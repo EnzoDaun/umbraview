@@ -1,0 +1,123 @@
+# Primeiros passos no Windows
+
+Do computador sem nada até o site rodando e o `verify` passando. Faça na ordem: cada passo
+confere o anterior.
+
+**Não é de dev (Mateus B., Matheus)?** Você não precisa instalar nada. Leia o
+[README](../README.md) e procure o seu nome no [backlog](backlog.md); as entregas de vocês são
+planilha, texto e vídeo, e quem é de dev leva para o repositório.
+
+> O que já foi conferido: o `npm install` e o `npm run verify` deste repositório, no Linux, em
+> 29/10/2026. Os comandos abaixo foram escritos para o Windows; a primeira execução no Windows é
+> a do Enzo, ao subir o repositório. Se algum passo der uma saída diferente da descrita, pare e
+> mande a saída inteira para o Enzo.
+
+## 1. Git for Windows
+
+Baixe em [git-scm.com/downloads/win](https://git-scm.com/downloads/win) e instale com as opções
+padrão. Ele traz o **Git Bash**, o terminal onde todo comando `git` deste projeto roda.
+
+Abra o Git Bash (menu Iniciar, "Git Bash"):
+
+**Máquina: a sua, no Git Bash, em qualquer pasta.**
+
+```bash
+git --version
+```
+
+Saída esperada: `git version 2.` seguido de mais números e `.windows.`. Sem isso, o Git não
+instalou: refaça antes de seguir.
+
+## 2. Node 24
+
+Baixe o Node **24** (LTS) em [nodejs.org](https://nodejs.org) e instale com as opções padrão. O
+Node 26 também virou LTS em 28/10/2026, e o site pode oferecer ele primeiro: o projeto usa o 24,
+o mesmo do CI (não conferi como o site apresenta as duas versões hoje).
+
+Abra o **Windows PowerShell** (menu Iniciar, "PowerShell"):
+
+**Máquina: a sua · Shell: Windows PowerShell · em qualquer pasta.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+node --version; if ($LASTEXITCODE -eq 0) { npm --version }
+```
+
+Saída esperada: `v24.15.0` ou um `v24` mais novo, e embaixo a versão do npm. Um `v24` abaixo
+de `24.15` não serve: o jsdom, usado nos testes, exige pelo menos essa.
+
+## 3. Seu nome nos commits
+
+**Máquina: a sua, no Git Bash, em qualquer pasta.**
+
+```bash
+git config --global user.name "Seu Nome" && git config --global user.email "o-email-da-sua-conta-do-github" && git config --global --get user.name && git config --global --get user.email
+```
+
+Troque o nome e o e-mail antes de colar. Os dois últimos comandos mostram o que ficou gravado: a
+saída são duas linhas, o seu nome e o seu e-mail.
+
+## 4. Convite do GitHub
+
+O Enzo convida você para o repositório. O convite chega no e-mail da sua conta do GitHub:
+aceite antes do próximo passo, senão o `git clone` responde `Repository not found`.
+
+## 5. Baixar o repositório
+
+**Máquina: a sua, no Git Bash, em qualquer pasta.**
+
+```bash
+mkdir -p ~/Documents/GitHub && cd ~/Documents/GitHub && git clone https://github.com/EnzoDaun/umbraview.git && cd umbraview && git status
+```
+
+- `mkdir -p` cria a pasta `Documents\GitHub` se ela não existir; `cd` entra nela.
+- `git clone` baixa o repositório. Na primeira vez, o Git abre o navegador para você entrar na
+  sua conta do GitHub: entre e volte ao terminal.
+- `git status` tem que dizer `On branch develop` e `nothing to commit, working tree clean`.
+
+## 6. Instalar e conferir
+
+**Máquina: a sua · Shell: Windows PowerShell · em qualquer pasta.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+Set-Location $HOME\Documents\GitHub\umbraview; if ($?) { npm install; if ($LASTEXITCODE -eq 0) { npm run verify } }
+```
+
+- `Set-Location` entra na pasta do repositório. Se ela não existir, para aí.
+- `npm install` baixa as dependências. A última linha dele tem que ser
+  `ganchos: core.hooksPath = .githooks (o commit-msg recusa coautoria do Claude)`.
+- `npm run verify` roda lint, testes, build e a conferência. A última linha tem que ser
+  `OK: nenhum TODO_PREENCHER no build.`
+
+Se o `verify` reprovar num computador recém-instalado, o problema não é seu: mande a saída
+inteira para o Enzo.
+
+## 7. Ver o site
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+npm run dev
+```
+
+Abra `http://localhost:5173` no navegador. O comando fica rodando e recarrega a página a cada
+arquivo salvo; para parar, `Ctrl+C` no PowerShell.
+
+## 8. O Claude neste projeto
+
+Antes de usar, leia a seção 4 do [CONTRIBUTING.md](../CONTRIBUTING.md): o Claude não faz commit.
+
+- **Claude Code**, aberto na pasta do repositório: ele lê o `CLAUDE.md` e o
+  `.claude/settings.json` sozinho. O gancho que bloqueia o git roda pelo Git Bash, por isso o
+  passo 1 é obrigatório também para isso. Para conferir: peça a ele para fazer um commit; ele tem
+  que recusar.
+- **Chat do claude.ai**: ele não lê o repositório sozinho. Crie um projeto no claude.ai e
+  adicione como conhecimento o `CLAUDE.md`, o `README.md`, o `CONTRIBUTING.md` e o
+  `docs/backlog.md`. Quando um deles mudar no repositório, troque o arquivo no projeto.
+
+## 9. Pegar o primeiro card
+
+Procure o seu nome no [backlog](backlog.md) e siga "Começando uma tarefa" no
+[CONTRIBUTING.md](../CONTRIBUTING.md).

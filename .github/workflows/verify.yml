@@ -1,0 +1,70 @@
+# Roda em todo PR para a develop ou para a main, e em todo push nas duas.
+#
+# Dois trabalhos:
+#   - verify: o mesmo npm run verify que cada pessoa roda antes do PR (CONTRIBUTING.md, seção 3);
+#   - sem-assinatura-do-claude: reprova o PR que tiver commit ou descrição assinados pelo Claude
+#     (CONTRIBUTING.md, seção 4). É a única trava que pega commit feito fora do Claude Code do
+#     computador de alguém: na nuvem, com --no-verify ou num clone sem o npm install.
+name: verify
+
+on:
+  pull_request:
+    branches: [develop, main]
+    # edited: a descrição do PR também é conferida, e ela muda sem push.
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+# Push novo na mesma branch cancela a rodada anterior. Repositório privado no plano gratuito
+# tem cota de minutos do Actions; rodada que ninguém vai ler não precisa gastar.
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: lint, testes, build e conferência
+    # Editar só a descrição do PR não muda código: não precisa rodar o verify de novo.
+    if: github.event.action != 'edited'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+
+  sem-assinatura-do-claude:
+    name: sem assinatura do Claude
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth 0: a conferência lê a mensagem de cada commit do PR, e o padrão do checkout
+      # baixa só o último.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # O mesmo padrão do .githooks/commit-msg. Os valores do evento entram por env, e não
+      # escritos dentro do script: assim um texto do PR não vira comando.
+      - name: Commits do PR sem assinatura do Claude
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^[[:space:]]*co-authored-by:.*(claude|anthropic\.com)|noreply@anthropic\.com|generated with \[?claude code|^[[:space:]]*claude-session:'
+          bad=$(git log --format='%H' "$BASE..$HEAD" | while read -r sha; do git log -1 --format=%B "$sha" | grep -qiE "$pattern" && echo "$sha"; done)
+          if [ -n "$bad" ]; then echo "::error::Commits with Claude attribution:"; echo "$bad"; exit 1; fi
+          echo "OK: $(git rev-list --count "$BASE..$HEAD") commit(s) conferido(s), nenhum com assinatura do Claude."
+
+      - name: Descrição do PR sem rodapé do Claude
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$BODY" | grep -qiE 'generated with \[?claude code|claude\.ai/code/session_'; then echo "::error::PR body contains Claude attribution"; exit 1; fi
+          echo "OK: a descrição do PR não tem rodapé do Claude."

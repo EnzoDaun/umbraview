@@ -1,0 +1,40 @@
+# Segredos e configuração local. Nada disso é versionado.
+.env
+*.env
+.env.*
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+*.local
+npm-debug.log*
+
+# Configuração pessoal do Claude Code. A da equipe é o .claude/settings.json, que é versionado;
+# a pessoal fica só no seu computador.
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Dados brutos da NASA. Os arquivos LOLA e os mapas de visibilidade passam de 100 MB, e o
+# GitHub recusa arquivo acima de 100 MiB. Eles ficam fora do git: o que o site usa sai deles
+# por script (card E2 do backlog), em pedaços pequenos.
+data-raw/
+*.TIF
+*.tif
+*.IMG
+*.LBL
+
+# Python dos scripts de preparação de dados
+__pycache__/
+.venv/
+venv/
+
+# Editor e sistema
+.idea/
+.vscode/
+*.iml
+*.swp
+.DS_Store
+Thumbs.db

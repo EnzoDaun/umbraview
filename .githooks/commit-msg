@@ -1,0 +1,16 @@
+#!/bin/sh
+# Recusa a mensagem de commit que traz o Claude como coautor (CONTRIBUTING.md, seção 4).
+#
+# Roda em todo commit feito neste clone, venha o comando de quem vier: de você, do terminal
+# do VS Code ou de uma ferramenta. O npm install liga este gancho (scripts/instalar-ganchos.mjs).
+# Sem ele, um "Co-Authored-By: Claude" esquecido entra no histórico, e histórico publicado
+# não se limpa sem reescrever a branch de todo mundo.
+#
+# O CI confere a mesma coisa em cada PR (.github/workflows/verify.yml), porque este gancho
+# pode ser pulado com --no-verify.
+if grep -qiE '^[[:space:]]*co-authored-by:.*(claude|anthropic\.com)|noreply@anthropic\.com|generated with \[?claude code|^[[:space:]]*claude-session:' "$1"; then
+  echo "commit-msg: a mensagem contem atribuicao ao Claude (Co-Authored-By, Claude-Session ou Generated with Claude Code)." >&2
+  echo "commit-msg: apague essas linhas e faca o commit de novo. O commit e seu; o Claude nao assina." >&2
+  exit 1
+fi
+exit 0

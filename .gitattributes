@@ -1,0 +1,19 @@
+# Fim de linha LF dentro do repositório, em todo sistema. Sem isto, cada Windows grava CRLF
+# do seu jeito, o diff mostra o arquivo inteiro como alterado e o conflito nasce do nada.
+* text=auto eol=lf
+
+# Os ganchos são scripts de shell: com CRLF a primeira linha (#!/bin/sh) quebra e o gancho
+# para de rodar sem avisar ninguém.
+.githooks/* text eol=lf
+*.sh text eol=lf
+
+# Binários: o git não deve tentar converter nem mesclar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.glb binary
+*.bin binary
+*.woff2 binary

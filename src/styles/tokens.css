@@ -1,0 +1,89 @@
+/* Tokens do UmbraView: toda cor, espaço, tamanho de letra, raio e duração da interface sai
+ * daqui. Componente não escreve #hex nem px solto (README, "Três regras que valem para
+ * qualquer tela"). O contraste dos pares de texto é conferido em tokens.test.js.
+ *
+ * Tema escuro de propósito: o app mostra o polo sul da Lua, onde o Sol mal passa do horizonte,
+ * e a cena 3D é o centro da tela. Um acento só (o âmbar do Sol). O azul da Terra é cor de
+ * dado, não de interface: aparece só onde a Terra aparece.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Fundo e superfícies, do mais fundo ao mais alto. Nada de preto puro. */
+  --color-bg: #0b0d12;
+  --color-surface: #12161e;
+  --color-surface-raised: #1a1f2a;
+
+  /* Texto */
+  --color-text: #e8ebf0;
+  --color-text-secondary: #b3bac7;
+  --color-text-muted: #929bab;
+
+  /* Bordas: a fina só separa áreas; a de controle precisa de 3:1 (WCAG 1.4.11). */
+  --color-border: #262d3a;
+  --color-border-control: #6b7487;
+
+  /* Acento e cores de dado */
+  --color-accent: #e9b450;
+  --color-on-accent: #1a1406;
+  --color-sun: #e9b450;
+  --color-earth: #79aee8;
+
+  /* Estado */
+  --color-danger: #ec8a7c;
+  --color-success: #5fcf8f;
+
+  /* Foco do teclado: visível sobre qualquer fundo do app */
+  --color-focus: #f2c46b;
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
+
+  /* Tipografia. Fontes do sistema por enquanto: nada de fonte externa sem licença conferida
+     (card I3 do backlog escolhe a fonte). Números do painel usam a monoespaçada. */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.625rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --line-height-tight: 1.2;
+  --line-height-body: 1.5;
+  --letter-spacing-tight: -0.01em;
+
+  /* Espaços, em passos de 4 px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Raios */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Movimento: curvas fortes de saída, nada acima de 300 ms em interface.
+     Com "reduzir movimento" ligado no sistema, global.css zera as durações. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 140ms;
+  --duration-fast: 180ms;
+  --duration-base: 240ms;
+
+  /* Camadas */
+  --z-panel: 10;
+  --z-overlay: 100;
+
+  /* Layout */
+  --panel-width: 380px;
+  --container-max-width: 1600px;
+}
