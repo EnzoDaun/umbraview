@@ -8,8 +8,12 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
 card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
-**Quem não é de dev (Mateus B., Matheus).** A entrega é planilha, texto, imagem ou vídeo, numa
-pasta compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como feito.
+**Quem não é de dev (Mateus B., Matheus).** Vocês não usam o GitHub: o Enzo manda os cards de
+vocês em PDF, e manda de novo quando eles mudarem. O que vocês precisam ler vai no fim do PDF:
+as fontes de dados do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou vídeo, numa pasta
+compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como feito e leva o
+resultado para o projeto. Se usarem IA para gerar imagem, música, vídeo ou texto que entra no
+projeto, avisem o Enzo: o texto de uso de IA precisa dizer isso.
 
 **Achou algo que não é do seu card?** Vira card novo, no fim da área certa, com o próximo
 número. Não resolva no meio do card que você está fazendo.
@@ -447,6 +451,9 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 
 ---
 
+<!-- Os cards P e V vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
+repositório. O que eles precisam ler vai nos anexos do PDF: a tabela de dados do CREDITS.md
+(anexo A) e o texto em inglês de docs/uso-de-ia.md (anexo B). -->
 ## P: Mateus Berlingieri
 
 Nenhum destes cards pede código. A entrega fica numa pasta compartilhada com a equipe.
@@ -455,7 +462,8 @@ Nenhum destes cards pede código. A entrega fica numa pasta compartilhada com a 
 
 **Estado:** a fazer · **Depende de:** nada
 
-**Para que serve.** Vira a lista de locais do site (card I2). Os juízes vão ler essas
+**Para que serve.** Vira a lista de locais que aparece no site (o Miguel monta essa parte). Os
+juízes vão ler essas
 coordenadas e datas como fato; um número errado é um erro com o nome da equipe.
 
 **O que fazer.** Uma planilha compartilhada, uma linha por local, com estas colunas:
@@ -489,23 +497,25 @@ diferentes, anote as duas em `notes` e avise o Enzo.
 
 ### P2 · Créditos e licenças
 
-**Estado:** a fazer · **Depende de:** nada (e do V3 e do I3 para a música e a fonte)
+**Estado:** a fazer · **Depende de:** nada para começar; a música e a fonte de letra entram
+quando forem escolhidas
 
 **Para que serve.** O Space Apps exige que toda fonte externa usada no projeto seja citada, com a
 licença.
 
 **O que fazer.**
-1. No [`CREDITS.md`](../CREDITS.md), a coluna "Condição de uso" dos dados da NASA está "a
-   conferir". Para cada linha, abra o link da fonte e procure o que a página diz sobre uso e
+1. Na lista das fontes de dados do projeto (anexo A do PDF), a coluna "Condição de uso" está
+   "a conferir". Para cada linha, abra o link da fonte e procure o que a página diz sobre uso e
    citação. Copie a frase e o link.
 2. Ler os termos de participação do Space Apps 2026 (página "Legal" do site) e conferir que a
    licença do projeto, MIT, atende ao que eles pedem.
-3. Conferir a licença da música (V3) e da fonte (I3) quando forem escolhidas.
+3. Conferir a licença da música que o Matheus escolher (V3) e da fonte de letra do site, que o
+   Miguel escolhe.
 
-**Entrega.** O texto pronto para entrar no CREDITS.md. O Enzo coloca no repositório (ou você abre
-o PR, se quiser aprender).
+**Entrega.** A condição de uso de cada fonte, com a frase e o link, numa planilha ou num
+documento; o Enzo leva para o projeto.
 
-**Pronto quando.** Nenhuma linha "a conferir" no CREDITS.md.
+**Pronto quando.** Nenhuma fonte fica "a conferir".
 
 ### P3 · Confirmação por escrito sobre começar antes de 14/11
 
@@ -513,8 +523,8 @@ o PR, se quiser aprender).
 
 **Para que serve.** A FAQ do Space Apps 2026 diz que as equipes não podem começar antes do
 hackathon. A equipe começou com base no que os organizadores disseram na faculdade. Com a
-resposta por escrito, a equipe tem como mostrar isso se alguém perguntar. As datas dos commits
-ficam públicas quando o repositório abrir.
+resposta por escrito, a equipe tem como mostrar isso se alguém perguntar. O histórico do código,
+com as datas, fica público quando o projeto for aberto para os juízes.
 
 **O que fazer.** Um e-mail para a organização do evento local perguntando se a equipe pode
 preparar o projeto antes de 14/11. Guardar a resposta na pasta da equipe.
@@ -532,12 +542,13 @@ preparar o projeto antes de 14/11. Guardar a resposta na pasta da equipe.
 **O que fazer.** Um rascunho em inglês, num documento compartilhado, com:
 - o problema: por que escolher onde pousar na Lua depende de luz do Sol e de ver a Terra;
 - o que o UmbraView faz, em linguagem simples;
-- os dados da NASA usados (estão no CREDITS.md);
-- como a equipe usou IA: o texto pronto está em `docs/uso-de-ia.md` (o Space Apps exige essa
-  descrição);
+- os dados da NASA usados (anexo A do PDF);
+- como a equipe usou IA: o texto pronto, em inglês, está no anexo B do PDF (o Space Apps exige
+  essa descrição);
 - a equipe.
 
-Junto, um parágrafo curto em inglês para o topo do README. Em 13/11, quando sair o guia de
+Junto, um parágrafo curto em inglês que apresenta o projeto, para a página do código; o Enzo
+coloca lá. Em 13/11, quando sair o guia de
 submissão, ajustar o texto aos campos dele.
 
 **Pronto quando.** O Enzo revisou o rascunho, e ele foi ajustado ao guia em 13/11.
@@ -561,8 +572,8 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ### V1 · Roteiro e storyboard do vídeo
 
-**Estado:** a fazer · **Depende de:** nada para o roteiro; as gravações dependem das telas
-(C1, I1)
+**Estado:** a fazer · **Depende de:** nada para o roteiro; as gravações dependem de as telas do
+site ficarem prontas
 
 **Para que serve.** O vídeo mostra o projeto funcionando para quem não vai abrir o site. Ele é
 montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ninguém decide na pressa.
@@ -580,7 +591,7 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada; combinar a fonte com o Miguel (I3)
+**Estado:** a fazer · **Depende de:** nada; combinar a fonte de letra com o Miguel
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
@@ -591,8 +602,6 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
   para ler bem pequena, como ícone da aba do navegador.
 - **Sem o logo redondo da NASA, o logotipo ou o selo dela**: só com autorização da NASA. Escrever
   "NASA Space Apps Challenge 2026" em texto pode.
-- Se usar IA para gerar alguma imagem, avise o Enzo: o texto de `docs/uso-de-ia.md` precisa
-  dizer isso.
 
 **Pronto quando.** Os arquivos estão na pasta compartilhada e a equipe aprovou. O Enzo troca o
 ícone do site.
@@ -603,7 +612,7 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 **O que fazer.**
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
-   licença para o CREDITS.md (o P2 confere).
+   licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
    qualquer janela, para acertar a configuração. O site ainda não está publicado: a gravação dele
    fica para quando o Enzo publicar, ou é feita junto com alguém de dev.

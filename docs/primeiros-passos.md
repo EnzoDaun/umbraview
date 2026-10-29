@@ -3,9 +3,9 @@
 Do computador sem nada até o site rodando e o `verify` passando. Faça na ordem: cada passo
 confere o anterior.
 
-**Não é de dev (Mateus B., Matheus)?** Você não precisa instalar nada. Leia o
-[README](../README.md) e procure o seu nome no [backlog](backlog.md); as entregas de vocês são
-planilha, texto e vídeo, e quem é de dev leva para o repositório.
+**Não vai programar (Mateus B., Matheus)?** Este guia não é para você, e você não precisa do
+GitHub. As suas tarefas chegam pelo Enzo, num PDF tirado do [backlog](backlog.md), e as entregas
+vão para a pasta compartilhada da equipe.
 
 > O que já foi conferido: o `npm install` e o `npm run verify` deste repositório, no Windows
 > com o Node 24.18, em 29/10/2026. Os passos de instalação do Git e do Node seguem o instalador
