@@ -184,6 +184,9 @@ umbraview/
 │   └── favicon.svg
 │
 ├── scripts/
+│   ├── references/                  referências de fora para os testes do motor
+│   │   ├── polar_reference.py
+│   │   └── requirements.txt
 │   ├── conferir-build.mjs
 │   ├── conferir-build.test.js
 │   ├── ganchos.test.js
@@ -192,8 +195,10 @@ umbraview/
 ├── src/
 │   ├── data/
 │   │   └── app.js                   textos da tela principal
-│   ├── engine/
-│   │   └── .gitkeep                 o motor entra aqui (card E1)
+│   ├── engine/                      o motor de cálculo (card E1)
+│   │   ├── fixtures/
+│   │   │   └── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   └── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
 │   ├── styles/
