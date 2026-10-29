@@ -22,6 +22,9 @@ instala tudo no Windows, do zero.
 - A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
   e o painel do ponto escolhido (direita). As duas regiões ainda estão vazias, com o texto que
   aparece enquanto não há nada para mostrar.
+- O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
+  próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj. Ele
+  ainda não está ligado à tela (card E3).
 - Os tokens de cor, espaço, tipo e movimento (`src/styles/tokens.css`), com o contraste de
   cada par de cor conferido por teste.
 - As travas que impedem o Claude de fazer commit ou de assinar um (CONTRIBUTING.md, seção 4).
@@ -205,7 +208,8 @@ umbraview/
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
 │   │   ├── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
-│   │   └── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
+│   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
+│   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
 │   ├── styles/

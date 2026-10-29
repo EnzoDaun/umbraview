@@ -21,3 +21,7 @@ export const HORIZON = Object.freeze({
 
 /* O relevo fino (80 m) vale até esta distância; dali até HORIZON.maxDistanceM, o grosso (960 m). */
 export const NEAR_LAYER_UP_TO_M = 10000
+
+/* Janela de pouso mínima: 6 dias seguidos com Sol e Terra à vista. Valor provisório, o mesmo da
+   conferência do motor em 28/10/2026; muda aqui, e só aqui. */
+export const MIN_LANDING_WINDOW_HOURS = 144
