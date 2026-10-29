@@ -198,7 +198,9 @@ umbraview/
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   └── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   ├── config.js                os parâmetros validados do motor, com a justificativa
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
+│   │   ├── horizon.js               o horizonte de um ponto, direção por direção
 │   │   └── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
