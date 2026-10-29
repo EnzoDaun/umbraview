@@ -3,14 +3,14 @@
 Do computador sem nada até o site rodando e o `verify` passando. Faça na ordem: cada passo
 confere o anterior.
 
-**Não é de dev (Mateus B., Matheus)?** Você não precisa instalar nada. Leia o
-[README](../README.md) e procure o seu nome no [backlog](backlog.md); as entregas de vocês são
-planilha, texto e vídeo, e quem é de dev leva para o repositório.
+**Não vai programar (Mateus B., Matheus)?** Este guia não é para você, e você não precisa do
+GitHub. As suas tarefas chegam pelo Enzo, num PDF tirado do [backlog](backlog.md), e as entregas
+vão para a pasta compartilhada da equipe.
 
-> O que já foi conferido: o `npm install` e o `npm run verify` deste repositório, no Linux, em
-> 29/10/2026. Os comandos abaixo foram escritos para o Windows; a primeira execução no Windows é
-> a do Enzo, ao subir o repositório. Se algum passo der uma saída diferente da descrita, pare e
-> mande a saída inteira para o Enzo.
+> O que já foi conferido: o `npm install` e o `npm run verify` deste repositório, no Windows
+> com o Node 24.18, em 29/10/2026. Os passos de instalação do Git e do Node seguem o instalador
+> de cada um e não foram refeitos do zero. Se algum passo der uma saída diferente da descrita,
+> pare e mande a saída inteira para o Enzo.
 
 ## 1. Git for Windows
 
@@ -85,10 +85,23 @@ Set-Location $HOME\Documents\GitHub\umbraview; if ($?) { npm install; if ($LASTE
 ```
 
 - `Set-Location` entra na pasta do repositório. Se ela não existir, para aí.
-- `npm install` baixa as dependências. A última linha dele tem que ser
-  `ganchos: core.hooksPath = .githooks (o commit-msg recusa coautoria do Claude)`.
+- `npm install` baixa as dependências. No meio da saída tem que aparecer
+  `ganchos: core.hooksPath = .githooks (o commit-msg recusa coautoria do Claude)`, e o fim
+  traz `found 0 vulnerabilities`.
 - `npm run verify` roda lint, testes, build e a conferência. A última linha tem que ser
   `OK: nenhum TODO_PREENCHER no build.`
+
+Dois avisos do npm aparecem no `npm install` e podem ser ignorados (os números de versão podem
+ser outros na sua máquina):
+
+```
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+npm notice New major version of npm available! 11.16.0 -> 12.2.1
+```
+
+O `verify` passa com os dois (conferido no Windows em 29/10/2026). Não atualize nada por causa
+deles: o ESLint fica no 9 de propósito (README, "Versões fixas"), e atualizar o npm deixa o seu
+computador diferente do da equipe e do CI. Para atualizar qualquer coisa, fale com o Enzo antes.
 
 Se o `verify` reprovar num computador recém-instalado, o problema não é seu: mande a saída
 inteira para o Enzo.

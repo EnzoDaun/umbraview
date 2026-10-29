@@ -44,10 +44,11 @@ está em [`docs/primeiros-passos.md`](docs/primeiros-passos.md).
 npm install; if ($LASTEXITCODE -eq 0) { npm run dev }
 ```
 
-- `npm install` baixa as dependências e, no fim, liga o gancho de commit deste clone. A última
-  linha tem que ser `ganchos: core.hooksPath = .githooks (...)`. Se aparecer `esta pasta não é
+- `npm install` baixa as dependências e liga o gancho de commit deste clone. No meio da saída
+  tem que aparecer `ganchos: core.hooksPath = .githooks (...)`. Se aparecer `esta pasta não é
   um repositório git`, você está numa cópia sem git (um zip, por exemplo): o site roda, mas o
-  gancho fica desligado.
+  gancho fica desligado. Dois avisos do npm aparecem e podem ser ignorados
+  ([`docs/primeiros-passos.md`](docs/primeiros-passos.md), passo 6).
 - `npm run dev` sobe o site em `http://localhost:5173`. Ele fica rodando; para parar, `Ctrl+C`.
 
 | Comando | O que faz |
