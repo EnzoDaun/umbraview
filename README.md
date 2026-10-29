@@ -186,7 +186,8 @@ umbraview/
 ├── scripts/
 │   ├── references/                  referências de fora para os testes do motor
 │   │   ├── polar_reference.py
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── spice_reference.py
 │   ├── conferir-build.mjs
 │   ├── conferir-build.test.js
 │   ├── ganchos.test.js
@@ -197,8 +198,10 @@ umbraview/
 │   │   └── app.js                   textos da tela principal
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
-│   │   │   └── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   │   └── spiceReference.json  Sol e Terra segundo o SPICE, para o teste das posições
 │   │   ├── config.js                os parâmetros validados do motor, com a justificativa
+│   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
 │   │   └── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
