@@ -204,7 +204,8 @@ umbraview/
 │   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
-│   │   └── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
+│   │   ├── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
+│   │   └── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
 │   ├── styles/
