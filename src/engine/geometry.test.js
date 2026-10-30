@@ -7,7 +7,7 @@ const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 const length = (a) => Math.sqrt(dot(a, a))
 
 /* Pontos de ida e volta: o equador, os dois polos de perto, a longitude dando a volta em ±180°
-   e os locais do polo sul que o produto mais usa. */
+   e dois pontos do polo sul que também estão na referência do SPICE. */
 const POINTS = [
   [0, 0], [12.5, 77], [-45, -30], [-89.999, 10], [89.999, -170],
   [-89.475, -137.44], [-86, 2.06], [-60, 179.9], [-60, -179.9],

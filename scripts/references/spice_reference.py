@@ -28,11 +28,16 @@ KERNELS = ['naif0012.tls', 'pck00011.tpc', 'moon_pa_de440_200625.bpc', 'moon_de4
 # Raio de referência dos produtos LOLA, em km: o mesmo de MOON_RADIUS_M em geometry.js.
 MOON_RADIUS_KM = 1737.4
 
-# Nome, latitude, longitude e altura do observador acima do raio de referência (km).
+# Descrição, latitude, longitude e altura do observador acima do raio de referência (km). Os pontos
+# só precisam cobrir latitudes diferentes perto do polo; nenhum é um local de pouso. A altura é a
+# do relevo LOLA (LDEM_80S_80MPP_ADJ, CREDITS.md) no pixel de cada ponto, lida com o rasterio em
+# 30/10/2026.
 SITES = [
-    ('Connecting Ridge', -89.475, -137.44, 1.9),
-    ('Malapert', -86.0, 2.06, 4.9),
-    ('Polo', -89.999, 0.0, 0.0),
+    # o pixel mais iluminado do mapa de Sol AVGVISIB_85S_060M (Mazarico et al. 2011, CREDITS.md),
+    # centro em x = −10770 m, y = −11730 m na projeção polar
+    ('pixel mais iluminado do mapa de Sol da NASA', -89.475, -137.44, 1.946),
+    ('ponto a 86°S', -86.0, 2.06, 5.156),
+    ('ponto a 0,001° do polo', -89.999, 0.0, 1.286),
 ]
 
 # Um instante a cada 5 dias durante um ano, a partir de 01/11/2026: o ano inteiro de posições
@@ -68,7 +73,7 @@ def main():
         'source': 'SPICE (NAIF/JPL), referencial MOON_ME; gerado por scripts/references/spice_reference.py',
         'kernels': KERNELS,
         'rows': rows,
-    }) + '\n', encoding='utf-8')
+    }, ensure_ascii=False) + '\n', encoding='utf-8', newline='\n')
     print(f'{OUT}: {len(rows)} linhas')
 
 
