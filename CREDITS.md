@@ -11,7 +11,7 @@ O código do UmbraView é da Umbra Team, sob a licença MIT ([`LICENSE`](LICENSE
 
 | Dado | Para quê | Fonte | Condição de uso |
 |---|---|---|---|
-| Relevo do polo sul da Lua, 80 m e 240 m por pixel (LOLA, `LDEM_80S_80MPP_ADJ` e `LDEM_60S_240MPP_ADJ`) | Horizonte de cada ponto perto do polo | NASA GSFC, Barker et al. 2023, [pgda.gsfc.nasa.gov/products/90](https://pgda.gsfc.nasa.gov/products/90) | a conferir (card P2) |
+| Relevo do polo sul da Lua, 80 m e 240 m por pixel (LOLA, `LDEM_80S_80MPP_ADJ` e `LDEM_60S_240MPP_ADJ`) | Horizonte de cada ponto perto do polo. O relevo grosso do motor, de 960 m por pixel, é a média de 4 × 4 pixels do de 240 m | NASA GSFC, Barker et al. 2023, [pgda.gsfc.nasa.gov/products/90](https://pgda.gsfc.nasa.gov/products/90) | a conferir (card P2) |
 | Relevo da Lua inteira (LOLA GDR) | Horizonte fora do polo | NASA PDS, [imbrium.mit.edu/DATA/LOLA_GDR](https://imbrium.mit.edu/DATA/LOLA_GDR) | a conferir (card P2) |
 | Mapas de visibilidade média do Sol e da Terra, polo sul | Comparação do nosso cálculo com o da NASA | NASA GSFC, Mazarico et al. 2011, [pgda.gsfc.nasa.gov/products/69](https://pgda.gsfc.nasa.gov/products/69) | a conferir (card P2) |
 
