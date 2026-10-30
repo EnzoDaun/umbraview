@@ -43,14 +43,32 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
     expect(sky.longestDarkHours).toBe(3)
   })
 
-  it('janelas de pouso viram início e fim em UTC, só as que duram o mínimo pedido', () => {
-    const janelas = (minWindowHours) => summarizeSky(SERIE, { minWindowHours }).landingWindows
-      .map((j) => [j.startUtc.toISOString(), j.endUtc.toISOString()])
-    expect(janelas(2)).toEqual([
-      ['2026-11-14T03:00:00.000Z', '2026-11-14T06:00:00.000Z'],
-      ['2026-11-14T10:00:00.000Z', '2026-11-14T13:00:00.000Z'],
+  it('janelas de pouso viram início e fim em UTC, com o corte nas pontas do período marcado', () => {
+    // a série é de hora em hora, e o cruzamento no meio dela não tem precisão de milissegundo:
+    // a comparação é até o minuto
+    const minuto = (d) => new Date(Math.round(d.getTime() / 60000) * 60000).toISOString()
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    expect(sky.landingWindows.map((j) => ({ ...j, startUtc: minuto(j.startUtc), endUtc: minuto(j.endUtc) }))).toEqual([
+      // já aberta no primeiro instante; fecha no pôr do Sol
+      { startUtc: '2026-11-14T03:00:00.000Z', endUtc: '2026-11-14T05:30:00.000Z', startsBeforePeriod: true, endsAfterPeriod: false },
+      // o Sol passa da metade do disco entre as horas 6 (0) e 7 (0,6); continua depois do último instante
+      { startUtc: '2026-11-14T09:50:00.000Z', endUtc: '2026-11-14T12:00:00.000Z', startsBeforePeriod: false, endsAfterPeriod: true },
     ])
-    expect(janelas(4)).toEqual([])
+  })
+
+  it('nenhuma janela de pouso passa do pôr do Sol', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    const antesDoPor = sky.landingWindows.filter((j) => j.startUtc < sky.nextSunsetUtc)
+    expect(antesDoPor).toHaveLength(1)
+    expect(antesDoPor[0].endUtc.getTime()).toBeLessThanOrEqual(sky.nextSunsetUtc.getTime())
+  })
+
+  it('janela inteira dentro do período só entra se durar o mínimo pedido', () => {
+    // o Sol passa da metade do disco entre as horas 1 e 2 e volta a ficar abaixo entre a 5 e a 6:
+    // de 1,83 h a 5,17 h, 3 h e pouco, inteira dentro das dez horas
+    const dentro = { ...SERIE, sunFraction: Float32Array.from([0, 0, 0.6, 1, 1, 0.6, 0, 0, 0, 0]) }
+    expect(summarizeSky(dentro, { minWindowHours: 4 }).landingWindows).toEqual([])
+    expect(summarizeSky(dentro, { minWindowHours: 3 }).landingWindows).toHaveLength(1)
   })
 
   it('Sol que não se põe no período: nextSunsetUtc é null, e a escuridão é zero', () => {

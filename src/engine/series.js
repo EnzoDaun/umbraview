@@ -117,9 +117,19 @@ export function nextSunset(series, fromIndex) {
   return null
 }
 
+const CONDITIONS = [
+  { value: sunValue, visible: isSunVisible },
+  { value: earthValue, visible: isEarthVisible },
+]
+
 /* Trechos seguidos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo
-   tempo, com pelo menos minHours de duração. start: o instante em que o trecho começa.
-   ongoing: o trecho já tinha começado no primeiro instante. open: continua depois do último. */
+   tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: a janela abre
+   quando o último dos dois aparece e fecha quando o primeiro some. Assim uma janela que fecha pelo
+   Sol fecha exatamente no pôr do Sol (nextSunset).
+   startHours e endHours: horas desde o primeiro instante da série. startsBeforePeriod: a janela já
+   estava aberta no primeiro instante, e o começo dela é o começo da série. endsAfterPeriod: continua
+   depois do último instante, que é o fim dela. Só a janela inteira dentro da série precisa durar
+   minHours; a cortada numa das pontas entra mesmo mais curta, porque pode durar mais fora dela. */
 export function findLandingWindows(series, minHours) {
   const n = series.sunFraction.length
   const ok = (i) => isSunVisible(series, i) && isEarthVisible(series, i)
@@ -130,10 +140,24 @@ export function findLandingWindows(series, minHours) {
       i++
       continue
     }
-    const start = i
+    const first = i
     while (i < n && ok(i)) i++
-    const hours = (i - start) * series.stepHours
-    if (hours >= minHours) windows.push({ start, hours, ongoing: start === 0, open: i === n })
+    const last = i - 1
+    const startsBeforePeriod = first === 0
+    const endsAfterPeriod = last === n - 1
+    // na entrada, cada condição que estava escondida cruza zero entre first − 1 e first; vale a mais tarde
+    const start = startsBeforePeriod
+      ? 0
+      : Math.max(...CONDITIONS.filter((c) => !c.visible(series, first - 1)).map((c) => crossing(c.value, series, first)))
+    // na saída, cada condição que some cruza zero entre last e last + 1; vale a mais cedo
+    const end = endsAfterPeriod
+      ? last
+      : Math.min(...CONDITIONS.filter((c) => !c.visible(series, last + 1)).map((c) => crossing(c.value, series, last + 1)))
+    const startHours = round(start * series.stepHours)
+    const endHours = round(end * series.stepHours)
+    if (startsBeforePeriod || endsAfterPeriod || endHours - startHours >= minHours) {
+      windows.push({ startHours, endHours, startsBeforePeriod, endsAfterPeriod })
+    }
   }
   return windows
 }

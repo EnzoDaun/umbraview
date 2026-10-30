@@ -102,14 +102,57 @@ describe('quando o Sol e a Terra mudam', () => {
     expect(nextSunset(serie([0, 0, 0], [1, 1, 1]), 0)).toBeNull()
   })
 
-  it('janelas de pouso: só os trechos seguidos com Sol e Terra que duram o mínimo pedido', () => {
+  it('janela de pouso: entra quando o último dos dois aparece e sai quando o primeiro some, entre duas horas', () => {
     const n = 400
     const sol = new Array(n).fill(0)
     const terra = new Array(n).fill(-1)
-    for (let i = 10; i < 160; i++) { sol[i] = 1; terra[i] = 1 } // 150 h seguidas
-    for (let i = 200; i < 300; i++) { sol[i] = 1; terra[i] = 1 } // 100 h
-    for (let i = 320; i < 400; i++) { sol[i] = 0.4; terra[i] = 1 } // Sol abaixo de metade do disco
-    expect(findLandingWindows(serie(sol, terra), 144)).toEqual([{ start: 10, hours: 150, ongoing: false, open: false }])
-    expect(findLandingWindows(serie(sol, terra), 1)).toHaveLength(2)
+    // a Terra aparece na hora 8; o Sol passa da metade do disco entre a 9 (0,2) e a 10 (0,8)
+    for (let i = 8; i < 170; i++) terra[i] = 1
+    sol[9] = 0.2
+    sol[10] = 0.8
+    for (let i = 11; i < 175; i++) sol[i] = 1
+    // a Terra some primeiro: entre a 159 (margem 0,5) e a 160 (margem −0,5)
+    terra[159] = 0.5
+    for (let i = 160; i < 170; i++) terra[i] = -0.5
+    expect(findLandingWindows(serie(sol, terra), 144)).toEqual([
+      { startHours: 9.5, endHours: 159.5, startsBeforePeriod: false, endsAfterPeriod: false },
+    ])
+  })
+
+  it('quando o Sol e a Terra mudam na mesma hora, vale o mais tarde na entrada e o mais cedo na saída', () => {
+    // entre as horas 1 e 2: a Terra cruza zero na metade (1,5), o Sol só aos três quartos (1,75)
+    // entre as horas 4 e 5: o Sol cai abaixo de metade na metade (4,5), a Terra só aos três quartos (4,75)
+    const sol = [0, 0.2, 0.6, 1, 1, 0, 0, 0]
+    const terra = [-1, -1, 1, 1, 1.5, -0.5, -1, -1]
+    expect(findLandingWindows(serie(sol, terra), 1)).toEqual([
+      { startHours: 1.75, endHours: 4.5, startsBeforePeriod: false, endsAfterPeriod: false },
+    ])
+  })
+
+  it('janela de pouso que termina pelo Sol termina no pôr do Sol', () => {
+    const sol = [0, 0, 1, 1, 1, 0.8, 0.2, 0, 0, 0]
+    const terra = new Array(10).fill(1)
+    const [janela] = findLandingWindows(serie(sol, terra), 1)
+    expect(janela.endHours).toBe(5.5)
+    expect(janela.endHours).toBe(nextSunset(serie(sol, terra), 0))
+  })
+
+  it('o mínimo pedido vale para a janela inteira dentro do período', () => {
+    const n = 400
+    const sol = new Array(n).fill(0)
+    const terra = new Array(n).fill(1)
+    for (let i = 200; i < 300; i++) sol[i] = 1 // cerca de 100 h
+    expect(findLandingWindows(serie(sol, terra), 144)).toEqual([])
+    expect(findLandingWindows(serie(sol, terra), 1)).toHaveLength(1)
+  })
+
+  it('janela cortada no começo ou no fim do período fica na lista, marcada, mesmo mais curta que o mínimo', () => {
+    // à vista desde o primeiro instante até entre as horas 2 e 3; e de novo entre a 7 e a 8 até o último
+    const sol = [1, 1, 1, 0, 0, 0, 0, 0, 1, 1]
+    const terra = new Array(10).fill(1)
+    expect(findLandingWindows(serie(sol, terra, 2), 144)).toEqual([
+      { startHours: 0, endHours: 5, startsBeforePeriod: true, endsAfterPeriod: false },
+      { startHours: 15, endHours: 18, startsBeforePeriod: false, endsAfterPeriod: true },
+    ])
   })
 })

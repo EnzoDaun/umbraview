@@ -34,8 +34,10 @@ export function summarizeSky(series, { minWindowHours }) {
     sunFraction: sunTotal / series.count,
     longestDarkHours: longestDark * stepHours,
     landingWindows: findLandingWindows(series, minWindowHours).map((w) => ({
-      startUtc: at(w.start * stepHours),
-      endUtc: at(w.start * stepHours + w.hours),
+      startUtc: at(w.startHours),
+      endUtc: at(w.endHours),
+      startsBeforePeriod: w.startsBeforePeriod,
+      endsAfterPeriod: w.endsAfterPeriod,
     })),
   }
 }
