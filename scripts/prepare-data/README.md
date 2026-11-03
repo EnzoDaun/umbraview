@@ -12,6 +12,8 @@ para o GitHub. O script `prepare_relief.py` recorta só o que o site usa e grava
 
 Ele grava também `src/engine/fixtures/reliefSamples.json`, as alturas que o teste do site confere.
 
+Na mesma pasta fica a comparação do nosso horizonte com o da NASA (seções 5 e 6).
+
 Os recortes já estão no repositório. Rode o script só quando mudar a área, a resolução ou o
 alcance do horizonte (`src/engine/config.js`), ou para conferir que ele gera os mesmos arquivos.
 
@@ -92,3 +94,55 @@ mudou=$(git status --porcelain --untracked-files=all public/data/relief src/engi
 Sem mudar nada no script, a saída é a linha `OK`. Se você mudou a área ou o alcance de propósito,
 a saída lista os arquivos que mudaram: eles entram no mesmo commit da mudança. Se o próprio
 `git status` falhar, a saída é o erro dele, e não a linha `OK`.
+
+## 5. Comparar com a NASA
+
+É a prova de que os recortes e os números de `src/engine/config.js` estão certos: o horizonte
+calculado com os arquivos de `public/data/relief/` contra o Sol e a Terra que a NASA calculou
+(Mazarico et al. 2011, valores em `nasa-reference.json`). Rode depois de gerar recortes novos ou
+de mudar o `config.js`, e anote o resultado no card E1 do backlog.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+node scripts/prepare-data/compare-nasa.mjs
+```
+
+Leva cerca de 1 minuto. A saída traz os 10 pontos mais iluminados do mapa da NASA, um por linha,
+com a porcentagem da NASA e a nossa; depois o erro médio de cada sorteio; e termina com
+`OK: comparação com a NASA feita em 382 pontos`.
+
+Para conferir uma escolha do `config.js` sem mudar o arquivo, acrescente `--mast=0` (altura do
+observador, em metros) ou `--directions=720` (direções do horizonte) ao comando. A primeira
+linha da saída diz qual configuração rodou. As medições que justificam os valores atuais estão
+nos comentários do `config.js`.
+
+## 6. Refazer os pontos de comparação (só se eles mudarem)
+
+`nasa-reference.json` já está no repositório. Ele sai de `nasa_reference.py`, que lê quatro mapas
+da NASA ([pgda.gsfc.nasa.gov/products/69](https://pgda.gsfc.nasa.gov/products/69), links
+conferidos em 29/10/2026) e confere o SHA-256 de cada um, como o outro script.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+curl.exe -fL -o data-raw\AVGVISIB_85S_060M_201608.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF
+if ($?) {
+  curl.exe -fL -o data-raw\AVGVISIB_85S_060M_201608_EARTH.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF
+  if ($?) {
+    curl.exe -fL -o data-raw\AVGVISIB_65S_240M_201608.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_65S_240M_201608.TIF
+    if ($?) {
+      curl.exe -fL -o data-raw\AVGVISIB_65S_240M_201608_EARTH.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_65S_240M_201608_EARTH.TIF
+      if ($?) {
+        .venv\Scripts\python.exe scripts\prepare-data\nasa_reference.py
+      }
+    }
+  }
+}
+```
+
+Saída esperada, na última linha:
+`OK: 382 pontos em scripts/prepare-data/nasa-reference.json ({'top': 10, '85-90': 259, '84-85': 113})`.
+

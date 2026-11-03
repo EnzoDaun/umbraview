@@ -189,9 +189,12 @@ umbraview/
 │   └── favicon.svg
 │
 ├── scripts/
-│   ├── prepare-data/                recorta o relevo da NASA para o site (card E2)
+│   ├── prepare-data/                recorta o relevo da NASA para o site e compara com a NASA (card E2)
 │   │   ├── README.md                de onde baixar os arquivos e como rodar
-│   │   ├── prepare_relief.py
+│   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
+│   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
+│   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare_relief.py        gera public/data/relief/
 │   │   └── requirements.txt
 │   ├── references/                  referências de fora para os testes do motor
 │   │   ├── polar_reference.py
