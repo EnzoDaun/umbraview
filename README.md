@@ -25,6 +25,9 @@ instala tudo no Windows, do zero.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj. Ele
   ainda não está ligado à tela (card E3).
+- O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
+  `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
+  E1).
 - Os tokens de cor, espaço, tipo e movimento (`src/styles/tokens.css`), com o contraste de
   cada par de cor conferido por teste.
 - As travas que impedem o Claude de fazer commit ou de assinar um (CONTRIBUTING.md, seção 4).
@@ -264,4 +267,4 @@ umbraview/
   preparação dos dados do relevo e as referências dos testes do motor.
 - `.claude/` e `.githooks/`: as travas do Claude e do commit (CONTRIBUTING.md, seção 4).
 - Dado bruto da NASA não entra no repositório (`.gitignore`, pasta `data-raw/`): o site usa só
-  os recortes pequenos que o script de preparação gera (card E2).
+  os recortes pequenos que `scripts/prepare-data/` gera (card E2).

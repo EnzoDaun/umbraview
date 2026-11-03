@@ -33,7 +33,8 @@ número. Não resolva no meio do card que você está fazendo.
 O site responde a uma pergunta: **num ponto da Lua, numa data, o Sol e a Terra aparecem acima
 das montanhas em volta?** Quatro peças fazem isso:
 
-- **Motor** (`src/engine/`, Enzo): faz a conta. Recebe o ponto e a data, devolve números.
+- **Motor** (`src/engine/`, Enzo): faz a conta. Recebe o ponto e a data, devolve números. O
+  relevo que ele usa fica em `public/data/relief/` (card E2).
 - **Ponte** (`src/hooks/useSiteSky.js`, Enzo): chama o motor quando o ponto ou a data mudam, e
   avisa a tela se está calculando, se deu certo ou se deu erro.
 - **Cena 3D** (`src/scene/`, Marco): a Lua na tela, com a luz do Sol vindo da direção certa.
@@ -80,13 +81,13 @@ volta são mais baixas que o ponto.
 
 ### E1 · Motor de cálculo
 
-**Estado:** em andamento: falta um item de "Pronto quando", a comparação com a NASA, que precisa
-do relevo do card E2 · **Depende de:** E2, para esse item
+**Estado:** feito em 03/11, PR #2 e PR #3 · **Depende de:** E2 (feito), para a comparação com
+a NASA
 
 **O que entrega.** O motor em `src/engine/`, em JavaScript puro (sem React e sem acesso à
 página). O caminho que a ponte (E3) usa, nesta ordem:
-1. `computeHorizon` (`horizon.js`): o horizonte do ponto, a partir das camadas de relevo
-   montadas com `polarGridRelief` ou `cylindricalGridRelief` (`relief.js`);
+1. `computeHorizon` (`horizon.js`): o horizonte do ponto, a partir das camadas de relevo que
+   `loadReliefLayers` (`reliefFiles.js`, card E2) monta com os arquivos do site;
 2. `computeEphemeris` (`ephemeris.js`): o Sol e a Terra hora a hora;
 3. `computeSeries` (`series.js`): quanto de cada um as montanhas escondem, hora a hora;
 4. `summarizeSky` (`summary.js`): o `sky` no formato de "O que a ponte entrega para a tela".
@@ -97,44 +98,91 @@ Os parâmetros ficam em `config.js`.
 - Sol e Terra batem com o SPICE do JPL com diferença de até 0,01°. Feito: `ephemeris.test.js` e
   `series.test.js`, contra `fixtures/spiceReference.json` (`scripts/references/`).
 - A porcentagem de Sol no período fica perto do mapa de Mazarico et al. (CREDITS.md) nos pontos
-  de referência, com a diferença de cada ponto anotada neste card. **Falta:** a comparação
-  precisa do relevo de verdade, que chega com o card E2. O PR do E2 traz o script que a refaz e
-  a tabela de cada ponto para cá, e fecha este card.
+  de referência, com a diferença de cada ponto anotada neste card. Feito: a comparação abaixo,
+  com o relevo do card E2.
 - Próximo pôr do Sol e janelas de pouso conferidos em casos montados à mão. Feito:
   `series.test.js` e `summary.test.js`, inclusive que a janela de pouso não passa do pôr do Sol.
 - Nenhum arquivo de `src/engine/` importa React, e o `verify` passa. Feito:
   `noBrowserDependencies.test.js`.
 
+**Comparação com a NASA.** `node scripts/prepare-data/compare-nasa.mjs`, com o relevo do site
+(`public/data/relief/`, card E2), em 30/10/2026. Os 10 pontos mais iluminados do mapa de 60 m de
+Mazarico et al. 2011, NASA → nosso (diferença em pontos percentuais):
+
+| # | Ponto | Sol | Terra |
+|---|---|---|---|
+| 1 | 89,475°S 137,44°O | 88,4% → 85,4% (−3,1) | 58,1% → 58,0% (0,0) |
+| 2 | 89,686°S 162,94°O | 87,1% → 81,6% (−5,4) | 53,7% → 53,8% (0,0) |
+| 3 | 88,809°S 123,76°L | 86,0% → 84,2% (−1,7) | 56,5% → 58,6% (+2,1) |
+| 4 | 89,784°S 155,90°O | 85,5% → 83,0% (−2,5) | 56,7% → 56,7% (0,0) |
+| 5 | 85,300°S 37,10°L | 83,1% → 82,0% (−1,1) | 59,9% → 63,7% (+3,8) |
+| 6 | 88,665°S 68,40°O | 82,7% → 79,2% (−3,5) | 61,4% → 61,5% (0,0) |
+| 7 | 86,001°S 2,06°L | 81,9% → 74,0% (−7,9) | 58,7% → 58,3% (−0,4) |
+| 8 | 85,955°S 3,38°O | 81,3% → 80,2% (−1,1) | 63,3% → 64,2% (+0,9) |
+| 9 | 87,988°S 166,38°O | 80,4% → 76,8% (−3,6) | 45,3% → 45,5% (+0,2) |
+| 10 | 86,041°S 3,16°L | 79,6% → 68,9% (−10,7) | 59,3% → 56,8% (−2,5) |
+
+E nos sorteios por faixa de Sol:
+
+| Faixa | Mapa da NASA | Pontos | Erro médio no Sol | Onde a NASA dá ≥ 50% de Sol | Erro médio na Terra |
+|---|---|---|---|---|---|
+| 85° a 90°S | 60 m | 259 | 2,1 pts | 3,1 pts (109 pontos) | 1,2 pts |
+| 84° a 85°S | 240 m | 113 | 2,6 pts | 4,3 pts (38 pontos) | 1,6 pts |
+
+**Aberto.** Os pontos 7 e 10, perto de 86°S entre 2° e 3°L, ficam 8 e 11 pontos abaixo da NASA no
+Sol, e a causa não foi investigada. Com mastro de 10 m (`--mast=10`), os dois ficam a 1,3 e 1,5
+pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
+
 ### E2 · Dados do relevo para o site
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 03/11, PR #3 · **Depende de:** nada
 
-**Para que serve.** O relevo medido pela NASA (LOLA) vem em arquivos grandes demais para o site
-e para o GitHub, que recusa arquivo acima de 100 MiB. Um script recorta e comprime só o que o
-site usa.
+**O que entrega.**
+- `public/data/relief/`: o relevo do polo sul, do polo até 84°S, recortado dos arquivos LOLA da
+  NASA (CREDITS.md). O fino, de 80 m por pixel, vale até 10 km do ponto e fica em 332 ladrilhos
+  de 20 × 20 km, de 127 kB cada. O grosso, de 960 m, vale até 200 km e fica num arquivo só, de
+  1,3 MB. São 43,5 MB no total.
+- `src/engine/reliefFiles.js`: `loadReliefLayers(manifest, ponto, readFile, cache)` devolve as
+  camadas que `computeHorizon` usa, baixando só o relevo grosso e os ladrilhos em volta do ponto
+  (em geral 4, cerca de 0,5 MB). `isInsideReliefArea(manifest, lat)` diz se o ponto está na área.
+- `scripts/prepare-data/`: o script que gera os recortes, a comparação com a NASA, a medição das
+  janelas de pouso e o README para rodar tudo do zero. O script dos recortes gera os mesmos
+  arquivos, byte a byte, no Windows e no Linux.
 
-**O que fazer.**
-1. Um script em Python em `scripts/preparar-dados/` que lê os arquivos baixados em `data-raw/`
-   (pasta que o git ignora) e grava os recortes em `public/data/`.
-2. Um README do script: de onde baixar cada arquivo (os links estão no CREDITS.md), a versão do
-   Python e dos pacotes, e o comando para rodar.
-3. Decidir até onde vai a área em que a pessoa pode clicar em qualquer ponto (card C3), medindo
-   quanto pesa cada opção.
-4. O site lê os recortes e monta as camadas do horizonte com `polarGridRelief` ou
-   `cylindricalGridRelief` (`src/engine/relief.js`), na combinação de `src/engine/config.js`.
+**Por que 80 m.** Medido em 29/10/2026 nos 259 pontos sorteados de 85° a 90°S
+(`scripts/prepare-data/nasa-reference.json`), com um script de uma vez só, que não ficou no
+repositório: o mesmo motor e os mesmos pontos, trocando só o relevo fino (a média de 2 × 2 pixels
+do de 80 m, para 160 m, e o arquivo de 240 m):
 
-**Pronto quando.**
-- Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
-  (CREDITS.md) nos pontos de referência, e um script em `scripts/` refaz a comparação. A tabela
-  de cada ponto vai para o card E1, e fecha o item que falta lá. É a prova de que os dados e o
-  `config.js` estão certos; as contas do motor os testes do E1 já provam.
-- Outra pessoa da equipe roda o script do zero seguindo só o README dele.
-- O tamanho de `public/data/` e a área escolhida estão anotados neste card.
-- Nenhum arquivo passa de 50 MB.
+| Relevo fino | Erro médio no Sol | Onde a NASA dá ≥ 50% de Sol | Ponto mais iluminado (NASA: 88,4%) |
+|---|---|---|---|
+| 80 m | 2,1 pts | 3,1 pts | 85,4% |
+| 160 m | 3,4 pts | 6,2 pts | 78,0% |
+| 240 m | 5,1 pts | 10,0 pts | 70,9% |
+
+Com 160 m, quem mais perde são os pontos mais iluminados, que são os que interessam para pousar.
+
+**Por que ladrilhos e por que até 84°S.** O site baixa só os ladrilhos em volta do ponto, então o
+custo de um clique é o mesmo em qualquer área; a área só muda o peso do repositório (medido em
+29/10/2026, também com um script de uma vez só): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
+MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
+Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
+lunar South Pole". Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
+primeiro clique. Comprimir os ladrilhos (gravando a diferença entre vizinhos, e depois gzip)
+tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; se fizer falta, a
+mudança fica só em `reliefFiles.js`.
+
+**Comparação com a NASA.** Está no card E1, feita com estes arquivos.
+
+**Aberto.**
+- Os arquivos não têm versão no nome. Se um deploy trouxer recortes novos, o navegador de quem
+  já abriu o site pode juntar o `manifest.json` de uma versão com ladrilhos da outra, enquanto o
+  cache dele não vence, e o tamanho igual não denuncia. Só acontece quando os recortes mudam; se
+  for preciso, a saída é uma pasta por versão.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** a fazer · **Depende de:** E2 (o relevo); o motor do E1 já está na develop
+**Estado:** a fazer · **Depende de:** E1 (feito) e E2 (feito)
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
 combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
@@ -145,10 +193,17 @@ escolhidos no `App.jsx`.
    As posições do Sol e da Terra não dependem do ponto: calcule uma vez por data e reaproveite
    para todos os pontos. Medido em 29/10/2026, no Node: um ano hora a hora leva cerca de 200 ms;
    o horizonte de um ponto, cerca de 60 ms.
+   O relevo vem de `loadReliefLayers` (`src/engine/reliefFiles.js`): leia o
+   `public/data/relief/manifest.json` uma vez e use o mesmo `cache` para todos os pontos. A
+   `readFile` do site faz o `fetch` do arquivo dentro de `data/relief/`, confere o
+   `response.ok` e devolve `response.arrayBuffer()`. Ponto fora da área
+   (`isInsideReliefArea`) dá `status: 'error'`.
 2. No `App.jsx`: guardar o ponto e a data escolhidos, entregar os dois para a cena e para o
    painel, e ligar o `onSelect` da lista (I2) e do clique na cena (C3) e o `onChange` da data (I4).
 3. Se a conta travar a página enquanto calcula, mover a conta para um Web Worker, que roda em
-   paralelo e não trava a tela.
+   paralelo e não trava a tela. No Worker, endereço relativo é lido a partir do arquivo do Worker,
+   e não da página: a página passa o endereço completo da pasta,
+   `new URL('data/relief/', document.baseURI).href`.
 4. Atualizar a tabela do formato acima com o que ficou valendo.
 
 **Pronto quando.**
@@ -204,6 +259,52 @@ com a pasta de cima da temporária.
 
 **Pronto quando.** O teste passa com a pasta temporária dentro de um repositório git (crie um
 de propósito para conferir), e o `verify` passa.
+
+### E8 · Relevo dos locais da lista fora do polo
+
+**Estado:** a fazer · **Depende de:** P1 (a lista de locais)
+
+**Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da lista
+(Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e até este card o
+painel mostra erro para eles.
+
+**O que fazer.**
+1. No script de `scripts/prepare-data/`, um recorte por local da lista ao norte de 84°S, dos
+   arquivos LOLA da Lua inteira (CREDITS.md): o fino até 10 km do local e o grosso até 200 km.
+2. No site, montar as camadas desses recortes com `cylindricalGridRelief`
+   (`src/engine/relief.js`).
+3. Escolher uma referência de fora para conferir o resultado: os mapas de Mazarico só cobrem o
+   polo.
+
+**Pronto quando.** Escolher qualquer local da lista mostra o resultado no painel, o tamanho dos
+recortes está anotado aqui, e a conferência também.
+
+### E9 · Testes do motor sem o navegador simulado
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** Todos os testes rodam dentro do jsdom, o navegador simulado, inclusive os do
+motor, que não usam tela. Em 29/10/2026, o Vitest avisou que criar o jsdom levou 67% do tempo
+que ele mediu.
+
+**O que fazer.** Pôr `// @vitest-environment node` no topo dos testes de `src/engine/` e de
+`scripts/` (conferir antes que o Vitest 5 aceita esse comentário), e medir o tempo do
+`npm run test` antes e depois.
+
+**Pronto quando.** O `verify` passa e os dois tempos estão anotados aqui.
+
+### E10 · Nome dos scripts em inglês
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O CLAUDE.md pede nome de arquivo em inglês, e quatro arquivos de `scripts/`
+estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.test.js` e
+`instalar-ganchos.mjs`.
+
+**O que fazer.** Renomear os quatro e tudo que aponta para eles: `package.json`, o CI
+(`.github/workflows/`), o README e o CONTRIBUTING.
+
+**Pronto quando.** Nenhum nome em português em `scripts/`, e o `verify` e o CI passam.
 
 ---
 
@@ -278,15 +379,18 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** a fazer · **Depende de:** C1, E2 (os arquivos de relevo) e E3 (a direção do Sol)
+**Estado:** a fazer · **Depende de:** C1, E2 (feito) e E3 (a direção do Sol)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
 verdade perto do polo e a luz vindo da direção certa, a pessoa vê as montanhas fazendo sombra,
 que é o assunto do produto.
 
 **O que fazer.**
-1. Carregar o recorte do polo sul de `public/data/` (o formato sai do E2) e montar uma malha com
-   altura, encaixada na esfera.
+1. Montar uma malha com altura, encaixada na esfera, a partir do relevo grosso do E2:
+   `public/data/relief/far.bin`, 802 × 802 alturas em `int16` (meio metro por unidade), 960 m por
+   pixel, linha a linha a partir da de cima, na projeção polar dos arquivos LOLA. Onde a grade
+   fica está no campo `far` do `manifest.json`, e `polarXYToUnit` (`src/engine/geometry.js`)
+   converte o x/y da projeção em ponto da Lua.
 2. A direção da luz vem do motor, para a data escolhida.
 3. Ligar sombra: `shadows` no `<Canvas>`, `castShadow` na luz, `castShadow` e `receiveShadow` na
    malha.
@@ -299,7 +403,7 @@ o motor diz `visible: true` e sombra onde diz `false`; e o `verify` passa.
 
 ### C3 · Escolher um ponto clicando na Lua
 
-**Estado:** a fazer · **Depende de:** C1 e E2 (a área em que o clique vale)
+**Estado:** a fazer · **Depende de:** C1 e E2 (feito)
 
 **Para que serve.** Além da lista de locais (I2), a pessoa pode clicar em qualquer ponto da área
 liberada e ver o resultado dele.
@@ -314,7 +418,9 @@ liberada e ver o resultado dele.
    `onSelect({ lat, lon })`, que vem do `App.jsx` (E3).
 3. Um marcador pequeno no ponto escolhido, também quando ele vem da lista.
 4. Clique fora da área liberada não escolhe nada e mostra um aviso curto (texto em
-   `src/data/scene.js`).
+   `src/data/scene.js`). A área liberada vai do polo até 84°S: é o `areaMaxLatDeg` de
+   `public/data/relief/manifest.json`, e a conta é `isInsideReliefArea(manifest, lat)`, de
+   `src/engine/reliefFiles.js`.
 
 Quem usa teclado escolhe pela lista (I2); a cena não precisa receber foco.
 
@@ -399,6 +505,23 @@ dentro do próprio arquivo de teste, nunca em `src/data/`.
 
 **Cuidado.** `elevationDeg` negativo com `visible: true` não é erro (veja "O que a ponte entrega
 para a tela"). Mostre os dois como chegam.
+
+**A janela mínima ainda está em aberto.** O painel só lista janelas que duram pelo menos
+`MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`), um valor provisório. Combine o valor com o
+Enzo e o Marco antes de fazer a lista de janelas. Para essa conversa, medido em 30/10/2026 com
+`node scripts/prepare-data/window-lengths.mjs`: a porcentagem dos pontos de comparação com a NASA
+que têm pelo menos uma janela deste tamanho, contando a partir de 14/11/2026.
+
+| Pontos | Período | ≥ 24 h | ≥ 72 h | ≥ 144 h |
+|---|---|---|---|---|
+| os 10 mais iluminados do mapa da NASA | 30 dias | 100% | 100% | 90% |
+| os 10 mais iluminados do mapa da NASA | 365 dias | 100% | 100% | 100% |
+| sorteio de 85° a 90°S (259 pontos) | 30 dias | 58% | 49% | 38% |
+| sorteio de 85° a 90°S (259 pontos) | 365 dias | 78% | 70% | 59% |
+| sorteio de 84° a 85°S (113 pontos) | 30 dias | 50% | 41% | 35% |
+| sorteio de 84° a 85°S (113 pontos) | 365 dias | 72% | 66% | 56% |
+
+O sorteio tem de propósito ponto claro e ponto escuro, em dez faixas de Sol.
 
 **Pronto quando.**
 - Os quatro `status` aparecem diferentes na tela.
@@ -664,6 +787,6 @@ submissão de 13/11 e entregar onde o guia pedir.
 
 Ideias que apareceram e não entram agora. Voltam para a lista de cima só com o OK do Enzo.
 
-- Clicar em qualquer ponto da Lua inteira: o E2 decide a área liberada, e o resto fica para
-  depois.
+- Clicar em qualquer ponto da Lua inteira: a área liberada vai do polo até 84°S (card E2), e o
+  resto fica para depois.
 - Modo história: contar uma missão passo a passo.
