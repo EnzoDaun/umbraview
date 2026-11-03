@@ -80,3 +80,32 @@ export function cylindricalGridRelief({
     },
   }
 }
+
+/* Grade polar em ladrilhos quadrados, o formato do relevo fino do site (public/data/relief/near,
+   gerado por scripts/prepare-data/). O ladrilho da linha r e coluna c cobre, sem contar a borda,
+   x de originX + c·tileM até originX + (c + 1)·tileM e y de originY − (r + 1)·tileM até
+   originY − r·tileM. Cada ladrilho traz marginPx pixels a mais de cada lado, repetidos do
+   vizinho: assim a interpolação na emenda lê um ladrilho só.
+   tiles: tileRows × tileColumns posições, linha a linha, com as alturas de cada ladrilho
+   carregado (tilePx × tilePx, a linha 0 em cima) ou undefined onde não há ladrilho. */
+export function tiledPolarRelief({
+  tiles, tileColumns, tileRows, tileM, tilePx, marginPx, resolutionM, originX, originY, scale = 1, noData,
+}) {
+  const margin = marginPx * resolutionM
+  return {
+    sample(x, y, z) {
+      // a mesma conta de unitToPolarXY, como em polarGridRelief
+      const k = (2 * MOON_RADIUS_M) / (1 - z)
+      const px = k * y
+      const py = k * x
+      const c = Math.floor((px - originX) / tileM)
+      const r = Math.floor((originY - py) / tileM)
+      if (c < 0 || r < 0 || c >= tileColumns || r >= tileRows) return NaN
+      const heights = tiles[r * tileColumns + c]
+      if (!heights) return NaN
+      const left = originX + c * tileM - margin
+      const top = originY - r * tileM + margin
+      return bilinear(heights, tilePx, tilePx, scale, noData, (px - left) / resolutionM - 0.5, (top - py) / resolutionM - 0.5)
+    },
+  }
+}

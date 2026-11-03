@@ -25,6 +25,9 @@ instala tudo no Windows, do zero.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj. Ele
   ainda não está ligado à tela (card E3).
+- O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
+  `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
+  E1).
 - Os tokens de cor, espaço, tipo e movimento (`src/styles/tokens.css`), com o contraste de
   cada par de cor conferido por teste.
 - As travas que impedem o Claude de fazer commit ou de assinar um (CONTRIBUTING.md, seção 4).
@@ -184,9 +187,19 @@ umbraview/
 │   └── uso-de-ia.md
 │
 ├── public/
+│   ├── data/
+│   │   └── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
 │   └── favicon.svg
 │
 ├── scripts/
+│   ├── prepare-data/                recorta o relevo da NASA para o site e compara com a NASA (card E2)
+│   │   ├── README.md                de onde baixar os arquivos e como rodar
+│   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
+│   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
+│   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare_relief.py        gera public/data/relief/
+│   │   ├── requirements.txt
+│   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
 │   ├── references/                  referências de fora para os testes do motor
 │   │   ├── polar_reference.py
 │   │   ├── requirements.txt
@@ -202,12 +215,14 @@ umbraview/
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   │   ├── reliefSamples.json   alturas lidas dos arquivos da NASA, para o teste do relevo do site
 │   │   │   └── spiceReference.json  Sol e Terra segundo o SPICE, para o teste das posições
 │   │   ├── config.js                os parâmetros do motor, com o motivo de cada um
 │   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
-│   │   ├── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
+│   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
+│   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
 │   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/
@@ -248,7 +263,8 @@ umbraview/
   lado dele.
 - `src/components/`: ainda não existe. Nasce no primeiro trecho de tela que se repete em dois
   lugares, e não antes.
-- `scripts/`: o que roda fora do navegador: a instalação do gancho e a conferência do build.
+- `scripts/`: o que roda fora do navegador: a instalação do gancho, a conferência do build, a
+  preparação dos dados do relevo e as referências dos testes do motor.
 - `.claude/` e `.githooks/`: as travas do Claude e do commit (CONTRIBUTING.md, seção 4).
 - Dado bruto da NASA não entra no repositório (`.gitignore`, pasta `data-raw/`): o site usa só
-  os recortes pequenos que o script de preparação gera (card E2).
+  os recortes pequenos que `scripts/prepare-data/` gera (card E2).

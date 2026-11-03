@@ -187,9 +187,9 @@ comando é dele.
 **Segredo.** Token, chave, senha. O `.gitignore` já barra `.env`; o site é estático e não
 precisa de nenhum.
 
-**Dado bruto da NASA.** Os arquivos LOLA e os mapas de iluminação passam de 100 MB, e o GitHub
-recusa arquivo acima de 100 MiB. Eles ficam na pasta `data-raw/`, que o `.gitignore` barra. O
-site usa só os recortes pequenos que o script de preparação gera (card E2).
+**Dado bruto da NASA.** Os arquivos LOLA têm 189 e 219 MB, e o GitHub recusa arquivo acima de
+100 MiB. Eles e os mapas de iluminação ficam na pasta `data-raw/`, que o `.gitignore` barra. O
+site usa só os recortes pequenos que `scripts/prepare-data/` gera (card E2).
 
 **Dado sem fonte.** Coordenada, data, número de comparação: com a fonte escrita, ou com
 `TODO_PREENCHER` até ela chegar (README, "Nenhum dado inventado").
