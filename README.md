@@ -203,7 +203,7 @@ umbraview/
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
 │   │   │   └── spiceReference.json  Sol e Terra segundo o SPICE, para o teste das posições
-│   │   ├── config.js                os parâmetros validados do motor, com a justificativa
+│   │   ├── config.js                os parâmetros do motor, com o motivo de cada um
 │   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção

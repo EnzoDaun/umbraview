@@ -134,7 +134,7 @@ site usa.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** a fazer · **Depende de:** E1 (feito) e E2 (o relevo)
+**Estado:** a fazer · **Depende de:** E2 (o relevo); o motor do E1 já está na develop
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
 combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
