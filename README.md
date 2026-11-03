@@ -22,6 +22,9 @@ instala tudo no Windows, do zero.
 - A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
   e o painel do ponto escolhido (direita). As duas regiões ainda estão vazias, com o texto que
   aparece enquanto não há nada para mostrar.
+- O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
+  próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj. Ele
+  ainda não está ligado à tela (card E3).
 - Os tokens de cor, espaço, tipo e movimento (`src/styles/tokens.css`), com o contraste de
   cada par de cor conferido por teste.
 - As travas que impedem o Claude de fazer commit ou de assinar um (CONTRIBUTING.md, seção 4).
@@ -184,6 +187,10 @@ umbraview/
 │   └── favicon.svg
 │
 ├── scripts/
+│   ├── references/                  referências de fora para os testes do motor
+│   │   ├── polar_reference.py
+│   │   ├── requirements.txt
+│   │   └── spice_reference.py
 │   ├── conferir-build.mjs
 │   ├── conferir-build.test.js
 │   ├── ganchos.test.js
@@ -192,8 +199,17 @@ umbraview/
 ├── src/
 │   ├── data/
 │   │   └── app.js                   textos da tela principal
-│   ├── engine/
-│   │   └── .gitkeep                 o motor entra aqui (card E1)
+│   ├── engine/                      o motor de cálculo (card E1)
+│   │   ├── fixtures/
+│   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
+│   │   │   └── spiceReference.json  Sol e Terra segundo o SPICE, para o teste das posições
+│   │   ├── config.js                os parâmetros do motor, com o motivo de cada um
+│   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
+│   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
+│   │   ├── horizon.js               o horizonte de um ponto, direção por direção
+│   │   ├── relief.js                a altura do relevo num ponto, em grade polar ou cilíndrica
+│   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
+│   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
 │   ├── styles/

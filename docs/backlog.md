@@ -65,9 +65,10 @@ mesmo dia.
 | `sky.nextSunsetUtc` | `Date` ou `null` | Quando metade do Sol some atrás das montanhas. `null` se ele não se põe no período. |
 | `sky.sunFraction` | número de 0 a 1 | Quanto do Sol ficou à vista, em média, no período. |
 | `sky.longestDarkHours` | número | O maior trecho seguido, em horas, com o Sol inteiro escondido. |
-| `sky.landingWindows` | lista de `{ startUtc, endUtc }`, com `Date` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. Lista vazia se não houver nenhum. |
+| `sky.landingWindows` | lista de `{ startUtc, endUtc, startsBeforePeriod, endsAfterPeriod }`: dois `Date` e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
 
-O período começa na data escolhida; quanto tempo ele cobre, o Enzo define no E3.
+O motor entrega o `sky` pronto, nesse formato: `summarizeSky`, em `src/engine/summary.js`. O
+período começa na data escolhida; quanto tempo ele cobre, o Enzo define no E3.
 
 Um caso que parece erro e não é: `elevationDeg` negativo com `visible: true`. Do alto de um
 morro, o Sol pode estar abaixo do plano do horizonte e ainda à vista, porque as montanhas em
@@ -79,25 +80,30 @@ volta são mais baixas que o ponto.
 
 ### E1 · Motor de cálculo
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** em andamento: falta um item de "Pronto quando", a comparação com a NASA, que precisa
+do relevo do card E2 · **Depende de:** E2, para esse item
 
-**Para que serve.** É a peça que faz a conta do produto. Sem ela, a cena e o painel não têm o
-que mostrar.
+**O que entrega.** O motor em `src/engine/`, em JavaScript puro (sem React e sem acesso à
+página). O caminho que a ponte (E3) usa, nesta ordem:
+1. `computeHorizon` (`horizon.js`): o horizonte do ponto, a partir das camadas de relevo
+   montadas com `polarGridRelief` ou `cylindricalGridRelief` (`relief.js`);
+2. `computeEphemeris` (`ephemeris.js`): o Sol e a Terra hora a hora;
+3. `computeSeries` (`series.js`): quanto de cada um as montanhas escondem, hora a hora;
+4. `summarizeSky` (`summary.js`): o `sky` no formato de "O que a ponte entrega para a tela".
 
-**O que fazer.**
-1. Em `src/engine/`, em JavaScript puro (sem React e sem acesso à página): o horizonte de um
-   ponto a partir do relevo; a posição do Sol e da Terra vistos do ponto, com o Astronomy
-   Engine; a série hora a hora de quanto do Sol e da Terra está à vista; o próximo pôr do Sol;
-   as janelas de pouso.
-2. Um `.test.js` ao lado de cada arquivo.
-3. Os arquivos novos no bloco "Estrutura" do README.
+Os parâmetros ficam em `config.js`.
 
 **Pronto quando.**
-- Sol e Terra batem com o SPICE do JPL com diferença de até 0,01°.
+- Sol e Terra batem com o SPICE do JPL com diferença de até 0,01°. Feito: `ephemeris.test.js` e
+  `series.test.js`, contra `fixtures/spiceReference.json` (`scripts/references/`).
 - A porcentagem de Sol no período fica perto do mapa de Mazarico et al. (CREDITS.md) nos pontos
-  de referência, com a diferença de cada ponto anotada neste card.
-- Próximo pôr do Sol e janelas de pouso conferidos em casos montados à mão.
-- Nenhum arquivo de `src/engine/` importa React, e o `verify` passa.
+  de referência, com a diferença de cada ponto anotada neste card. **Falta:** a comparação
+  precisa do relevo de verdade, que chega com o card E2. O PR do E2 traz o script que a refaz e
+  a tabela de cada ponto para cá, e fecha este card.
+- Próximo pôr do Sol e janelas de pouso conferidos em casos montados à mão. Feito:
+  `series.test.js` e `summary.test.js`, inclusive que a janela de pouso não passa do pôr do Sol.
+- Nenhum arquivo de `src/engine/` importa React, e o `verify` passa. Feito:
+  `noBrowserDependencies.test.js`.
 
 ### E2 · Dados do relevo para o site
 
@@ -114,22 +120,31 @@ site usa.
    Python e dos pacotes, e o comando para rodar.
 3. Decidir até onde vai a área em que a pessoa pode clicar em qualquer ponto (card C3), medindo
    quanto pesa cada opção.
+4. O site lê os recortes e monta as camadas do horizonte com `polarGridRelief` ou
+   `cylindricalGridRelief` (`src/engine/relief.js`), na combinação de `src/engine/config.js`.
 
 **Pronto quando.**
+- Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
+  (CREDITS.md) nos pontos de referência, e um script em `scripts/` refaz a comparação. A tabela
+  de cada ponto vai para o card E1, e fecha o item que falta lá. É a prova de que os dados e o
+  `config.js` estão certos; as contas do motor os testes do E1 já provam.
 - Outra pessoa da equipe roda o script do zero seguindo só o README dele.
 - O tamanho de `public/data/` e a área escolhida estão anotados neste card.
 - Nenhum arquivo passa de 50 MB.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** a fazer · **Depende de:** E1
+**Estado:** a fazer · **Depende de:** E2 (o relevo); o motor do E1 já está na develop
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
 combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
 escolhidos no `App.jsx`.
 
 **O que fazer.**
-1. `src/hooks/useSiteSky.js`, no formato combinado.
+1. `src/hooks/useSiteSky.js`, no formato combinado, chamando o motor na ordem do card E1.
+   As posições do Sol e da Terra não dependem do ponto: calcule uma vez por data e reaproveite
+   para todos os pontos. Medido em 29/10/2026, no Node: um ano hora a hora leva cerca de 200 ms;
+   o horizonte de um ponto, cerca de 60 ms.
 2. No `App.jsx`: guardar o ponto e a data escolhidos, entregar os dois para a cena e para o
    painel, e ligar o `onSelect` da lista (I2) e do clique na cena (C3) e o `onChange` da data (I4).
 3. Se a conta travar a página enquanto calcula, mover a conta para um Web Worker, que roda em
@@ -173,6 +188,22 @@ branches só existem em repositório público.
 ### E6 · Revisar PRs e levar a `develop` para a `main`
 
 **Estado:** contínuo. Quem revisa o quê está no CONTRIBUTING.md, seção 1.
+
+### E7 · Teste dos ganchos numa pasta que já é repositório
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O teste "fora de um repositório git, avisa e não quebra o npm install", em
+`scripts/ganchos.test.js`, roda o `instalar-ganchos.mjs` numa pasta temporária e supõe que ela
+não está dentro de nenhum repositório. Na máquina do Marco, a pasta de usuário é um repositório
+git, e o teste falhou (revisão do PR #2, 30/10/2026); com a pasta temporária fora dela, passou.
+
+**O que fazer.** Fazer o git chamado pelo teste parar de procurar repositório acima da pasta
+temporária. Uma saída a conferir: passar ao `spawnSync` a variável `GIT_CEILING_DIRECTORIES`
+com a pasta de cima da temporária.
+
+**Pronto quando.** O teste passa com a pasta temporária dentro de um repositório git (crie um
+de propósito para conferir), e o `verify` passa.
 
 ---
 
