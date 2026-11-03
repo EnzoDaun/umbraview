@@ -12,7 +12,8 @@ para o GitHub. O script `prepare_relief.py` recorta só o que o site usa e grava
 
 Ele grava também `src/engine/fixtures/reliefSamples.json`, as alturas que o teste do site confere.
 
-Na mesma pasta fica a comparação do nosso horizonte com o da NASA (seções 5 e 6).
+Na mesma pasta ficam a comparação do nosso horizonte com o da NASA (seções 5 e 6) e a medição
+das janelas de pouso (seção 7).
 
 Os recortes já estão no repositório. Rode o script só quando mudar a área, a resolução ou o
 alcance do horizonte (`src/engine/config.js`), ou para conferir que ele gera os mesmos arquivos.
@@ -146,3 +147,18 @@ if ($?) {
 Saída esperada, na última linha:
 `OK: 382 pontos em scripts/prepare-data/nasa-reference.json ({'top': 10, '85-90': 259, '84-85': 113})`.
 
+## 7. Medir as janelas de pouso
+
+Quanto duram as janelas de pouso (Sol e Terra à vista ao mesmo tempo) nos pontos de comparação, em
+30 e em 365 dias a partir de 14/11/2026. Serve para escolher a janela mínima do painel
+(`MIN_LANDING_WINDOW_HOURS`, em `src/engine/config.js`).
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+node scripts/prepare-data/window-lengths.mjs
+```
+
+Leva menos de 1 minuto. A saída traz, para cada grupo de pontos e cada período, a porcentagem de
+pontos com janela de pelo menos 24, 72 e 144 h, e termina com `OK: janelas medidas em 382 pontos`.

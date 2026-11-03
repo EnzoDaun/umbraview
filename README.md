@@ -195,7 +195,8 @@ umbraview/
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
 │   │   ├── prepare_relief.py        gera public/data/relief/
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
 │   ├── references/                  referências de fora para os testes do motor
 │   │   ├── polar_reference.py
 │   │   ├── requirements.txt
