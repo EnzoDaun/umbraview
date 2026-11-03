@@ -5,7 +5,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist', 'coverage'] },
+  /* .venv e data-raw são do script de dados (scripts/prepare-data/) e ficam fora do git. Sem
+     isto, o lint lê o JavaScript que vem dentro dos pacotes de Python, e um arquivo de lá pode
+     reprovar o verify de quem rodou o script. */
+  { ignores: ['dist', 'coverage', '.venv', 'data-raw'] },
 
   /* Acessibilidade conferida no lint: imagem sem alt, botão sem nome, clique em elemento que
      não recebe teclado. É mais barato barrar aqui do que achar na véspera da entrega. */
