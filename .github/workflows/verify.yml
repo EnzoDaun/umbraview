@@ -52,13 +52,16 @@ jobs:
 
       # O mesmo padrão do .githooks/commit-msg. Os valores do evento entram por env, e não
       # escritos dentro do script: assim um texto do PR não vira comando.
+      # O laço usa if, e não "grep && echo": o Actions roda o script com bash -e, e com && o
+      # grep sem achado no último commit do laço faria o $(...) devolver erro, e o script pararia
+      # calado, reprovando o PR justamente quando todos os commits estão limpos.
       - name: Commits do PR sem assinatura do Claude
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           pattern='^[[:space:]]*co-authored-by:.*(claude|anthropic\.com)|noreply@anthropic\.com|generated with \[?claude code|^[[:space:]]*claude-session:'
-          bad=$(git log --format='%H' "$BASE..$HEAD" | while read -r sha; do git log -1 --format=%B "$sha" | grep -qiE "$pattern" && echo "$sha"; done)
+          bad=$(git log --format='%H' "$BASE..$HEAD" | while read -r sha; do if git log -1 --format=%B "$sha" | grep -qiE "$pattern"; then echo "$sha"; fi; done)
           if [ -n "$bad" ]; then echo "::error::Commits with Claude attribution:"; echo "$bad"; exit 1; fi
           echo "OK: $(git rev-list --count "$BASE..$HEAD") commit(s) conferido(s), nenhum com assinatura do Claude."
 
