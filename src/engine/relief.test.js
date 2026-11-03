@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { latLonToUnit, polarXYToUnit } from './geometry.js'
-import { cylindricalGridRelief, polarGridRelief } from './relief.js'
+import { cylindricalGridRelief, polarGridRelief, tiledPolarRelief } from './relief.js'
 
 /* Um plano inclinado é a prova da interpolação: a média ponderada de quatro cantos de um plano
    cai exatamente no plano, em qualquer ponto entre eles. Se a conta trocar linha com coluna ou
@@ -102,5 +102,62 @@ describe('relevo em grade cilíndrica (arquivos LOLA da Lua inteira)', () => {
     const meio = em(359.875)
     expect(meio).toBeGreaterThan(0)
     expect(meio).toBeLessThan(columns - 1)
+  })
+})
+
+describe('relevo polar em ladrilhos (o relevo fino do site, card E2)', () => {
+  /* 3 × 3 ladrilhos de 800 m, com pixel de 80 m: 10 pixels de miolo e 1 de borda de cada lado,
+     a borda repetindo o vizinho, como o script de preparação grava. Um plano inclinado de novo:
+     se a conta esquecer a borda, trocar linha com coluna ou errar o ladrilho na emenda, o valor
+     sai do plano (A·80 m já são quase 30 m). */
+  const GRID = { tileM: 800, resolutionM: 80, marginPx: 1, tilePx: 12, originX: -1200, originY: 1200, tileColumns: 3, tileRows: 3 }
+
+  function tiledPlane() {
+    const { tileM, resolutionM, marginPx, tilePx, originX, originY, tileColumns, tileRows } = GRID
+    const tiles = []
+    for (let tr = 0; tr < tileRows; tr++) {
+      for (let tc = 0; tc < tileColumns; tc++) {
+        const left = originX + tc * tileM - marginPx * resolutionM
+        const top = originY - tr * tileM + marginPx * resolutionM
+        const heights = new Float64Array(tilePx * tilePx)
+        for (let r = 0; r < tilePx; r++) {
+          for (let c = 0; c < tilePx; c++) {
+            heights[r * tilePx + c] = A * (left + (c + 0.5) * resolutionM) + B * (top - (r + 0.5) * resolutionM) + C
+          }
+        }
+        tiles.push(heights)
+      }
+    }
+    return { ...GRID, tiles }
+  }
+
+  it('a interpolação cai exatamente no plano, inclusive na emenda e no canto de quatro ladrilhos', () => {
+    const relief = tiledPolarRelief(tiledPlane())
+    // −400 e 400 são as emendas entre ladrilhos, nos dois eixos
+    for (const [x, y] of [[-1100, 1100], [-400, 0], [-400.01, 0], [-399.99, 123.4], [400, 400], [399.9, 400.1], [0, -400], [1150, -1150]]) {
+      expect(Math.abs(sampleXY(relief, x, y) - (A * x + B * y + C)), `${x}, ${y}`).toBeLessThan(1e-6)
+    }
+  })
+
+  it('ladrilho que não foi carregado deixa o ponto sem valor, e o vizinho continua valendo', () => {
+    const plano = tiledPlane()
+    plano.tiles[1 * GRID.tileColumns + 1] = undefined // o do meio
+    const relief = tiledPolarRelief(plano)
+    expect(sampleXY(relief, 0, 0)).toBeNaN()
+    expect(Math.abs(sampleXY(relief, -500, 0) - (A * -500 + C))).toBeLessThan(1e-6)
+  })
+
+  it('fora da grade de ladrilhos não tem valor', () => {
+    const relief = tiledPolarRelief(tiledPlane())
+    expect(sampleXY(relief, 1300, 0)).toBeNaN()
+    expect(sampleXY(relief, 0, 1250)).toBeNaN()
+    expect(sampleXY(relief, -1250, -1250)).toBeNaN()
+    expect(sampleXY(relief, 1199, -1199)).not.toBeNaN()
+  })
+
+  it('aplica a escala: altura guardada em meio metro volta em metros', () => {
+    const tiles = Array.from({ length: 9 }, () => new Int16Array(GRID.tilePx * GRID.tilePx).fill(100))
+    const relief = tiledPolarRelief({ ...GRID, tiles, scale: 0.5 })
+    expect(sampleXY(relief, 123, -456)).toBe(50)
   })
 })
