@@ -215,6 +215,7 @@ umbraview/
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
 │   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
+│   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
 │   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/
