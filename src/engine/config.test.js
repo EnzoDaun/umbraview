@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { HORIZON, MIN_LANDING_WINDOW_HOURS, NEAR_LAYER_UP_TO_M } from './config.js'
+import { HORIZON, MIN_LANDING_WINDOW_HOURS, NEAR_LAYER_UP_TO_M, PERIOD_DAYS } from './config.js'
 
 /* O config.js não tem conta, mas um número errado aqui muda o horizonte inteiro sem nenhum outro
    teste perceber: o motor roda com qualquer valor. Estes testes seguram o que o resto do motor
@@ -32,5 +32,13 @@ describe('parâmetros do motor (config.js)', () => {
 
   it('a janela mínima de pouso é um número de horas positivo', () => {
     expect(MIN_LANDING_WINDOW_HOURS).toBeGreaterThan(0)
+  })
+
+  it('o período da tela cobre um dia lunar inteiro, em dias inteiros', () => {
+    // 29,53 dias: o mês sinódico, o tempo que o Sol leva para dar uma volta no céu da Lua. Com
+    // menos que isso, um ponto pode aparecer sempre no Sol ou sempre no escuro só pela data.
+    expect(PERIOD_DAYS).toBeGreaterThanOrEqual(29.53)
+    // a série tem PERIOD_DAYS · 24 instantes, e o tamanho de um Float32Array não pode ser quebrado
+    expect(Number.isInteger(PERIOD_DAYS)).toBe(true)
   })
 })

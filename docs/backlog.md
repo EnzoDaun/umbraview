@@ -35,22 +35,23 @@ das montanhas em volta?** Quatro peças fazem isso:
 
 - **Motor** (`src/engine/`, Enzo): faz a conta. Recebe o ponto e a data, devolve números. O
   relevo que ele usa fica em `public/data/relief/` (card E2).
-- **Ponte** (`src/hooks/useSiteSky.js`, Enzo): chama o motor quando o ponto ou a data mudam, e
-  avisa a tela se está calculando, se deu certo ou se deu erro.
+- **Ponte** (`src/hooks/`, Enzo): o `useSiteSky` chama o motor quando o ponto ou a data mudam, e
+  avisa a tela se está calculando, se deu certo ou se deu erro; o `useSubsolarPoint` dá a direção
+  do Sol para a luz da cena.
 - **Cena 3D** (`src/scene/`, Marco): a Lua na tela, com a luz do Sol vindo da direção certa.
 - **Painel** (`src/panel/`, Miguel): os números do ponto escolhido, em texto, e os controles para
   escolher o local e a data.
 
 O ponto e a data escolhidos ficam guardados no `App.jsx`, que entrega os dois para a cena e
-para o painel. Quem liga isso no `App.jsx` é o card E3. Os cards C1 e I1 só trocam, cada um, a
+para o painel. Quem liga isso no `App.jsx` é o card E11. Os cards C1 e I1 só trocam, cada um, a
 linha do texto vazio da própria região pelo componente novo. Assim o Marco e o Miguel não
 editam as mesmas linhas ao mesmo tempo.
 
 ### O que a ponte entrega para a tela
 
-A cena e o painel começam antes de o motor ficar pronto. Para isso, o formato do resultado fica
-combinado aqui. O Enzo pode mudar este formato até o E3 fechar, avisando o Marco e o Miguel no
-mesmo dia.
+O formato do resultado fica combinado aqui, para a cena e o painel não dependerem de como o
+motor faz a conta. Ele é o que o card E3 entregou; mudar depois é card novo, avisando o Marco e o
+Miguel no mesmo dia.
 
 `useSiteSky(site, dateUtc)` recebe o ponto (`site`, um objeto com `lat` e `lon` em graus, e
 `name` quando vem da lista de locais) e a data (`dateUtc`, um `Date`). Devolve `{ status, sky }`:
@@ -69,11 +70,18 @@ mesmo dia.
 | `sky.landingWindows` | lista de `{ startUtc, endUtc, startsBeforePeriod, endsAfterPeriod }`: dois `Date` e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
 
 O motor entrega o `sky` pronto, nesse formato: `summarizeSky`, em `src/engine/summary.js`. O
-período começa na data escolhida; quanto tempo ele cobre, o Enzo define no E3.
+período começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, com o
+motivo).
 
 Um caso que parece erro e não é: `elevationDeg` negativo com `visible: true`. Do alto de um
 morro, o Sol pode estar abaixo do plano do horizonte e ainda à vista, porque as montanhas em
 volta são mais baixas que o ponto.
+
+`useSubsolarPoint(dateUtc)` devolve `{ lat, lon }`, em graus: o ponto da Lua onde o Sol está a
+pino naquela data. A luz da cena vem do centro da Lua na direção dele; para virar ponto 3D, ele
+passa pela mesma conversão do marcador do ponto (card C3). Ele não depende do ponto escolhido: a
+luz existe antes de alguém escolher um ponto e enquanto o `useSiteSky` calcula. Enquanto a data
+não muda, ele devolve o mesmo objeto.
 
 ---
 
@@ -98,8 +106,9 @@ Os parâmetros ficam em `config.js`.
 - Sol e Terra batem com o SPICE do JPL com diferença de até 0,01°. Feito: `ephemeris.test.js` e
   `series.test.js`, contra `fixtures/spiceReference.json` (`scripts/references/`).
 - A porcentagem de Sol no período fica perto do mapa de Mazarico et al. (CREDITS.md) nos pontos
-  de referência, com a diferença de cada ponto anotada neste card. Feito: a comparação abaixo,
-  com o relevo do card E2.
+  de referência. Feito: a comparação abaixo, com o relevo do card E2: a diferença de cada um dos
+  10 pontos mais iluminados e a média de cada faixa do sorteio, que é o que o `compare-nasa.mjs`
+  imprime.
 - Próximo pôr do Sol e janelas de pouso conferidos em casos montados à mão. Feito:
   `series.test.js` e `summary.test.js`, inclusive que a janela de pouso não passa do pôr do Sol.
 - Nenhum arquivo de `src/engine/` importa React, e o `verify` passa. Feito:
@@ -129,13 +138,19 @@ E nos sorteios por faixa de Sol:
 | 85° a 90°S | 60 m | 259 | 2,1 pts | 3,1 pts (109 pontos) | 1,2 pts |
 | 84° a 85°S | 240 m | 113 | 2,6 pts | 4,3 pts (38 pontos) | 1,6 pts |
 
-**Aberto.** Os pontos 7 e 10, perto de 86°S entre 2° e 3°L, ficam 8 e 11 pontos abaixo da NASA no
-Sol, e a causa não foi investigada. Com mastro de 10 m (`--mast=10`), os dois ficam a 1,3 e 1,5
-pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
+**Aberto.**
+- Os pontos 7 e 10, perto de 86°S entre 2° e 3°L, ficam 8 e 11 pontos abaixo da NASA no Sol, e a
+  causa não foi investigada. Com mastro de 10 m (`--mast=10`), os dois ficam a 1,3 e 1,5 pontos
+  da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
+- O nosso Sol fica abaixo do da NASA: nos 10 pontos mais iluminados, em todos os 10, e o viés (a
+  média da diferença, com o sinal) é de −2,5 pontos de 84° a 85°S, para um erro médio de 2,6, e de
+  −0,6 de 85° a 90°S, para 2,1. A Terra vai para o outro lado de 85° a 90°S: viés de +1,2, para um
+  erro médio de 1,2. Medido em 04/11/2026, na linha "viés" do `compare-nasa.mjs`. A causa não foi
+  investigada.
 
 ### E2 · Dados do relevo para o site
 
-**Estado:** feito em 03/11, PR #3 · **Depende de:** nada
+**Estado:** feito em 03/11, PR #3; falta a conferência do card I5 · **Depende de:** nada
 
 **O que entrega.**
 - `public/data/relief/`: o relevo do polo sul, do polo até 84°S, recortado dos arquivos LOLA da
@@ -151,8 +166,8 @@ pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
 
 **Por que 80 m.** Medido em 29/10/2026 nos 259 pontos sorteados de 85° a 90°S
 (`scripts/prepare-data/nasa-reference.json`), com um script de uma vez só, que não ficou no
-repositório: o mesmo motor e os mesmos pontos, trocando só o relevo fino (a média de 2 × 2 pixels
-do de 80 m, para 160 m, e o arquivo de 240 m):
+repositório, e por isso estes números não se refazem por ele: o mesmo motor e os mesmos pontos,
+trocando só o relevo fino (a média de 2 × 2 pixels do de 80 m, para 160 m, e o arquivo de 240 m):
 
 | Relevo fino | Erro médio no Sol | Onde a NASA dá ≥ 50% de Sol | Ponto mais iluminado (NASA: 88,4%) |
 |---|---|---|---|
@@ -164,52 +179,65 @@ Com 160 m, quem mais perde são os pontos mais iluminados, que são os que inter
 
 **Por que ladrilhos e por que até 84°S.** O site baixa só os ladrilhos em volta do ponto, então o
 custo de um clique é o mesmo em qualquer área; a área só muda o peso do repositório (medido em
-29/10/2026, também com um script de uma vez só): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
+29/10/2026, também com um script de uma vez só, que não se refaz pelo repositório): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
 MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
 Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
-lunar South Pole". Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
+lunar South Pole" (fonte no CREDITS.md). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
 primeiro clique. Comprimir os ladrilhos (gravando a diferença entre vizinhos, e depois gzip)
 tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; se fizer falta, a
 mudança fica só em `reliefFiles.js`.
 
 **Comparação com a NASA.** Está no card E1, feita com estes arquivos.
 
+**Pronto quando.**
+- Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
+  (CREDITS.md) nos pontos de referência, e um script refaz a comparação. Feito:
+  `scripts/prepare-data/compare-nasa.mjs`, com o resultado no card E1.
+- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Falta: card I5.
+- O tamanho de `public/data/` e a área escolhida estão anotados neste card. Feito: "O que
+  entrega" e "Por que ladrilhos e por que até 84°S".
+- Nenhum arquivo passa de 50 MB. Feito: o maior é o `far.bin`, de 1,3 MB.
+
 **Aberto.**
 - Os arquivos não têm versão no nome. Se um deploy trouxer recortes novos, o navegador de quem
   já abriu o site pode juntar o `manifest.json` de uma versão com ladrilhos da outra, enquanto o
   cache dele não vence, e o tamanho igual não denuncia. Só acontece quando os recortes mudam; se
   for preciso, a saída é uma pasta por versão.
+- O git guarda cada versão de cada arquivo. A versão de hoje dos recortes ocupa 31,7 MB dentro do
+  `.git` (medido em 04/11/2026, com `git cat-file`), e cada geração nova que mude os ladrilhos
+  soma outra versão ao histórico, mesmo substituindo a anterior. Gerar de novo arquivos idênticos,
+  como no card I5, não soma nada: para o git, é a mesma versão.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** a fazer · **Depende de:** E1 (feito) e E2 (feito)
+**Estado:** feito em 04/11, PR #4 · **Depende de:** E1 (feito) e E2 (feito)
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
-combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
-escolhidos no `App.jsx`.
+combinado em "O que a ponte entrega para a tela". Ligar a ponte no `App.jsx` é o card E11.
 
-**O que fazer.**
-1. `src/hooks/useSiteSky.js`, no formato combinado, chamando o motor na ordem do card E1.
-   As posições do Sol e da Terra não dependem do ponto: calcule uma vez por data e reaproveite
-   para todos os pontos. Medido em 29/10/2026, no Node: um ano hora a hora leva cerca de 200 ms;
-   o horizonte de um ponto, cerca de 60 ms.
-   O relevo vem de `loadReliefLayers` (`src/engine/reliefFiles.js`): leia o
-   `public/data/relief/manifest.json` uma vez e use o mesmo `cache` para todos os pontos. A
-   `readFile` do site faz o `fetch` do arquivo dentro de `data/relief/`, confere o
-   `response.ok` e devolve `response.arrayBuffer()`. Ponto fora da área
-   (`isInsideReliefArea`) dá `status: 'error'`.
-2. No `App.jsx`: guardar o ponto e a data escolhidos, entregar os dois para a cena e para o
-   painel, e ligar o `onSelect` da lista (I2) e do clique na cena (C3) e o `onChange` da data (I4).
-3. Se a conta travar a página enquanto calcula, mover a conta para um Web Worker, que roda em
-   paralelo e não trava a tela. No Worker, endereço relativo é lido a partir do arquivo do Worker,
-   e não da página: a página passa o endereço completo da pasta,
-   `new URL('data/relief/', document.baseURI).href`.
-4. Atualizar a tabela do formato acima com o que ficou valendo.
+**O que entrega.**
+- `src/hooks/useSiteSky.js` pede a conta a `src/engine/siteSky.js`, que segue a ordem do card
+  E1, lê o `manifest.json` uma vez, usa o mesmo `cache` de relevo para todos os pontos e guarda a
+  última posição do Sol e da Terra (serve para qualquer ponto na mesma data) e o último horizonte
+  (serve para qualquer data no mesmo ponto). A `readFile` do site (`createReliefReader`) faz o
+  `fetch` dentro de `data/relief/`, a partir do endereço da página, e confere o `response.ok`.
+  Ponto fora da área com relevo (`isInsideReliefArea`) dá `status: 'error'`.
+- `src/hooks/useSubsolarPoint.js` dá a direção do Sol para a cena.
+- A tabela de "O que a ponte entrega para a tela", com o período e o `useSubsolarPoint`.
 
 **Pronto quando.**
 - Os testes do hook cobrem os quatro `status`, com o motor de verdade (não um substituto).
-- Escolher um local na lista mostra o resultado no painel e a luz certa na cena.
-- O Marco e o Miguel foram avisados do formato final.
+  Feito: `src/hooks/useSiteSky.test.js`.
+- O Marco e o Miguel foram avisados do formato final. Feito: no PR #4.
+
+**Aberto.**
+- Por enquanto, sem Web Worker. Medido em 03/11/2026, no Node, no computador do Enzo: trocar de
+  ponto trava a página por uns 50 ms (o horizonte leva de 38 a 46 ms); trocar de data, até uns
+  80 ms (a posição do Sol e da Terra, `src/engine/config.js`). Se a página travar nos notebooks
+  da equipe (dá para ver junto com o card C4), a conta vai para um Web Worker sem mudar o motor,
+  porque o `siteSky.js` não toca na página. No Worker, endereço relativo é lido a partir do
+  arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
+  `new URL('data/relief/', document.baseURI).href`.
 
 ### E4 · GitHub quando o repositório ficar público
 
@@ -306,6 +334,24 @@ estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.t
 
 **Pronto quando.** Nenhum nome em português em `scripts/`, e o `verify` e o CI passam.
 
+### E11 · Ligar a ponte no `App.jsx`
+
+**Estado:** a fazer · **Depende de:** E3 (feito), C1, I1, I2 e I4
+
+**Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
+guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
+
+**O que fazer.**
+1. No `App.jsx`: guardar o ponto e a data escolhidos e entregar os dois para a cena e para o
+   painel. O painel recebe o que o `useSiteSky` devolve; a cena, o que o `useSubsolarPoint`
+   devolve. Ligar o `onSelect` da lista (I2), o `onChange` da data (I4) e, quando o C3 existir, o
+   `onSelect` do clique na cena.
+2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
+   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+
+**Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
+cena, e o `verify` passa.
+
 ---
 
 ## C: Marco
@@ -379,7 +425,8 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** a fazer · **Depende de:** C1, E2 (feito) e E3 (a direção do Sol)
+**Estado:** a fazer · **Depende de:** C1 e E2 (feito); a direção do Sol já está pronta
+(`useSubsolarPoint`, card E3)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
 verdade perto do polo e a luz vindo da direção certa, a pessoa vê as montanhas fazendo sombra,
@@ -391,7 +438,9 @@ que é o assunto do produto.
    pixel, linha a linha a partir da de cima, na projeção polar dos arquivos LOLA. Onde a grade
    fica está no campo `far` do `manifest.json`, e `polarXYToUnit` (`src/engine/geometry.js`)
    converte o x/y da projeção em ponto da Lua.
-2. A direção da luz vem do motor, para a data escolhida.
+2. A direção da luz vem do `useSubsolarPoint(dateUtc)` (`src/hooks/useSubsolarPoint.js`; o
+   formato está em "O que a ponte entrega para a tela"): a luz sai do centro da Lua na direção
+   do ponto que ele devolve.
 3. Ligar sombra: `shadows` no `<Canvas>`, `castShadow` na luz, `castShadow` e `receiveShadow` na
    malha.
 4. Decidir a escala: montanhas de alguns quilômetros numa Lua de 1.737 km de raio quase não
@@ -415,7 +464,7 @@ liberada e ver o resultado dele.
    - ida: `x = cos(lat)·cos(lon)`, `y = sin(lat)`, `z = −cos(lat)·sin(lon)`;
    - volta: `lat = asin(y)`, `lon = atan2(−z, x)` (normalize o ponto para tamanho 1 antes).
 2. No `onClick` do `<mesh>` da Lua, o ponto atingido chega em `event.point`. Converter e chamar
-   `onSelect({ lat, lon })`, que vem do `App.jsx` (E3).
+   `onSelect({ lat, lon })`, que vem do `App.jsx` (E11).
 3. Um marcador pequeno no ponto escolhido, também quando ele vem da lista.
 4. Clique fora da área liberada não escolhe nada e mostra um aviso curto (texto em
    `src/data/scene.js`). A área liberada vai do polo até 84°S: é o `areaMaxLatDeg` de
@@ -490,7 +539,7 @@ quando? Quando dá para pousar?". É o que os juízes vão ler.
 3. `src/panel/SitePanel.jsx`: recebe `status` e `sky` por props e mostra o que está acima.
 4. `src/panel/SitePanel.css`, só com tokens.
 5. No `App.jsx`, trocar a linha `<p className="app__empty">{app.panel.empty}</p>` por
-   `<SitePanel status="idle" sky={null} />`. O E3 liga o resto.
+   `<SitePanel status="idle" sky={null} />`. O E11 liga o resto.
 6. Os arquivos novos no bloco "Estrutura" do README.
 
 **Como testar** (`src/panel/SitePanel.test.jsx` e `src/panel/format.test.js`). Escreva o teste
@@ -542,7 +591,7 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
    teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
    sobrar tempo.
-2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E3.
+2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E11.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
 
@@ -593,7 +642,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 2. **O erro mais provável deste card:** o `datetime-local` não guarda fuso, e
    `new Date(valor)` lê o valor no fuso do computador. Leia como UTC: `new Date(valor + ':00Z')`.
    Para pôr uma data no campo: `data.toISOString().slice(0, 16)`.
-3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E3.
+3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E11.
 
 **Como testar** (`src/panel/DateTimeControl.test.jsx`).
 - Digitar `2026-11-14T03:00` resulta num `Date` com `getUTCHours() === 3`. A suíte roda em
@@ -602,6 +651,26 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 - O botão "Now" usa a hora atual: fixe a hora no teste com `vi.setSystemTime`.
 
 **Pronto quando.** Os testes passam, funciona só com o teclado, e o `verify` passa.
+
+### I5 · Rodar o script do relevo do zero, seguindo só o README
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O relevo que o site usa (`public/data/relief/`) sai de um script, e até agora
+só o Enzo rodou esse script. Se o README dele depender de alguma coisa que só existe no
+computador do Enzo, ninguém mais consegue gerar o relevo de novo. O card E2 só fecha de vez
+quando outra pessoa roda tudo do zero, lendo só o README.
+
+**O que fazer.**
+1. Num clone atualizado da `develop`, siga `scripts/prepare-data/README.md` do passo 1 ao 4, na
+   ordem, sem pular nada. Os dois downloads da NASA somam uns 410 MB.
+2. Se algum passo não sair como o README diz, pare nele e anote o passo, o comando e a saída
+   inteira. Não conserte por conta própria: o que faltou é do README, e o conserto fica com o
+   Enzo.
+
+**Pronto quando.** Este card tem uma linha com a data, a versão do Python (a primeira linha da
+saída do passo 2) e a saída do passo 4, que é `OK: os recortes gerados são idênticos aos do
+repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que falta no card E2.
 
 ---
 

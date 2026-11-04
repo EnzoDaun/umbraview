@@ -46,8 +46,8 @@ MOON_RADIUS_M = 1737400.0
 POLAR = '+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs'
 
 # A área em que a pessoa pode escolher um ponto: do polo até esta latitude. Até 84°S cabem as
-# regiões candidatas do Artemis III anunciadas pela NASA em 2022 ("within six degrees of latitude
-# of the lunar South Pole").
+# regiões candidatas do Artemis III anunciadas pela NASA em 19/08/2022 ("within six degrees of
+# latitude of the lunar South Pole"; fonte no CREDITS.md).
 AREA_MAX_LAT_DEG = -84.0
 
 # Até onde cada camada precisa chegar a partir de um ponto da área. Os donos destes números são

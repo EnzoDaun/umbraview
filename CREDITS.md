@@ -39,8 +39,9 @@ site publicado; as licenças delas estão no `package-lock.json` e em `node_modu
 
 ## Ferramentas e referências que não vão para o site
 
-Rodam fora do navegador: preparam os recortes do relevo (`scripts/prepare-data/`) e conferem o
-motor (`src/engine/`) contra fontes de fora (`scripts/references/`).
+Rodam fora do navegador, ou só embasam uma escolha: preparam os recortes do relevo
+(`scripts/prepare-data/`), conferem o motor (`src/engine/`) contra fontes de fora
+(`scripts/references/`) e justificam a área do relevo (card E2).
 
 | O quê | Para quê | Fonte | Licença ou condição de uso |
 |---|---|---|---|
@@ -49,6 +50,7 @@ motor (`src/engine/`) contra fontes de fora (`scripts/references/`).
 | [pyproj](https://github.com/pyproj4/pyproj) 3.8.0 | Projeção polar de referência (`polarReference.json`) | pacote do PyPI | MIT |
 | [NumPy](https://numpy.org) 2.5.4 | Contas dos scripts de Python | pacote do PyPI | BSD-3-Clause, com partes 0BSD, MIT, Zlib e CC0-1.0 |
 | [rasterio](https://github.com/rasterio/rasterio) 1.5.2 | Lê os arquivos da NASA nos scripts de `scripts/prepare-data/` | pacote do PyPI | BSD-3-Clause |
+| Comunicado da NASA com as 13 regiões candidatas ao pouso do Artemis III (RELEASE 22-089, 19/08/2022) | Justifica a área do relevo até 84°S (card E2 e `scripts/prepare-data/prepare_relief.py`) | NASA, [NASA Identifies Candidate Regions for Landing Next Americans on Moon](https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-Moon/) (link conferido em 04/11/2026) | a conferir (card P2) |
 
 Licenças lidas nos metadados de cada pacote instalado, em 29/10/2026.
 

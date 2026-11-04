@@ -2,7 +2,7 @@
  *
  * A prova de que eles estão certos é comparar o horizonte com os mapas de visibilidade da NASA
  * (Mazarico et al. 2011, CREDITS.md): scripts/prepare-data/compare-nasa.mjs, com o relevo do site.
- * O resultado de cada ponto está no card E1 do backlog. Mudar qualquer número do horizonte pede
+ * O resultado está no card E1 do backlog. Mudar qualquer número do horizonte pede
  * rodar a comparação de novo.
  *
  * Os erros citados abaixo são a média da diferença no Sol, em pontos percentuais, nos 259 pontos
@@ -33,3 +33,11 @@ export const NEAR_LAYER_UP_TO_M = 10000
    conversa está no card I1. Muda aqui, e só aqui.
    Janela cortada no começo ou no fim do período entra mesmo mais curta (series.js). */
 export const MIN_LANDING_WINDOW_HOURS = 144
+
+/* O período que a tela mostra para um ponto, a partir da data escolhida. 30 dias cobrem um dia
+   lunar inteiro (29,5 dias: o tempo que o Sol leva para dar uma volta no céu da Lua), então todo
+   ponto mostra o ciclo inteiro de luz e escuro, e não só o pedaço em que a data caiu. Medido em
+   03/11/2026 no Node, no computador do Enzo: a posição do Sol e da Terra de 30 dias leva de 32 a
+   79 ms a cada troca de data; a de 365 dias, de 123 a 180 ms, e o ponto mais iluminado do mapa da
+   NASA chega a 13 janelas de pouso na lista. Muda aqui, e só aqui. */
+export const PERIOD_DAYS = 30
