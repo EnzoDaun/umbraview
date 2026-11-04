@@ -23,8 +23,10 @@ instala tudo no Windows, do zero.
   e o painel do ponto escolhido (direita). As duas regiões ainda estão vazias, com o texto que
   aparece enquanto não há nada para mostrar.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
-  próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj. Ele
-  ainda não está ligado à tela (card E3).
+  próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
+- A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
+  `useSubsolarPoint`, a direção do Sol para a luz da cena. Ela ainda não está ligada à tela
+  (card E3).
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
@@ -227,7 +229,8 @@ umbraview/
 │   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
-│   │   └── useSiteSky.js            o céu do ponto escolhido, com o status da conta
+│   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
+│   │   └── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
