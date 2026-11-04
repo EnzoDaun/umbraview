@@ -159,8 +159,8 @@ pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
 
 **Por que 80 m.** Medido em 29/10/2026 nos 259 pontos sorteados de 85° a 90°S
 (`scripts/prepare-data/nasa-reference.json`), com um script de uma vez só, que não ficou no
-repositório: o mesmo motor e os mesmos pontos, trocando só o relevo fino (a média de 2 × 2 pixels
-do de 80 m, para 160 m, e o arquivo de 240 m):
+repositório, e por isso estes números não se refazem por ele: o mesmo motor e os mesmos pontos,
+trocando só o relevo fino (a média de 2 × 2 pixels do de 80 m, para 160 m, e o arquivo de 240 m):
 
 | Relevo fino | Erro médio no Sol | Onde a NASA dá ≥ 50% de Sol | Ponto mais iluminado (NASA: 88,4%) |
 |---|---|---|---|
@@ -172,7 +172,7 @@ Com 160 m, quem mais perde são os pontos mais iluminados, que são os que inter
 
 **Por que ladrilhos e por que até 84°S.** O site baixa só os ladrilhos em volta do ponto, então o
 custo de um clique é o mesmo em qualquer área; a área só muda o peso do repositório (medido em
-29/10/2026, também com um script de uma vez só): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
+29/10/2026, também com um script de uma vez só, que não se refaz pelo repositório): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
 MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
 Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
 lunar South Pole" (fonte no CREDITS.md). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
@@ -196,6 +196,10 @@ mudança fica só em `reliefFiles.js`.
   já abriu o site pode juntar o `manifest.json` de uma versão com ladrilhos da outra, enquanto o
   cache dele não vence, e o tamanho igual não denuncia. Só acontece quando os recortes mudam; se
   for preciso, a saída é uma pasta por versão.
+- O git guarda cada versão de cada arquivo. A versão de hoje dos recortes ocupa 31,7 MB dentro do
+  `.git` (medido em 04/11/2026, com `git cat-file`), e cada geração nova que mude os ladrilhos
+  soma outra versão ao histórico, mesmo substituindo a anterior. Gerar de novo arquivos idênticos,
+  como no card I5, não soma nada: para o git, é a mesma versão.
 
 ### E3 · Ponte entre o motor e a tela
 
