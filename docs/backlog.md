@@ -35,8 +35,9 @@ das montanhas em volta?** Quatro peças fazem isso:
 
 - **Motor** (`src/engine/`, Enzo): faz a conta. Recebe o ponto e a data, devolve números. O
   relevo que ele usa fica em `public/data/relief/` (card E2).
-- **Ponte** (`src/hooks/useSiteSky.js`, Enzo): chama o motor quando o ponto ou a data mudam, e
-  avisa a tela se está calculando, se deu certo ou se deu erro.
+- **Ponte** (`src/hooks/`, Enzo): o `useSiteSky` chama o motor quando o ponto ou a data mudam, e
+  avisa a tela se está calculando, se deu certo ou se deu erro; o `useSubsolarPoint` dá a direção
+  do Sol para a luz da cena.
 - **Cena 3D** (`src/scene/`, Marco): a Lua na tela, com a luz do Sol vindo da direção certa.
 - **Painel** (`src/panel/`, Miguel): os números do ponto escolhido, em texto, e os controles para
   escolher o local e a data.
@@ -69,11 +70,18 @@ mesmo dia.
 | `sky.landingWindows` | lista de `{ startUtc, endUtc, startsBeforePeriod, endsAfterPeriod }`: dois `Date` e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
 
 O motor entrega o `sky` pronto, nesse formato: `summarizeSky`, em `src/engine/summary.js`. O
-período começa na data escolhida; quanto tempo ele cobre, o Enzo define no E3.
+período começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, com o
+motivo).
 
 Um caso que parece erro e não é: `elevationDeg` negativo com `visible: true`. Do alto de um
 morro, o Sol pode estar abaixo do plano do horizonte e ainda à vista, porque as montanhas em
 volta são mais baixas que o ponto.
+
+`useSubsolarPoint(dateUtc)` devolve `{ lat, lon }`, em graus: o ponto da Lua onde o Sol está a
+pino naquela data. A luz da cena vem do centro da Lua na direção dele; para virar ponto 3D, ele
+passa pela mesma conversão do marcador do ponto (card C3). Ele não depende do ponto escolhido: a
+luz existe antes de alguém escolher um ponto e enquanto o `useSiteSky` calcula. Enquanto a data
+não muda, ele devolve o mesmo objeto.
 
 ---
 
@@ -182,32 +190,37 @@ mudança fica só em `reliefFiles.js`.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** a fazer · **Depende de:** E1 (feito) e E2 (feito)
+**Estado:** em andamento: os hooks no PR #4; falta o passo 2 · **Depende de:** E1 (feito) e E2
+(feito); o passo 2, também dos componentes que ele liga (C1, I1, I2 e I4)
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
 combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
 escolhidos no `App.jsx`.
 
 **O que fazer.**
-1. `src/hooks/useSiteSky.js`, no formato combinado, chamando o motor na ordem do card E1.
-   As posições do Sol e da Terra não dependem do ponto: calcule uma vez por data e reaproveite
-   para todos os pontos. Medido em 29/10/2026, no Node: um ano hora a hora leva cerca de 200 ms;
-   o horizonte de um ponto, cerca de 60 ms.
-   O relevo vem de `loadReliefLayers` (`src/engine/reliefFiles.js`): leia o
-   `public/data/relief/manifest.json` uma vez e use o mesmo `cache` para todos os pontos. A
-   `readFile` do site faz o `fetch` do arquivo dentro de `data/relief/`, confere o
-   `response.ok` e devolve `response.arrayBuffer()`. Ponto fora da área
-   (`isInsideReliefArea`) dá `status: 'error'`.
+1. Feito: `src/hooks/useSiteSky.js` pede a conta a `src/engine/siteSky.js`, que segue a ordem
+   do card E1, lê o `manifest.json` uma vez, usa o mesmo `cache` de relevo para todos os pontos e
+   guarda a última posição do Sol e da Terra (serve para qualquer ponto na mesma data) e o último
+   horizonte (serve para qualquer data no mesmo ponto). A `readFile` do site
+   (`createReliefReader`) faz o `fetch` dentro de `data/relief/`, a partir do endereço da página,
+   e confere o `response.ok`. Ponto fora da área com relevo (`isInsideReliefArea`) dá
+   `status: 'error'`. A direção do Sol para a cena é o `src/hooks/useSubsolarPoint.js`.
 2. No `App.jsx`: guardar o ponto e a data escolhidos, entregar os dois para a cena e para o
    painel, e ligar o `onSelect` da lista (I2) e do clique na cena (C3) e o `onChange` da data (I4).
-3. Se a conta travar a página enquanto calcula, mover a conta para um Web Worker, que roda em
-   paralelo e não trava a tela. No Worker, endereço relativo é lido a partir do arquivo do Worker,
-   e não da página: a página passa o endereço completo da pasta,
+   Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
+   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+3. Por enquanto, sem Web Worker. Medido em 03/11/2026, no Node, no computador do Enzo: trocar de
+   ponto trava a página por uns 50 ms (o horizonte leva de 38 a 46 ms); trocar de data, até uns
+   80 ms (a posição do Sol e da Terra, `src/engine/config.js`). Se a página travar nos notebooks
+   da equipe (dá para ver junto com o card C4), a conta vai para um Web Worker sem mudar o motor,
+   porque o `siteSky.js` não toca na página. No Worker, endereço relativo é lido a partir do
+   arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
    `new URL('data/relief/', document.baseURI).href`.
-4. Atualizar a tabela do formato acima com o que ficou valendo.
+4. Atualizar a tabela do formato acima com o que ficou valendo. Feito para os dois hooks.
 
 **Pronto quando.**
 - Os testes do hook cobrem os quatro `status`, com o motor de verdade (não um substituto).
+  Feito: `src/hooks/useSiteSky.test.js`.
 - Escolher um local na lista mostra o resultado no painel e a luz certa na cena.
 - O Marco e o Miguel foram avisados do formato final.
 
@@ -379,7 +392,8 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** a fazer · **Depende de:** C1, E2 (feito) e E3 (a direção do Sol)
+**Estado:** a fazer · **Depende de:** C1 e E2 (feito); a direção do Sol já está pronta
+(`useSubsolarPoint`, card E3)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
 verdade perto do polo e a luz vindo da direção certa, a pessoa vê as montanhas fazendo sombra,
@@ -391,7 +405,9 @@ que é o assunto do produto.
    pixel, linha a linha a partir da de cima, na projeção polar dos arquivos LOLA. Onde a grade
    fica está no campo `far` do `manifest.json`, e `polarXYToUnit` (`src/engine/geometry.js`)
    converte o x/y da projeção em ponto da Lua.
-2. A direção da luz vem do motor, para a data escolhida.
+2. A direção da luz vem do `useSubsolarPoint(dateUtc)` (`src/hooks/useSubsolarPoint.js`; o
+   formato está em "O que a ponte entrega para a tela"): a luz sai do centro da Lua na direção
+   do ponto que ele devolve.
 3. Ligar sombra: `shadows` no `<Canvas>`, `castShadow` na luz, `castShadow` e `receiveShadow` na
    malha.
 4. Decidir a escala: montanhas de alguns quilômetros numa Lua de 1.737 km de raio quase não
