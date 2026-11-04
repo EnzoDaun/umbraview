@@ -143,7 +143,7 @@ pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
 
 ### E2 · Dados do relevo para o site
 
-**Estado:** feito em 03/11, PR #3 · **Depende de:** nada
+**Estado:** feito em 03/11, PR #3; falta a conferência do card I5 · **Depende de:** nada
 
 **O que entrega.**
 - `public/data/relief/`: o relevo do polo sul, do polo até 84°S, recortado dos arquivos LOLA da
@@ -181,6 +181,15 @@ tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; s
 mudança fica só em `reliefFiles.js`.
 
 **Comparação com a NASA.** Está no card E1, feita com estes arquivos.
+
+**Pronto quando.**
+- Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
+  (CREDITS.md) nos pontos de referência, e um script refaz a comparação. Feito:
+  `scripts/prepare-data/compare-nasa.mjs`, com o resultado no card E1.
+- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Falta: card I5.
+- O tamanho de `public/data/` e a área escolhida estão anotados neste card. Feito: "O que
+  entrega" e "Por que ladrilhos e por que até 84°S".
+- Nenhum arquivo passa de 50 MB. Feito: o maior é o `far.bin`, de 1,3 MB.
 
 **Aberto.**
 - Os arquivos não têm versão no nome. Se um deploy trouxer recortes novos, o navegador de quem
@@ -618,6 +627,26 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 - O botão "Now" usa a hora atual: fixe a hora no teste com `vi.setSystemTime`.
 
 **Pronto quando.** Os testes passam, funciona só com o teclado, e o `verify` passa.
+
+### I5 · Rodar o script do relevo do zero, seguindo só o README
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O relevo que o site usa (`public/data/relief/`) sai de um script, e até agora
+só o Enzo rodou esse script. Se o README dele depender de alguma coisa que só existe no
+computador do Enzo, ninguém mais consegue gerar o relevo de novo. O card E2 só fecha de vez
+quando outra pessoa roda tudo do zero, lendo só o README.
+
+**O que fazer.**
+1. Num clone atualizado da `develop`, siga `scripts/prepare-data/README.md` do passo 1 ao 4, na
+   ordem, sem pular nada. Os dois downloads da NASA somam uns 410 MB.
+2. Se algum passo não sair como o README diz, pare nele e anote o passo, o comando e a saída
+   inteira. Não conserte por conta própria: o que faltou é do README, e o conserto fica com o
+   Enzo.
+
+**Pronto quando.** Este card tem uma linha com a data, a versão do Python (a primeira linha da
+saída do passo 2) e a saída do passo 4, que é `OK: os recortes gerados são idênticos aos do
+repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que falta no card E2.
 
 ---
 
