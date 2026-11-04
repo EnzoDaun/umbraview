@@ -106,8 +106,9 @@ Os parâmetros ficam em `config.js`.
 - Sol e Terra batem com o SPICE do JPL com diferença de até 0,01°. Feito: `ephemeris.test.js` e
   `series.test.js`, contra `fixtures/spiceReference.json` (`scripts/references/`).
 - A porcentagem de Sol no período fica perto do mapa de Mazarico et al. (CREDITS.md) nos pontos
-  de referência, com a diferença de cada ponto anotada neste card. Feito: a comparação abaixo,
-  com o relevo do card E2.
+  de referência. Feito: a comparação abaixo, com o relevo do card E2: a diferença de cada um dos
+  10 pontos mais iluminados e a média de cada faixa do sorteio, que é o que o `compare-nasa.mjs`
+  imprime.
 - Próximo pôr do Sol e janelas de pouso conferidos em casos montados à mão. Feito:
   `series.test.js` e `summary.test.js`, inclusive que a janela de pouso não passa do pôr do Sol.
 - Nenhum arquivo de `src/engine/` importa React, e o `verify` passa. Feito:
@@ -137,9 +138,15 @@ E nos sorteios por faixa de Sol:
 | 85° a 90°S | 60 m | 259 | 2,1 pts | 3,1 pts (109 pontos) | 1,2 pts |
 | 84° a 85°S | 240 m | 113 | 2,6 pts | 4,3 pts (38 pontos) | 1,6 pts |
 
-**Aberto.** Os pontos 7 e 10, perto de 86°S entre 2° e 3°L, ficam 8 e 11 pontos abaixo da NASA no
-Sol, e a causa não foi investigada. Com mastro de 10 m (`--mast=10`), os dois ficam a 1,3 e 1,5
-pontos da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
+**Aberto.**
+- Os pontos 7 e 10, perto de 86°S entre 2° e 3°L, ficam 8 e 11 pontos abaixo da NASA no Sol, e a
+  causa não foi investigada. Com mastro de 10 m (`--mast=10`), os dois ficam a 1,3 e 1,5 pontos
+  da NASA, mas o erro médio do sorteio sobe de 2,1 para 3,6 (`config.js`).
+- O nosso Sol fica abaixo do da NASA: nos 10 pontos mais iluminados, em todos os 10, e o viés (a
+  média da diferença, com o sinal) é de −2,5 pontos de 84° a 85°S, para um erro médio de 2,6, e de
+  −0,6 de 85° a 90°S, para 2,1. A Terra vai para o outro lado de 85° a 90°S: viés de +1,2, para um
+  erro médio de 1,2. Medido em 04/11/2026, na linha "viés" do `compare-nasa.mjs`. A causa não foi
+  investigada.
 
 ### E2 · Dados do relevo para o site
 

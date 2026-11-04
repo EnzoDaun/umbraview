@@ -2,7 +2,7 @@
  *
  * A prova de que eles estão certos é comparar o horizonte com os mapas de visibilidade da NASA
  * (Mazarico et al. 2011, CREDITS.md): scripts/prepare-data/compare-nasa.mjs, com o relevo do site.
- * O resultado de cada ponto está no card E1 do backlog. Mudar qualquer número do horizonte pede
+ * O resultado está no card E1 do backlog. Mudar qualquer número do horizonte pede
  * rodar a comparação de novo.
  *
  * Os erros citados abaixo são a média da diferença no Sol, em pontos percentuais, nos 259 pontos
