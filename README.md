@@ -224,6 +224,7 @@ umbraview/
 │   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
 │   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
 │   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
+│   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/
 │   │   └── .gitkeep                 a ponte entre o motor e a tela (card E3)
