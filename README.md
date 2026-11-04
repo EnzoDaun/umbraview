@@ -26,7 +26,7 @@ instala tudo no Windows, do zero.
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
   `useSubsolarPoint`, a direção do Sol para a luz da cena. Ela ainda não está ligada à tela
-  (card E3).
+  (card E11).
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).

@@ -43,15 +43,15 @@ das montanhas em volta?** Quatro peças fazem isso:
   escolher o local e a data.
 
 O ponto e a data escolhidos ficam guardados no `App.jsx`, que entrega os dois para a cena e
-para o painel. Quem liga isso no `App.jsx` é o card E3. Os cards C1 e I1 só trocam, cada um, a
+para o painel. Quem liga isso no `App.jsx` é o card E11. Os cards C1 e I1 só trocam, cada um, a
 linha do texto vazio da própria região pelo componente novo. Assim o Marco e o Miguel não
 editam as mesmas linhas ao mesmo tempo.
 
 ### O que a ponte entrega para a tela
 
-A cena e o painel começam antes de o motor ficar pronto. Para isso, o formato do resultado fica
-combinado aqui. O Enzo pode mudar este formato até o E3 fechar, avisando o Marco e o Miguel no
-mesmo dia.
+O formato do resultado fica combinado aqui, para a cena e o painel não dependerem de como o
+motor faz a conta. Ele é o que o card E3 entregou; mudar depois é card novo, avisando o Marco e o
+Miguel no mesmo dia.
 
 `useSiteSky(site, dateUtc)` recebe o ponto (`site`, um objeto com `lat` e `lon` em graus, e
 `name` quando vem da lista de locais) e a data (`dateUtc`, um `Date`). Devolve `{ status, sky }`:
@@ -210,39 +210,34 @@ mudança fica só em `reliefFiles.js`.
 
 ### E3 · Ponte entre o motor e a tela
 
-**Estado:** em andamento: os hooks no PR #4; falta o passo 2 · **Depende de:** E1 (feito) e E2
-(feito); o passo 2, também dos componentes que ele liga (C1, I1, I2 e I4)
+**Estado:** feito em 04/11, PR #4 · **Depende de:** E1 (feito) e E2 (feito)
 
 **Para que serve.** A cena e o painel não chamam o motor direto: a ponte chama, no formato
-combinado em "O que a ponte entrega para a tela". É também o card que guarda o ponto e a data
-escolhidos no `App.jsx`.
+combinado em "O que a ponte entrega para a tela". Ligar a ponte no `App.jsx` é o card E11.
 
-**O que fazer.**
-1. Feito: `src/hooks/useSiteSky.js` pede a conta a `src/engine/siteSky.js`, que segue a ordem
-   do card E1, lê o `manifest.json` uma vez, usa o mesmo `cache` de relevo para todos os pontos e
-   guarda a última posição do Sol e da Terra (serve para qualquer ponto na mesma data) e o último
-   horizonte (serve para qualquer data no mesmo ponto). A `readFile` do site
-   (`createReliefReader`) faz o `fetch` dentro de `data/relief/`, a partir do endereço da página,
-   e confere o `response.ok`. Ponto fora da área com relevo (`isInsideReliefArea`) dá
-   `status: 'error'`. A direção do Sol para a cena é o `src/hooks/useSubsolarPoint.js`.
-2. No `App.jsx`: guardar o ponto e a data escolhidos, entregar os dois para a cena e para o
-   painel, e ligar o `onSelect` da lista (I2) e do clique na cena (C3) e o `onChange` da data (I4).
-   Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
-   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
-3. Por enquanto, sem Web Worker. Medido em 03/11/2026, no Node, no computador do Enzo: trocar de
-   ponto trava a página por uns 50 ms (o horizonte leva de 38 a 46 ms); trocar de data, até uns
-   80 ms (a posição do Sol e da Terra, `src/engine/config.js`). Se a página travar nos notebooks
-   da equipe (dá para ver junto com o card C4), a conta vai para um Web Worker sem mudar o motor,
-   porque o `siteSky.js` não toca na página. No Worker, endereço relativo é lido a partir do
-   arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
-   `new URL('data/relief/', document.baseURI).href`.
-4. Atualizar a tabela do formato acima com o que ficou valendo. Feito para os dois hooks.
+**O que entrega.**
+- `src/hooks/useSiteSky.js` pede a conta a `src/engine/siteSky.js`, que segue a ordem do card
+  E1, lê o `manifest.json` uma vez, usa o mesmo `cache` de relevo para todos os pontos e guarda a
+  última posição do Sol e da Terra (serve para qualquer ponto na mesma data) e o último horizonte
+  (serve para qualquer data no mesmo ponto). A `readFile` do site (`createReliefReader`) faz o
+  `fetch` dentro de `data/relief/`, a partir do endereço da página, e confere o `response.ok`.
+  Ponto fora da área com relevo (`isInsideReliefArea`) dá `status: 'error'`.
+- `src/hooks/useSubsolarPoint.js` dá a direção do Sol para a cena.
+- A tabela de "O que a ponte entrega para a tela", com o período e o `useSubsolarPoint`.
 
 **Pronto quando.**
 - Os testes do hook cobrem os quatro `status`, com o motor de verdade (não um substituto).
   Feito: `src/hooks/useSiteSky.test.js`.
-- Escolher um local na lista mostra o resultado no painel e a luz certa na cena.
-- O Marco e o Miguel foram avisados do formato final.
+- O Marco e o Miguel foram avisados do formato final. Feito: no PR #4.
+
+**Aberto.**
+- Por enquanto, sem Web Worker. Medido em 03/11/2026, no Node, no computador do Enzo: trocar de
+  ponto trava a página por uns 50 ms (o horizonte leva de 38 a 46 ms); trocar de data, até uns
+  80 ms (a posição do Sol e da Terra, `src/engine/config.js`). Se a página travar nos notebooks
+  da equipe (dá para ver junto com o card C4), a conta vai para um Web Worker sem mudar o motor,
+  porque o `siteSky.js` não toca na página. No Worker, endereço relativo é lido a partir do
+  arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
+  `new URL('data/relief/', document.baseURI).href`.
 
 ### E4 · GitHub quando o repositório ficar público
 
@@ -338,6 +333,24 @@ estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.t
 (`.github/workflows/`), o README e o CONTRIBUTING.
 
 **Pronto quando.** Nenhum nome em português em `scripts/`, e o `verify` e o CI passam.
+
+### E11 · Ligar a ponte no `App.jsx`
+
+**Estado:** a fazer · **Depende de:** E3 (feito), C1, I1, I2 e I4
+
+**Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
+guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
+
+**O que fazer.**
+1. No `App.jsx`: guardar o ponto e a data escolhidos e entregar os dois para a cena e para o
+   painel. O painel recebe o que o `useSiteSky` devolve; a cena, o que o `useSubsolarPoint`
+   devolve. Ligar o `onSelect` da lista (I2), o `onChange` da data (I4) e, quando o C3 existir, o
+   `onSelect` do clique na cena.
+2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
+   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+
+**Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
+cena, e o `verify` passa.
 
 ---
 
@@ -451,7 +464,7 @@ liberada e ver o resultado dele.
    - ida: `x = cos(lat)·cos(lon)`, `y = sin(lat)`, `z = −cos(lat)·sin(lon)`;
    - volta: `lat = asin(y)`, `lon = atan2(−z, x)` (normalize o ponto para tamanho 1 antes).
 2. No `onClick` do `<mesh>` da Lua, o ponto atingido chega em `event.point`. Converter e chamar
-   `onSelect({ lat, lon })`, que vem do `App.jsx` (E3).
+   `onSelect({ lat, lon })`, que vem do `App.jsx` (E11).
 3. Um marcador pequeno no ponto escolhido, também quando ele vem da lista.
 4. Clique fora da área liberada não escolhe nada e mostra um aviso curto (texto em
    `src/data/scene.js`). A área liberada vai do polo até 84°S: é o `areaMaxLatDeg` de
@@ -526,7 +539,7 @@ quando? Quando dá para pousar?". É o que os juízes vão ler.
 3. `src/panel/SitePanel.jsx`: recebe `status` e `sky` por props e mostra o que está acima.
 4. `src/panel/SitePanel.css`, só com tokens.
 5. No `App.jsx`, trocar a linha `<p className="app__empty">{app.panel.empty}</p>` por
-   `<SitePanel status="idle" sky={null} />`. O E3 liga o resto.
+   `<SitePanel status="idle" sky={null} />`. O E11 liga o resto.
 6. Os arquivos novos no bloco "Estrutura" do README.
 
 **Como testar** (`src/panel/SitePanel.test.jsx` e `src/panel/format.test.js`). Escreva o teste
@@ -578,7 +591,7 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
    teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
    sobrar tempo.
-2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E3.
+2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E11.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
 
@@ -629,7 +642,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 2. **O erro mais provável deste card:** o `datetime-local` não guarda fuso, e
    `new Date(valor)` lê o valor no fuso do computador. Leia como UTC: `new Date(valor + ':00Z')`.
    Para pôr uma data no campo: `data.toISOString().slice(0, 16)`.
-3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E3.
+3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E11.
 
 **Como testar** (`src/panel/DateTimeControl.test.jsx`).
 - Digitar `2026-11-14T03:00` resulta num `Date` com `getUTCHours() === 3`. A suíte roda em
