@@ -175,7 +175,7 @@ custo de um clique é o mesmo em qualquer área; a área só muda o peso do repo
 29/10/2026, também com um script de uma vez só): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
 MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
 Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
-lunar South Pole". Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
+lunar South Pole" (fonte no CREDITS.md). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
 primeiro clique. Comprimir os ladrilhos (gravando a diferença entre vizinhos, e depois gzip)
 tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; se fizer falta, a
 mudança fica só em `reliefFiles.js`.
