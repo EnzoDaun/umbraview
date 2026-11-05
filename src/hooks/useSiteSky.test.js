@@ -50,6 +50,8 @@ function renderSiteSky(initialProps, compute) {
 }
 
 afterEach(() => {
+  // desfaz os vi.spyOn, como o do console.error no teste do erro: sem isso, o console seguiria
+  // mudo nos testes seguintes, e um erro de verdade passaria sem aparecer
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   document.head.querySelector('base')?.remove()
