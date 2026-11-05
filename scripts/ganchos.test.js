@@ -11,7 +11,7 @@
  * saída. No CI (Linux) eles sempre rodam.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -141,12 +141,26 @@ describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', () => {
     expect(caminho.trim()).toBe('.githooks')
   })
 
+  /* A pasta sem git fica, de propósito, dentro de outro repositório (a casa). Num Windows em que
+     a pasta de usuário é um repositório git, a pasta temporária fica dentro dela: o git acha o
+     repositório de fora, e o instalador liga os ganchos nele, no git de quem rodou o verify.
+     Montado aqui, o caso roda em toda máquina, inclusive no CI, e não só onde acontece sozinho.
+     O GIT_CEILING_DIRECTORIES faz o git parar de procurar repositório antes de entrar na casa. */
   it('fora de um repositório git, avisa e não quebra o npm install', () => {
-    const solta = mkdtempSync(join(tmpdir(), 'umbraview-sem-git-'))
-    const saida = spawnSync('node', [join(RAIZ, 'scripts', 'instalar-ganchos.mjs')], { cwd: solta, encoding: 'utf8' })
-    rmSync(solta, { recursive: true, force: true })
+    const casa = join(temporaria, 'casa')
+    execFileSync('git', ['init', '-q', casa])
+    const solta = join(casa, 'sem-git')
+    mkdirSync(solta)
+    const saida = spawnSync('node', [join(RAIZ, 'scripts', 'instalar-ganchos.mjs')], {
+      cwd: solta,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_CEILING_DIRECTORIES: casa },
+    })
     expect(saida.status).toBe(0)
     expect(saida.stdout + saida.stderr).toMatch(/não é um repositório git/)
+    /* O repositório de fora continua como estava: o teste não pode mexer no git de quem roda.
+       --local, para um core.hooksPath global de quem roda não contar como gravado aqui. */
+    expect(spawnSync('git', ['config', '--local', '--get', 'core.hooksPath'], { cwd: casa }).status).toBe(1)
   })
 
   it('o arquivo do gancho existe e começa com #!/bin/sh', () => {
