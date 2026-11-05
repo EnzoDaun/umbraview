@@ -772,21 +772,6 @@ documento; o Enzo leva para o projeto.
 
 **Pronto quando.** Nenhuma fonte fica "a conferir".
 
-### P3 · Confirmação por escrito sobre começar antes de 14/11
-
-**Estado:** a fazer · **Depende de:** nada
-
-**Para que serve.** A FAQ do Space Apps 2026 diz que as equipes não podem começar antes do
-hackathon. A equipe começou com base no que os organizadores disseram na faculdade. Com a
-resposta por escrito, a equipe tem como mostrar isso se alguém perguntar. O histórico do código,
-com as datas, fica público quando o projeto for aberto para os juízes.
-
-**O que fazer.** Um e-mail para a organização do evento local perguntando se a equipe pode
-preparar o projeto antes de 14/11. Guardar a resposta na pasta da equipe.
-
-**Pronto quando.** A resposta está guardada, ou o e-mail foi enviado e ficou sem resposta até
-13/11 (anotar neste card).
-
 ### P4 · Texto da submissão, em inglês
 
 **Estado:** a fazer · **Depende de:** P5 ajuda; revisar em 13/11, com o guia de submissão
@@ -891,3 +876,6 @@ Ideias que apareceram e não entram agora. Voltam para a lista de cima só com o
 - Clicar em qualquer ponto da Lua inteira: a área liberada vai do polo até 84°S (card E2), e o
   resto fica para depois.
 - Modo história: contar uma missão passo a passo.
+- Pedir à organização local uma confirmação por escrito de que a equipe pode começar antes de
+  14/11 (era o card P3): o Enzo decidiu em 05/11/2026 não pedir. A equipe segue a orientação do
+  orientador e da organização do evento de 2025, e o risco está aceito no escopo (card E5).
