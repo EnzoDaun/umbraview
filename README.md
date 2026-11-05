@@ -20,8 +20,10 @@ instala tudo no Windows, do zero.
 ## O que já existe
 
 - A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
-  e o painel do ponto escolhido (direita). As duas regiões ainda estão vazias, com o texto que
-  aparece enquanto não há nada para mostrar.
+  e o painel do ponto escolhido (direita).
+- A Lua em 3D na região da cena (`src/scene/`): uma esfera iluminada de um lado só, que gira com
+  o mouse e aproxima com a roda (card C1). O relevo e a sombra das montanhas são o card C2. O
+  painel ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
@@ -213,7 +215,8 @@ umbraview/
 │
 ├── src/
 │   ├── data/
-│   │   └── app.js                   textos da tela principal
+│   │   ├── app.js                   textos da tela principal
+│   │   └── scene.js                 textos da cena 3D (card C1)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
@@ -229,8 +232,12 @@ umbraview/
 │   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
+│   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   └── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
+│   ├── scene/                       a Lua em 3D (cards C1 a C3)
+│   │   ├── LunarScene.css
+│   │   └── LunarScene.jsx           a Lua, a luz do Sol e a câmera que gira com o mouse
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
