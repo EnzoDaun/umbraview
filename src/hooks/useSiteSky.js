@@ -58,8 +58,12 @@ export function useSiteSky(site, dateUtc, compute = siteSkyOfPage) {
       (sky) => {
         if (current) setDone({ request, result: { status: 'ready', sky } })
       },
-      () => {
-        if (current) setDone({ request, result: { status: 'error', sky: null } })
+      (error) => {
+        if (!current) return
+        // a tela recebe só o status; o motivo (ponto fora da área, arquivo que não chegou...) vai
+        // para o console, para quem depura não precisar adivinhar
+        console.error('useSiteSky: a conta do céu falhou', error)
+        setDone({ request, result: { status: 'error', sky: null } })
       },
     )
     return () => {
