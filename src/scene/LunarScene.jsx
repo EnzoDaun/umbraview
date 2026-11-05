@@ -15,8 +15,9 @@ import './LunarScene.css'
    a direção da câmera e o "para cima" ficam paralelos e a rotação dela fica indefinida. */
 const CAMERA_POSITION = [0, -3, 0.01]
 
-/* Mais perto que 1.2 a câmera entra no relevo exagerado do C2; mais longe que 6 a Lua vira um
-   ponto na região. */
+/* Com a esfera lisa do C1, 1.2 deixa o polo encher a região sem a câmera encostar na superfície
+   (raio 1); mais longe que 6, a Lua vira um ponto na região. O C2 pode mudar o 1.2: se ele escolher
+   levar a câmera perto do polo em vez de exagerar a altura (item 4 do card), este limite trava. */
 const MIN_DISTANCE = 1.2
 const MAX_DISTANCE = 6
 
