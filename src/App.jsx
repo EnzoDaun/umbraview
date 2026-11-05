@@ -1,4 +1,5 @@
 import { app } from './data/app.js'
+import { LunarScene } from './scene/LunarScene.jsx'
 import './App.css'
 
 /* Esqueleto da tela: cabeçalho, a região da cena (esquerda, maior) e a do painel do ponto
@@ -15,7 +16,7 @@ export default function App() {
       <main className="app__main">
         <section className="app__scene" aria-labelledby="scene-title">
           <h2 id="scene-title" className="app__region-title">{app.scene.title}</h2>
-          <p className="app__empty">{app.scene.empty}</p>
+          <LunarScene />
         </section>
 
         <section className="app__panel" aria-labelledby="panel-title">
