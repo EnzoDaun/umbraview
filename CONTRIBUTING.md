@@ -41,8 +41,9 @@ Seis frases que resumem tudo:
 5. **Não apague branch nenhuma**, nem depois do merge. O GitHub oferece um botão
    *Delete branch* na tela do PR: não use.
 6. **Um card, um PR.** O PR entrega o card inteiro, em commits atômicos, e a descrição explica
-   cada um. Se o card depende de algo que ainda não existe, divida o card em dois antes de
-   começar, e não o PR: um card entregue em dois PRs fica marcado como feito sem estar.
+   cada um. Se o card depende de algo que ainda não existe, divida o card em dois, e não o PR:
+   antes de começar, ou assim que perceber a dependência, e sempre antes de abrir o PR. Um card
+   entregue em dois PRs fica marcado como feito sem estar.
 
 Enquanto o repositório for privado no plano gratuito do GitHub, a proteção automática de
 branch não existe: tecnicamente, o `git push origin main` funciona se alguém digitar. As regras
