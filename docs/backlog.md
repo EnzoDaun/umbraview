@@ -360,7 +360,7 @@ Além dos cards, o Marco revisa os PRs do Enzo (CONTRIBUTING.md, seção 1).
 
 ### C1 · A Lua em 3D, girando com o mouse
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 05/11, PR #5 · **Depende de:** nada
 
 **Para que serve.** A região da esquerda da tela mostra a Lua em 3D, para a pessoa ver onde fica
 o ponto escolhido e de que lado vem a luz do Sol. Este card faz só a base: a Lua, a luz e a
