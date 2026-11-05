@@ -151,10 +151,13 @@ describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', () => {
     execFileSync('git', ['init', '-q', casa])
     const solta = join(casa, 'sem-git')
     mkdirSync(solta)
+    const semCasa = { ...process.env, GIT_CEILING_DIRECTORIES: casa }
+    // com o teto, o git não acha a casa a partir da pasta sem git (128 = "not a git repository")
+    expect(spawnSync('git', ['rev-parse', '--git-dir'], { cwd: solta, env: semCasa }).status).toBe(128)
     const saida = spawnSync('node', [join(RAIZ, 'scripts', 'instalar-ganchos.mjs')], {
       cwd: solta,
       encoding: 'utf8',
-      env: { ...process.env, GIT_CEILING_DIRECTORIES: casa },
+      env: semCasa,
     })
     expect(saida.status).toBe(0)
     expect(saida.stdout + saida.stderr).toMatch(/não é um repositório git/)
