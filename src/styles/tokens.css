@@ -30,7 +30,9 @@
   --color-earth: #79aee8;
 
   /* Cena 3D (card C1). A Lua é cinza neutro, como o regolito; a luz é um branco quente, porque o
-     Sol visto sem atmosfera é quase branco, e o âmbar do acento pintaria a Lua inteira de laranja. */
+     Sol visto sem atmosfera é quase branco, e o âmbar do acento pintaria a Lua inteira de laranja.
+     A Lua tem par de contraste em tokens.test.js; a luz não tem, de propósito: ela é a cor da luz
+     que bate na Lua, e não aparece pintada na tela sobre fundo nenhum. */
   --color-moon: #a7a9ad;
   --color-sunlight: #fff6e8;
 
