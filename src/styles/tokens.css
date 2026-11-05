@@ -29,6 +29,11 @@
   --color-sun: #e9b450;
   --color-earth: #79aee8;
 
+  /* Cena 3D (card C1). A Lua é cinza neutro, como o regolito; a luz é um branco quente, porque o
+     Sol visto sem atmosfera é quase branco, e o âmbar do acento pintaria a Lua inteira de laranja. */
+  --color-moon: #a7a9ad;
+  --color-sunlight: #fff6e8;
+
   /* Estado */
   --color-danger: #ec8a7c;
   --color-success: #5fcf8f;

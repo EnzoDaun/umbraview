@@ -213,7 +213,8 @@ umbraview/
 │
 ├── src/
 │   ├── data/
-│   │   └── app.js                   textos da tela principal
+│   │   ├── app.js                   textos da tela principal
+│   │   └── scene.js                 textos da cena 3D (card C1)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
@@ -229,8 +230,12 @@ umbraview/
 │   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
+│   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   └── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
+│   ├── scene/                       a Lua em 3D (cards C1 a C3)
+│   │   ├── LunarScene.css
+│   │   └── LunarScene.jsx           a Lua, a luz do Sol e a câmera que gira com o mouse
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css

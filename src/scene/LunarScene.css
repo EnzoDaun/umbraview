@@ -1,0 +1,10 @@
+/* A cena ocupa o que sobra da região "Lunar scene", abaixo do título. O Canvas do React Three
+   Fiber toma 100% do elemento em volta dele: sem uma altura aqui, ele cai para 150 px (visto num
+   rascunho em 29/10/2026). O min-height: 0 deixa a cena encolher dentro do flex, em vez de
+   empurrar a região para baixo. */
+.lunar-scene {
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
