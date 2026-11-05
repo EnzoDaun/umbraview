@@ -260,13 +260,23 @@ branches só existem em repositório público.
 
 ### E5 · Corrigir os documentos do projeto no claude.ai
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 05/11, PR #7 · **Depende de:** nada
 
-1. Trocar "CLPS Lunar Mission Browser" por "Lunar Landing Site Navigator" / "UmbraView" nos
-   títulos: o desafio mudou de nome.
-2. Corrigir a frase "a FAQ de 2026 não proíbe": a FAQ diz "Teams are not allowed to begin
-   working on the challenges prior to the hackathon". Registrar ao lado a decisão da equipe e o
-   card P3.
+**Para que serve.** Os três documentos do projeto no claude.ai (o projeto, o escopo e o roteiro
+da apresentação para a equipe) são o que a equipe lê fora do repositório. Eles precisam dizer o
+nome atual do desafio e o que a FAQ de 2026 diz sobre começar antes do hackathon.
+
+**O que entrega.**
+- As abas do projeto e do escopo com o nome "Lunar Landing Site Navigator". O nome antigo fica só
+  como "(antes, CLPS Lunar Mission Browser)", porque o endereço da página do desafio ainda usa ele.
+- No roteiro, a resposta a "Pode programar antes do evento?" cita a FAQ ("Teams are not allowed
+  to begin working on the challenges prior to the hackathon", conferida em 05/11/2026) e a decisão
+  da equipe de começar pela orientação do orientador e da organização do evento de 2025. No
+  escopo, a tabela "Riscos" registra esse risco como aceito.
+
+**Atenção.** A página da FAQ monta o texto pelo JavaScript: uma leitura da página sem navegador
+não acha essa frase, e foi assim que um documento chegou a dizer que a FAQ não proibia. Regra do
+site do Space Apps se confere no navegador.
 
 ### E6 · Revisar PRs e levar a `develop` para a `main`
 
