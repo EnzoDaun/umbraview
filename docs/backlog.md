@@ -284,16 +284,19 @@ máquina do Marco, em que a pasta temporária fica dentro da pasta de usuário, 
 git (revisões dos PRs #2, #4 e #5).
 
 **O que entrega.** O teste monta o caso de propósito, em toda máquina: cria um repositório na
-pasta temporária e a pasta sem git dentro dele, roda o instalador com `GIT_CEILING_DIRECTORIES`
-apontando para esse repositório (o git para de procurar antes de entrar nele) e confere que o
-repositório continua sem `core.hooksPath`.
+pasta temporária e a pasta sem git dentro dele, e roda o instalador com `GIT_CEILING_DIRECTORIES`
+apontando para esse repositório, o que faz o git parar de procurar antes de entrar nele. O teste
+confere que, assim, o git não acha o repositório a partir da pasta sem git, e que o repositório
+continua sem `core.hooksPath` depois do instalador.
 
 **Pronto quando.**
-- O teste passa com a pasta temporária dentro de um repositório git. Feito: o próprio teste cria
-  esse repositório, então todo `verify` e o CI conferem. Conferido em 05/11/2026 no Linux, também
-  com a pasta temporária do sistema dentro de um repositório, e no Windows pelo `verify` de cada
-  commit do PR #6.
-- O `verify` passa.
+- O teste passa com a pasta temporária dentro de um repositório git. Feito: o próprio teste monta
+  esse repositório, então todo `verify` e o CI conferem.
+- O `verify` passa. Feito.
+
+**Conferido** em 05/11/2026: no Linux, também com a pasta temporária do sistema dentro de um
+repositório; no Windows do Enzo, no `verify` de cada commit do PR #6; e no Windows do Marco, na
+revisão do PR #6.
 
 ### E8 · Relevo dos locais da lista fora do polo
 
