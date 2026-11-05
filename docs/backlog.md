@@ -336,7 +336,7 @@ estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.t
 
 ### E11 · Ligar a ponte no `App.jsx`
 
-**Estado:** a fazer · **Depende de:** E3 (feito), C1, I1, I2 e I4
+**Estado:** a fazer · **Depende de:** E3 (feito), C1 (feito), I1, I2 e I4
 
 **Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
 guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
@@ -425,7 +425,7 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** a fazer · **Depende de:** C1 e E2 (feito); a direção do Sol já está pronta
+**Estado:** a fazer · **Depende de:** C1 (feito) e E2 (feito); a direção do Sol já está pronta
 (`useSubsolarPoint`, card E3)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
@@ -452,7 +452,7 @@ o motor diz `visible: true` e sombra onde diz `false`; e o `verify` passa.
 
 ### C3 · Escolher um ponto clicando na Lua
 
-**Estado:** a fazer · **Depende de:** C1 e E2 (feito)
+**Estado:** a fazer · **Depende de:** C1 (feito) e E2 (feito)
 
 **Para que serve.** Além da lista de locais (I2), a pessoa pode clicar em qualquer ponto da área
 liberada e ver o resultado dele.
@@ -483,7 +483,7 @@ e o `verify` passa.
 
 ### C4 · Quanto o site pesa nos notebooks da equipe
 
-**Estado:** a fazer · **Depende de:** C1 (e de novo depois do C2)
+**Estado:** a fazer · **Depende de:** C1 (feito), e de novo depois do C2
 
 **Para que serve.** Os juízes abrem o site num computador qualquer. Se a cena travar nos
 notebooks da equipe, vai travar lá também.
@@ -501,6 +501,26 @@ para 1,15 MB (315 kB compactado).
 
 **Pronto quando.** Uma tabela neste card com notebook, navegador, tempo, quadros por segundo e
 data; repetida depois do C2.
+
+### C5 · Parar o giro quando a pessoa mexe na Lua
+
+**Estado:** a fazer · **Depende de:** C1 (feito)
+
+**Para que serve.** Sem o pedido de menos movimento no sistema, a Lua do C1 gira sozinha o tempo
+todo, e não há como pausar. A WCAG 2.2.2 (nível A) pede um jeito de pausar o que se move sozinho
+por mais de 5 segundos junto com outro conteúdo. Parar o giro quando a pessoa mexe também ajuda o
+C3 e o E11: o ponto escolhido não sai andando da frente dela. Veio da revisão do PR #5.
+
+**O que fazer.** Em `src/scene/LunarScene.jsx`, desligar o `autoRotate` na primeira vez que a
+pessoa arrasta ou usa a roda (o `OrbitControls` do Drei avisa no `onStart`), e deixar desligado
+dali em diante. Com o pedido de menos movimento, nada muda: a Lua já começa parada.
+
+**Como testar** (`src/scene/LunarScene.test.jsx`). Com os mesmos substitutos do C1: sem o pedido
+de menos movimento, os controles começam com `autoRotate: true`; depois de chamar o `onStart` que
+a cena entregou a eles, passam a receber `autoRotate: false`.
+
+**Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
+não volta a girar; os testes passam e o `verify` passa.
 
 ---
 
