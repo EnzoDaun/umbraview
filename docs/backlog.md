@@ -348,6 +348,11 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
    `onSelect` do clique na cena.
 2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
    motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
+   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
+   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
+   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
+   (`useSiteSky: a conta do céu falhou`).
 
 **Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
 cena, e o `verify` passa.
