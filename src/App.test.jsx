@@ -1,6 +1,7 @@
-/* O esqueleto da tela: as regiões em que cada frente vai trabalhar existem, têm nome para o
- * leitor de tela e mostram o texto que vem de src/data/app.js. Quando a cena 3D (card C1) e o
- * painel do ponto (card I1) entrarem, eles substituem o conteúdo das regiões, não as regiões.
+/* O esqueleto da tela: as regiões em que cada frente vai trabalhar existem e têm nome para o
+ * leitor de tela, com o título que vem de src/data/app.js. A cena 3D (card C1) já ocupa a região
+ * dela; quando o painel do ponto (card I1) entrar, ele substitui o conteúdo da região dele, e não
+ * a região.
  *
  * O jsdom não tem WebGL: as bibliotecas 3D viram substitutos, como em LunarScene.test.jsx. */
 import { render, screen, within } from '@testing-library/react'
