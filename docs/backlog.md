@@ -274,19 +274,26 @@ branches só existem em repositório público.
 
 ### E7 · Teste dos ganchos numa pasta que já é repositório
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 05/11, PR #6 · **Depende de:** nada
 
 **Para que serve.** O teste "fora de um repositório git, avisa e não quebra o npm install", em
-`scripts/ganchos.test.js`, roda o `instalar-ganchos.mjs` numa pasta temporária e supõe que ela
-não está dentro de nenhum repositório. Na máquina do Marco, a pasta de usuário é um repositório
-git, e o teste falhou (revisão do PR #2, 30/10/2026); com a pasta temporária fora dela, passou.
+`scripts/ganchos.test.js`, roda o `instalar-ganchos.mjs` numa pasta sem git. Se essa pasta fica
+dentro de outro repositório, o git acha o de fora: o teste falha, e o instalador grava
+`core.hooksPath = .githooks` nesse repositório, no git de quem rodou o `verify`. Era o caso da
+máquina do Marco, em que a pasta temporária fica dentro da pasta de usuário, que é um repositório
+git (revisões dos PRs #2, #4 e #5).
 
-**O que fazer.** Fazer o git chamado pelo teste parar de procurar repositório acima da pasta
-temporária. Uma saída a conferir: passar ao `spawnSync` a variável `GIT_CEILING_DIRECTORIES`
-com a pasta de cima da temporária.
+**O que entrega.** O teste monta o caso de propósito, em toda máquina: cria um repositório na
+pasta temporária e a pasta sem git dentro dele, roda o instalador com `GIT_CEILING_DIRECTORIES`
+apontando para esse repositório (o git para de procurar antes de entrar nele) e confere que o
+repositório continua sem `core.hooksPath`.
 
-**Pronto quando.** O teste passa com a pasta temporária dentro de um repositório git (crie um
-de propósito para conferir), e o `verify` passa.
+**Pronto quando.**
+- O teste passa com a pasta temporária dentro de um repositório git. Feito: o próprio teste cria
+  esse repositório, então todo `verify` e o CI conferem. Conferido em 05/11/2026 no Linux, também
+  com a pasta temporária do sistema dentro de um repositório, e no Windows pelo `verify` de cada
+  commit do PR #6.
+- O `verify` passa.
 
 ### E8 · Relevo dos locais da lista fora do polo
 
@@ -348,6 +355,11 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
    `onSelect` do clique na cena.
 2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
    motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
+   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
+   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
+   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
+   (`useSiteSky: a conta do céu falhou`).
 
 **Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
 cena, e o `verify` passa.

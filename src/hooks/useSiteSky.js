@@ -38,7 +38,11 @@ function siteSkyOfPage(site, startMs) {
 
 /* site: { lat, lon } em graus (e name, quando vem da lista de locais), ou null enquanto nada foi
    escolhido. dateUtc: o começo do período (PERIOD_DAYS, src/engine/config.js). compute: a conta;
-   só os testes trocam. Devolve { status, sky }. */
+   só os testes trocam. Devolve { status, sky }.
+
+   O compute precisa ser sempre a mesma função (de fora do componente, ou com useCallback): ele
+   está nas dependências do efeito. Uma função criada no próprio render pede a conta de novo a cada
+   render, e cada resultado provoca outro render: a conta entra em laço. */
 export function useSiteSky(site, dateUtc, compute = siteSkyOfPage) {
   const lat = site?.lat
   const lon = site?.lon
@@ -54,8 +58,12 @@ export function useSiteSky(site, dateUtc, compute = siteSkyOfPage) {
       (sky) => {
         if (current) setDone({ request, result: { status: 'ready', sky } })
       },
-      () => {
-        if (current) setDone({ request, result: { status: 'error', sky: null } })
+      (error) => {
+        if (!current) return
+        // a tela recebe só o status; o motivo (ponto fora da área, arquivo que não chegou...) vai
+        // para o console, para quem depura não precisar adivinhar
+        console.error('useSiteSky: a conta do céu falhou', error)
+        setDone({ request, result: { status: 'error', sky: null } })
       },
     )
     return () => {
