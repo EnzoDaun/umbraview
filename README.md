@@ -21,14 +21,15 @@ instala tudo no Windows, do zero.
 
 - A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
   e o painel do ponto escolhido (direita).
-- A Lua em 3D na região da cena (`src/scene/`): uma esfera iluminada de um lado só, que gira com
-  o mouse e aproxima com a roda (card C1). O relevo e a sombra das montanhas são o card C2. O
-  painel ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
+- A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
+  (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
+  da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
+  abriu. O painel ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
-  `useSubsolarPoint`, a direção do Sol para a luz da cena. Ela ainda não está ligada à tela
-  (card E11).
+  `useSubsolarPoint`, a direção do Sol. A cena já usa o `useSubsolarPoint`; o `useSiteSky` ainda
+  não está ligado à tela (card E11).
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
