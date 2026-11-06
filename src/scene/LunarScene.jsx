@@ -1,6 +1,6 @@
 /* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
- * luz do Sol da data escolhida e a sombra das montanhas (card C2). O clique para escolher um
- * ponto é o C3.
+ * luz do Sol da data escolhida e a sombra das montanhas (card C2), e o clique que escolhe um ponto,
+ * com o marcador dele (card C3).
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
@@ -13,8 +13,11 @@ import { scene } from '../data/scene.js'
 import { useFarRelief } from '../hooks/useFarRelief.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
+import { useTimedNotice } from '../hooks/useTimedNotice.js'
+import { readMoonClick } from './picking.js'
 import { ReliefCap } from './ReliefCap.jsx'
 import { smoothSphereThetaLength } from './reliefMesh.js'
+import { SiteMarker } from './SiteMarker.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
@@ -64,19 +67,27 @@ const SHADOW_NORMAL_BIAS = 0.0002
    0.186, que troca por este e avisa no console a cada página aberta. */
 const SHADOW_TYPE = 'percentage'
 
+/* Quanto tempo o aviso de clique fora da área fica na tela, em milissegundos: o bastante para ler
+   uma frase curta sem cobrir a Lua depois disso. Não é token porque não é duração de animação. */
+const NOTICE_DURATION_MS = 5000
+
 /* As cores vêm dos tokens (tokens.css), como toda cor da interface. O three não lê variável de
    CSS, então o valor é lido da página. */
 function token(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
-/* dateUtc: a data da luz (um Date). Vem do App.jsx. */
-export function LunarScene({ dateUtc }) {
+/* dateUtc: a data da luz (um Date). site: o ponto escolhido, { lat, lon } em graus, ou null; o
+   marcador aparece nele. onSelect: chamada com { lat, lon } quando a pessoa clica num ponto da área
+   com relevo. Os três vêm do App.jsx. */
+export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   const reducedMotion = usePrefersReducedMotion()
   const subsolar = useSubsolarPoint(dateUtc)
   const relief = useFarRelief()
   const moonColor = token('--color-moon')
   const sunlightColor = token('--color-sunlight')
+  const [notice, showNotice] = useTimedNotice(NOTICE_DURATION_MS)
+  const manifest = relief?.manifest ?? null
 
   const sunPosition = useMemo(() => sunLightPosition(subsolar), [subsolar])
   /* O alvo da luz precisa estar na cena para o three saber onde ele fica; solto, ele conta como
@@ -90,44 +101,66 @@ export function LunarScene({ dateUtc }) {
   // Com o relevo, a esfera lisa abre um buraco no polo e a malha entra no lugar.
   const sphereThetaLength = relief ? smoothSphereThetaLength(relief.manifest.far.reachM) : Math.PI
 
+  function handleMoonClick(event) {
+    /* O raio do clique atravessa a malha do relevo e a esfera lisa por baixo dela, e o React Three
+       Fiber chama o grupo uma vez para cada objeto atingido. O primeiro é o que a pessoa vê; os
+       outros escolheriam o mesmo ponto de novo. */
+    event.stopPropagation()
+    const result = readMoonClick({ point: event.point.toArray(), delta: event.delta }, manifest)
+    if (!result) return
+    if (result.outside) showNotice(scene.outsideArea(Math.abs(manifest.areaMaxLatDeg)))
+    else onSelect(result.site)
+  }
+
   return (
-    <div className="lunar-scene" role="img" aria-label={scene.label}>
-      <Canvas shadows={SHADOW_TYPE} camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}>
-        <ambientLight intensity={AMBIENT_INTENSITY} />
-        <primitive object={sunTarget} />
-        <directionalLight
-          position={sunPosition}
-          target={sunTarget}
-          intensity={SUN_INTENSITY}
-          color={sunlightColor}
-          castShadow
-          shadow-mapSize={[SHADOW_MAP_SIZE, SHADOW_MAP_SIZE]}
-          shadow-camera-left={-SHADOW_HALF_SIZE}
-          shadow-camera-right={SHADOW_HALF_SIZE}
-          shadow-camera-top={SHADOW_HALF_SIZE}
-          shadow-camera-bottom={-SHADOW_HALF_SIZE}
-          shadow-camera-near={SHADOW_NEAR}
-          shadow-camera-far={SHADOW_FAR}
-          shadow-bias={SHADOW_BIAS}
-          shadow-normalBias={SHADOW_NORMAL_BIAS}
-        />
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[1, 128, 64, 0, 2 * Math.PI, 0, sphereThetaLength]} />
-          {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que
-              ela passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto
-              piscariam disputando o mesmo pixel. */}
-          <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-        </mesh>
-        {relief && <ReliefCap relief={relief} color={moonColor} />}
-        <OrbitControls
-          enablePan={false}
-          minDistance={MIN_DISTANCE}
-          maxDistance={MAX_DISTANCE}
-          autoRotate={!reducedMotion}
-          autoRotateSpeed={AUTO_ROTATE_SPEED}
-          enableDamping={!reducedMotion}
-        />
-      </Canvas>
+    <div className="lunar-scene">
+      <div className="lunar-scene__view" role="img" aria-label={scene.label}>
+        <Canvas shadows={SHADOW_TYPE} camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}>
+          <ambientLight intensity={AMBIENT_INTENSITY} />
+          <primitive object={sunTarget} />
+          <directionalLight
+            position={sunPosition}
+            target={sunTarget}
+            intensity={SUN_INTENSITY}
+            color={sunlightColor}
+            castShadow
+            shadow-mapSize={[SHADOW_MAP_SIZE, SHADOW_MAP_SIZE]}
+            shadow-camera-left={-SHADOW_HALF_SIZE}
+            shadow-camera-right={SHADOW_HALF_SIZE}
+            shadow-camera-top={SHADOW_HALF_SIZE}
+            shadow-camera-bottom={-SHADOW_HALF_SIZE}
+            shadow-camera-near={SHADOW_NEAR}
+            shadow-camera-far={SHADOW_FAR}
+            shadow-bias={SHADOW_BIAS}
+            shadow-normalBias={SHADOW_NORMAL_BIAS}
+          />
+          <group onClick={handleMoonClick}>
+            <mesh castShadow receiveShadow>
+              <sphereGeometry args={[1, 128, 64, 0, 2 * Math.PI, 0, sphereThetaLength]} />
+              {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que
+                  ela passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto
+                  piscariam disputando o mesmo pixel. */}
+              <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            </mesh>
+            {relief && <ReliefCap relief={relief} color={moonColor} />}
+          </group>
+          {site && <SiteMarker site={site} relief={relief} />}
+          <OrbitControls
+            enablePan={false}
+            minDistance={MIN_DISTANCE}
+            maxDistance={MAX_DISTANCE}
+            autoRotate={!reducedMotion}
+            autoRotateSpeed={AUTO_ROTATE_SPEED}
+            enableDamping={!reducedMotion}
+          />
+        </Canvas>
+      </div>
+      {/* Fora do role="img": lá dentro, o leitor de tela trataria o aviso como parte da imagem e
+          não leria. O elemento existe desde o começo, vazio, porque o leitor de tela só anuncia a
+          mudança de um role="status" que já estava na página. */}
+      <p className="lunar-scene__notice" role="status">
+        {notice}
+      </p>
     </div>
   )
 }
