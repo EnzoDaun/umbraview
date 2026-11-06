@@ -450,8 +450,8 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** em revisão, PR de 06/11; falta conferir os três pontos com o Enzo · **Depende de:**
-C1 (feito) e E2 (feito); a direção do Sol já está pronta (`useSubsolarPoint`, card E3)
+**Estado:** feito em 06/11, PR #8 · **Depende de:** C1 (feito) e E2 (feito); a direção do Sol
+já está pronta (`useSubsolarPoint`, card E3)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
 verdade perto do polo e a luz vindo da direção certa, a pessoa vê as montanhas fazendo sombra,
@@ -478,6 +478,27 @@ que é o assunto do produto.
 
 **Pronto quando.** Em três pontos combinados com o Enzo, numa mesma data, a cena mostra luz onde
 o motor diz `visible: true` e sombra onde diz `false`; e o `verify` passa.
+
+Feito em 06/11/2026, com os três pontos que o Enzo calculou com o motor para 14/11/2026, 00:00
+UTC (revisão do PR #8). A cena foi desenhada no Chromium com essa data e a câmera a uns 7 km
+acima de cada ponto, olhando para baixo; o número é o brilho no centro da imagem, de 0 a 255 (só
+a luz fraca do lado escuro dá uns 5):
+
+| Ponto | Lat, lon | Motor | Cena com sombra | Cena sem sombra (controle) |
+|---|---|---|---|---|
+| 1 | −86,219°, 154,92° | luz (folga +7,80°) | 51: luz | 51 |
+| 2 | −87,097°, 40,99° | sombra (folga −17,08°) | 5: sombra | 8 |
+| 3 | −85,445°, −175,65° | sombra (folga −2,11°) | 5: sombra | 87 |
+
+O controle desliga a sombra e deixa só a inclinação do chão. No ponto 3, é a sombra da montanha
+que escurece o ponto: sem ela, ele fica claro. No ponto 2, a encosta já está virada para o lado
+contrário do Sol, e a sombra só completa. O `verify` passa no PR #8.
+
+**Aberto.**
+- Com o Sol rasante, a sombra perde precisão. Um pixel da sombra tem 424 m de lado, de frente
+  para a luz, e cobre uns 424 m / tan(altura do Sol) no chão, na direção do Sol: cerca de 14 km
+  com o Sol a 1,8°. Uma borda de sombra pode andar por essa distância (conta do Enzo, na revisão
+  do PR #8; não medido na cena). Por isso os pontos da conferência acima têm folga grande.
 
 ### C3 · Escolher um ponto clicando na Lua
 
@@ -551,6 +572,23 @@ a cena entregou a eles, passam a receber `autoRotate: false`.
 
 **Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
 não volta a girar; os testes passam e o `verify` passa.
+
+### C6 · O relevo fino de perto
+
+**Estado:** a fazer · **Depende de:** C2 (feito) e C4
+
+**Para que serve.** De perto, a cena do C2 fica borrada: ela desenha o relevo grosso (`far.bin`),
+com um vértice a cada 1,9 km, e uma cratera de 1 ou 2 km vira poucos triângulos. Testado em
+06/11/2026: com todos os pixels do `far.bin` (960 m) e sombra de 4096, fica só duas vezes mais
+nítido, com 4 vezes mais vértices, e o WebGL 2 só garante textura de 2048. Veio do PR #8.
+
+**O que fazer.** Desenhar o relevo fino de 80 m (`public/data/relief/near/`, os ladrilhos de 20 km
+do card E2) só perto de onde a câmera olha, por cima do relevo grosso, trocando os ladrilhos
+quando a câmera anda. O C4 diz quanto a cena aguenta a mais.
+
+**Pronto quando.** Com a câmera na distância mínima, uma cratera de 1 km aparece com borda e
+fundo; os quadros por segundo continuam dentro do que o C4 mediu como aceitável; e o `verify`
+passa.
 
 ---
 
