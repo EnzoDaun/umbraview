@@ -503,7 +503,7 @@ contrário do Sol, e a sombra só completa. O `verify` passa no PR #8.
 
 ### C3 · Escolher um ponto clicando na Lua
 
-**Estado:** em revisão, PR de 06/11 · **Depende de:** C1 (feito), C2 (feito) e E2 (feito)
+**Estado:** feito em 06/11, PR #9 · **Depende de:** C1 (feito), C2 (feito) e E2 (feito)
 
 **Para que serve.** Além da lista de locais (I2), a pessoa pode clicar em qualquer ponto da área
 liberada e ver o resultado dele.
@@ -595,6 +595,24 @@ quando a câmera anda. O C4 diz quanto a cena aguenta a mais.
 **Pronto quando.** Com a câmera na distância mínima, uma cratera de 1 km aparece com borda e
 fundo; os quadros por segundo continuam dentro do que o C4 mediu como aceitável; e o `verify`
 passa.
+
+### C8 · Mostrar na cena até onde dá para escolher um ponto
+
+**Estado:** a fazer · **Depende de:** C3 (feito)
+
+**Para que serve.** O relevo que a cena desenha em volta do polo vai até uns 77°S (o `far.bin`,
+que o motor usa para as montanhas distantes do horizonte), mas só dá para escolher ponto até 84°S,
+onde existe o relevo fino (card E2). Nada na tela mostra esse limite: a pessoa clica em cima de
+uma montanha entre 84° e 77°S e recebe o aviso de fora da área. Testado em 06/11/2026: um clique a
+uns 32 px do centro do polo, com a câmera na posição inicial, já cai fora da área. Veio do PR #9.
+
+**O que fazer.** Desenhar na cena um anel discreto na latitude do `areaMaxLatDeg` do
+`public/data/relief/manifest.json`, com a cor de um token, seguindo o relevo para não sumir atrás
+das montanhas. Escurecer o relevo de fora da área foi descartado na revisão do PR #9: na tela, ele
+se confundiria com sombra, que é o assunto do site.
+
+**Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
+um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
 
 ---
 
