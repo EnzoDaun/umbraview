@@ -503,8 +503,7 @@ contrário do Sol, e a sombra só completa. O `verify` passa no PR #8.
 
 ### C3 · Escolher um ponto clicando na Lua
 
-**Estado:** em revisão, PR de 06/11 · **Depende de:** C1 (feito), C2 (em revisão, PR #8) e E2
-(feito)
+**Estado:** em revisão, PR de 06/11 · **Depende de:** C1 (feito), C2 (feito) e E2 (feito)
 
 **Para que serve.** Além da lista de locais (I2), a pessoa pode clicar em qualquer ponto da área
 liberada e ver o resultado dele.
