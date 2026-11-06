@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { app } from './data/app.js'
+import { SitePanel } from './panel/SitePanel.jsx'
 import { LunarScene } from './scene/LunarScene.jsx'
 import './App.css'
 
@@ -27,7 +28,7 @@ export default function App() {
 
         <section className="app__panel" aria-labelledby="panel-title">
           <h2 id="panel-title" className="app__region-title">{app.panel.title}</h2>
-          <p className="app__empty">{app.panel.empty}</p>
+          <SitePanel status="idle" sky={null} />
         </section>
       </main>
 
