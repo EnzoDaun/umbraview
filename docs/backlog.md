@@ -287,7 +287,7 @@ site do Space Apps se confere no navegador.
 **Estado:** feito em 05/11, PR #6 · **Depende de:** nada
 
 **Para que serve.** O teste "fora de um repositório git, avisa e não quebra o npm install", em
-`scripts/ganchos.test.js`, roda o `instalar-ganchos.mjs` numa pasta sem git. Se essa pasta fica
+`scripts/hooks.test.js`, roda o `install-hooks.mjs` numa pasta sem git. Se essa pasta fica
 dentro de outro repositório, o git acha o de fora: o teste falha, e o instalador grava
 `core.hooksPath = .githooks` nesse repositório, no git de quem rodou o `verify`. Era o caso da
 máquina do Marco, em que a pasta temporária fica dentro da pasta de usuário, que é um repositório
@@ -343,16 +343,26 @@ que ele mediu.
 
 ### E10 · Nome dos scripts em inglês
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 06/11, PR #10 · **Depende de:** nada
 
 **Para que serve.** O CLAUDE.md pede nome de arquivo em inglês, e quatro arquivos de `scripts/`
-estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.test.js` e
-`instalar-ganchos.mjs`.
+estavam em português.
 
-**O que fazer.** Renomear os quatro e tudo que aponta para eles: `package.json`, o CI
-(`.github/workflows/`), o README e o CONTRIBUTING.
+**O que entrega.** Os quatro com nome em inglês:
+- `conferir-build.mjs` → `check-build.mjs`, e a função `conferirBuild` → `checkBuild`;
+- `conferir-build.test.js` → `check-build.test.js`;
+- `ganchos.test.js` → `hooks.test.js`;
+- `instalar-ganchos.mjs` → `install-hooks.mjs`.
+
+O `package.json` (scripts `conferir` e `prepare`), o README, o `.githooks/commit-msg` e o card E7
+citam os nomes novos. O comando continua `npm run conferir`. Os nomes de variável em português
+dentro dos arquivos ficaram para o card E12.
 
 **Pronto quando.** Nenhum nome em português em `scripts/`, e o `verify` e o CI passam.
+
+**Conferido:** o `verify` passa em cada commit do PR #10, no Linux e no Windows do Enzo, com o
+mesmo número de testes da `develop`; e o `npm run prepare` liga os ganchos pelo
+`install-hooks.mjs`.
 
 ### E11 · Ligar a ponte no `App.jsx`
 
@@ -376,6 +386,32 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
 
 **Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
 cena, e o `verify` passa.
+
+### E12 · Nomes de variável e função em inglês
+
+**Estado:** a fazer · **Depende de:** E10, e de não haver PR aberto nos arquivos que ele muda
+
+**Para que serve.** O CLAUDE.md pede nome de variável e função em inglês e, logo abaixo, pede
+para seguir o estilo dos arquivos que já existem. Enquanto houver nome em português no código, as
+duas regras brigam: quem usa um arquivo como modelo, pessoa ou Claude, copia o português junto.
+Veio do PR #10 (card E10), que trocou só os nomes dos arquivos.
+
+**O que fazer.** Trocar para inglês os nomes de constante, variável e função declarados em
+português, e os campos que uma função devolve (o `checkBuild` devolve `lidos` e `problemas`), sem
+mudar o que o código faz. Contagem de 06/11/2026, nas declarações com `const`, `let` e `function`
+(a lista de palavras em português foi feita à mão, então pode faltar algum nome):
+- código que roda: `scripts/check-build.mjs` (9 nomes) e `scripts/install-hooks.mjs` (3);
+- testes: outros 20 arquivos de `src/` e `scripts/`. Os que têm mais são
+  `src/engine/series.test.js` (22), `src/scene/reliefMesh.test.js` (15),
+  `src/readmeStructure.test.js` (14) e `scripts/hooks.test.js` (13).
+
+Um commit por pasta, para a revisão ler só troca de nome, sem caçar mudança de comportamento no
+meio. Comentário e texto de `describe`/`it` continuam em português (CLAUDE.md). A troca mexe em
+muitas linhas de cada arquivo e briga com qualquer outro PR no mesmo arquivo: por isso a
+dependência acima.
+
+**Pronto quando.** Os nomes declarados nesses arquivos estão em inglês, o `npm run test` passa
+com o mesmo número de testes de antes da troca, e o `verify` passa.
 
 ---
 
@@ -589,6 +625,31 @@ quando a câmera anda. O C4 diz quanto a cena aguenta a mais.
 **Pronto quando.** Com a câmera na distância mínima, uma cratera de 1 km aparece com borda e
 fundo; os quadros por segundo continuam dentro do que o C4 mediu como aceitável; e o `verify`
 passa.
+
+### C7 · Teste do relevo perto do limite de tempo
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O Vitest dá 5 s para cada teste. No Windows do Enzo, em 06/11/2026, o teste
+"todo vértice fica perto da superfície" (`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e
+reprovou o `verify` uma vez por tempo, sem nada de errado na malha. Teste que passa ou não
+conforme o computador está ocupado ensina a rodar de novo até passar, e um erro de verdade passa
+junto. Veio do PR #10 (card E10).
+
+**Causa** (medido no Linux em 06/11/2026). A malha do `far.bin` tem 125.314 vértices, e o teste
+chama o `expect` duas vezes para cada um. A conta leva de 6 a 13 ms; os 250 mil `expect`, de 830
+a 1.100 ms. O teste vizinho, "todo vértice fica no hemisfério sul da cena", faz o mesmo, com um
+`expect` por vértice, e levou de 0,8 a 2,3 s no Windows do Enzo.
+
+**O que fazer.** Nos dois testes, guardar no laço o menor e o maior valor (o raio de cada vértice;
+o ângulo até o polo) e conferir com um `expect` só, no fim. A conferência continua a mesma.
+
+**Como conferir que o teste continua pegando erro.** A malha vai de −6,72 km a +6,96 km (medido
+junto com a causa). Com o limite de 8000 m trocado por 6000 m, o teste novo tem que reprovar;
+de volta a 8000 m, passar.
+
+**Pronto quando.** Os dois testes conferem o mesmo que antes, cada um leva menos de 0,5 s no
+`verify` do Windows de quem fizer, e o `verify` passa.
 
 ---
 
