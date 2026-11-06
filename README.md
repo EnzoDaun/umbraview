@@ -233,11 +233,16 @@ umbraview/
 │   │   └── summary.js               o resultado no formato que a tela espera
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
 │   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
+│   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   └── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   ├── scene/                       a Lua em 3D (cards C1 a C3)
 │   │   ├── LunarScene.css
-│   │   └── LunarScene.jsx           a Lua, a luz do Sol e a câmera que gira com o mouse
+│   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
+│   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
+│   │   ├── coordinates.js           ponto da Lua para ponto da cena: a convenção dos eixos
+│   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
+│   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
