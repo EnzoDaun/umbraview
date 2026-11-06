@@ -1,13 +1,21 @@
-/* A Lua em 3D (card C1): a esfera, a luz que faz o papel do Sol e a câmera que gira com o mouse.
- * O relevo e a sombra das montanhas são o card C2; o clique para escolher um ponto, o C3.
+/* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
+ * luz do Sol da data escolhida e a sombra das montanhas (card C2). O clique para escolher um
+ * ponto é o C3.
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
- * contadas a partir do centro dela. */
+ * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
+import { useMemo } from 'react'
+import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
+import { useFarRelief } from '../hooks/useFarRelief.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
+import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
+import { ReliefCap } from './ReliefCap.jsx'
+import { smoothSphereThetaLength } from './reliefMesh.js'
+import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
 /* A câmera começa embaixo da esfera, olhando para o polo sul, que é onde o produto se concentra.
@@ -15,15 +23,17 @@ import './LunarScene.css'
    a direção da câmera e o "para cima" ficam paralelos e a rotação dela fica indefinida. */
 const CAMERA_POSITION = [0, -3, 0.01]
 
-/* Com a esfera lisa do C1, 1.2 deixa o polo encher a região sem a câmera encostar na superfície
-   (raio 1); mais longe que 6, a Lua vira um ponto na região. O C2 pode mudar o 1.2: se ele escolher
-   levar a câmera perto do polo em vez de exagerar a altura (item 4 do card), este limite trava. */
-const MIN_DISTANCE = 1.2
+/* Com o relevo na altura real, as montanhas só aparecem de perto: 1.02 deixa a câmera descer a
+   uns 35 km do polo, e o pico mais alto do relevo fica a 7 km. Mais longe que 6, a Lua vira um
+   ponto na região. */
+const MIN_DISTANCE = 1.02
 const MAX_DISTANCE = 6
 
-/* Direção fixa do Sol até o C2, que troca pela do motor (useSubsolarPoint). De lado em relação à
-   câmera, para a linha entre o dia e a noite aparecer no polo. */
-const SUN_POSITION = [5, -1, 2]
+/* O plano mais perto que a câmera desenha. O padrão do three (0.1, ou 174 km) cortaria a
+   superfície quando a câmera desce a 35 km dela. O far cobre a Lua inteira vista de longe. */
+const CAMERA_NEAR = 0.001
+const CAMERA_FAR = 20
+
 const SUN_INTENSITY = 2.5
 
 /* Fraco de propósito: só para o lado escuro não sumir no fundo. Forte, ele apagaria a sombra, que
@@ -33,26 +43,82 @@ const AMBIENT_INTENSITY = 0.06
 // Devagar: é um convite a mexer, não uma animação para assistir.
 const AUTO_ROTATE_SPEED = 0.3
 
+/* A caixa da sombra, em volta do polo (sunLight.js). O relevo vai até uns 0,22 do polo para cada
+   lado; 0,25 cobre ele visto de qualquer direção. Com 2048 pixels nesses 0,5, cada pixel da
+   sombra tem uns 420 m, menos que os 1,9 km entre os vértices da malha. 2048 é o tamanho que o
+   WebGL 2 garante em qualquer placa de vídeo. A profundidade cobre o relevo inteiro em volta da
+   distância da luz (SUN_DISTANCE). */
+const SHADOW_HALF_SIZE = 0.25
+const SHADOW_MAP_SIZE = 2048
+const SHADOW_NEAR = SUN_DISTANCE - 0.5
+const SHADOW_FAR = SUN_DISTANCE + 0.5
+
+/* No polo, o Sol fica a 1 ou 2 graus do horizonte, e a luz bate quase de raspão. Sem estes
+   descontos, a superfície faz sombra nela mesma em listras (o "shadow acne"). Os valores estão em
+   raios da Lua: o normalBias afasta a conta uns 350 m da superfície, menos que um pixel da
+   sombra. */
+const SHADOW_BIAS = -0.00005
+const SHADOW_NORMAL_BIAS = 0.0002
+
+/* O tipo de sombra do three. O padrão do React Three Fiber (o PCFSoftShadowMap) saiu do three
+   0.186, que troca por este e avisa no console a cada página aberta. */
+const SHADOW_TYPE = 'percentage'
+
 /* As cores vêm dos tokens (tokens.css), como toda cor da interface. O three não lê variável de
    CSS, então o valor é lido da página. */
 function token(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
-export function LunarScene() {
+/* dateUtc: a data da luz (um Date). Vem do App.jsx. */
+export function LunarScene({ dateUtc }) {
   const reducedMotion = usePrefersReducedMotion()
+  const subsolar = useSubsolarPoint(dateUtc)
+  const relief = useFarRelief()
   const moonColor = token('--color-moon')
   const sunlightColor = token('--color-sunlight')
 
+  const sunPosition = useMemo(() => sunLightPosition(subsolar), [subsolar])
+  /* O alvo da luz precisa estar na cena para o three saber onde ele fica; solto, ele conta como
+     se estivesse no centro, e a caixa da sombra sairia do polo. */
+  const sunTarget = useMemo(() => {
+    const target = new Object3D()
+    target.position.set(...SUN_TARGET)
+    return target
+  }, [])
+
+  // Com o relevo, a esfera lisa abre um buraco no polo e a malha entra no lugar.
+  const sphereThetaLength = relief ? smoothSphereThetaLength(relief.manifest.far.reachM) : Math.PI
+
   return (
     <div className="lunar-scene" role="img" aria-label={scene.label}>
-      <Canvas camera={{ position: CAMERA_POSITION }}>
+      <Canvas shadows={SHADOW_TYPE} camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}>
         <ambientLight intensity={AMBIENT_INTENSITY} />
-        <directionalLight position={SUN_POSITION} intensity={SUN_INTENSITY} color={sunlightColor} />
-        <mesh>
-          <sphereGeometry args={[1, 64, 64]} />
-          <meshStandardMaterial color={moonColor} />
+        <primitive object={sunTarget} />
+        <directionalLight
+          position={sunPosition}
+          target={sunTarget}
+          intensity={SUN_INTENSITY}
+          color={sunlightColor}
+          castShadow
+          shadow-mapSize={[SHADOW_MAP_SIZE, SHADOW_MAP_SIZE]}
+          shadow-camera-left={-SHADOW_HALF_SIZE}
+          shadow-camera-right={SHADOW_HALF_SIZE}
+          shadow-camera-top={SHADOW_HALF_SIZE}
+          shadow-camera-bottom={-SHADOW_HALF_SIZE}
+          shadow-camera-near={SHADOW_NEAR}
+          shadow-camera-far={SHADOW_FAR}
+          shadow-bias={SHADOW_BIAS}
+          shadow-normalBias={SHADOW_NORMAL_BIAS}
+        />
+        <mesh castShadow receiveShadow>
+          <sphereGeometry args={[1, 128, 64, 0, 2 * Math.PI, 0, sphereThetaLength]} />
+          {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que
+              ela passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto
+              piscariam disputando o mesmo pixel. */}
+          <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
+        {relief && <ReliefCap relief={relief} color={moonColor} />}
         <OrbitControls
           enablePan={false}
           minDistance={MIN_DISTANCE}

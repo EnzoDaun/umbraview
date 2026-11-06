@@ -13,6 +13,7 @@ import { scene } from './data/scene.js'
 
 vi.mock('@react-three/fiber', () => ({ Canvas: ({ children }) => <div data-testid="canvas">{children}</div> }))
 vi.mock('@react-three/drei', () => ({ OrbitControls: () => null }))
+vi.mock('./hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
 
 describe('App, esqueleto da tela', () => {
   it('tem cabeçalho com o nome do projeto como título principal', () => {

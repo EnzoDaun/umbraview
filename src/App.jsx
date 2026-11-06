@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { app } from './data/app.js'
 import { LunarScene } from './scene/LunarScene.jsx'
 import './App.css'
@@ -6,6 +8,10 @@ import './App.css'
    (direita). Cada frente trabalha dentro da sua região, em componente próprio, para duas
    pessoas não mexerem nas mesmas linhas deste arquivo ao mesmo tempo. */
 export default function App() {
+  /* A data da luz da cena: por enquanto, a hora em que a página abriu. O controle de data (card I4)
+     e a ligação das partes (card E11) trocam por um estado que a pessoa muda. */
+  const [dateUtc] = useState(() => new Date())
+
   return (
     <div className="app">
       <header className="app__header">
@@ -16,7 +22,7 @@ export default function App() {
       <main className="app__main">
         <section className="app__scene" aria-labelledby="scene-title">
           <h2 id="scene-title" className="app__region-title">{app.scene.title}</h2>
-          <LunarScene />
+          <LunarScene dateUtc={dateUtc} />
         </section>
 
         <section className="app__panel" aria-labelledby="panel-title">
