@@ -626,6 +626,31 @@ quando a câmera anda. O C4 diz quanto a cena aguenta a mais.
 fundo; os quadros por segundo continuam dentro do que o C4 mediu como aceitável; e o `verify`
 passa.
 
+### C7 · Teste do relevo perto do limite de tempo
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O Vitest dá 5 s para cada teste. No Windows do Enzo, em 06/11/2026, o teste
+"todo vértice fica perto da superfície" (`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e
+reprovou o `verify` uma vez por tempo, sem nada de errado na malha. Teste que passa ou não
+conforme o computador está ocupado ensina a rodar de novo até passar, e um erro de verdade passa
+junto. Veio do PR #10 (card E10).
+
+**Causa** (medido no Linux em 06/11/2026). A malha do `far.bin` tem 125.314 vértices, e o teste
+chama o `expect` duas vezes para cada um. A conta leva de 6 a 13 ms; os 250 mil `expect`, de 830
+a 1.100 ms. O teste vizinho, "todo vértice fica no hemisfério sul da cena", faz o mesmo, com um
+`expect` por vértice, e levou de 0,8 a 2,3 s no Windows do Enzo.
+
+**O que fazer.** Nos dois testes, guardar no laço o menor e o maior valor (o raio de cada vértice;
+o ângulo até o polo) e conferir com um `expect` só, no fim. A conferência continua a mesma.
+
+**Como conferir que o teste continua pegando erro.** A malha vai de −6,72 km a +6,96 km (medido
+junto com a causa). Com o limite de 8000 m trocado por 6000 m, o teste novo tem que reprovar;
+de volta a 8000 m, passar.
+
+**Pronto quando.** Os dois testes conferem o mesmo que antes, cada um leva menos de 0,5 s no
+`verify` do Windows de quem fizer, e o `verify` passa.
+
 ---
 
 ## I: Miguel
