@@ -450,8 +450,8 @@ build sai.
 
 ### C2 · O relevo do polo sul e a sombra das montanhas
 
-**Estado:** a fazer · **Depende de:** C1 (feito) e E2 (feito); a direção do Sol já está pronta
-(`useSubsolarPoint`, card E3)
+**Estado:** em revisão, PR de 06/11; falta conferir os três pontos com o Enzo · **Depende de:**
+C1 (feito) e E2 (feito); a direção do Sol já está pronta (`useSubsolarPoint`, card E3)
 
 **Para que serve.** Uma esfera lisa não mostra por que um ponto fica no escuro. Com o relevo de
 verdade perto do polo e a luz vindo da direção certa, a pessoa vê as montanhas fazendo sombra,
@@ -471,6 +471,10 @@ que é o assunto do produto.
 4. Decidir a escala: montanhas de alguns quilômetros numa Lua de 1.737 km de raio quase não
    aparecem. Ou a altura é exagerada (e a tela diz que está exagerada, com o texto em
    `src/data/scene.js`), ou a câmera chega perto do polo.
+   **Decidido em 06/11 (Marco): altura real, e a câmera chega a uns 35 km do polo.** Exagerar a
+   altura alonga a sombra na mesma proporção: com o Sol a 1 ou 2 graus do horizonte, a cena
+   mostraria sombra em pontos onde o motor diz `visible: true`, e o "Pronto quando" abaixo não
+   fecharia.
 
 **Pronto quando.** Em três pontos combinados com o Enzo, numa mesma data, a cena mostra luz onde
 o motor diz `visible: true` e sombra onde diz `false`; e o `verify` passa.
@@ -484,8 +488,9 @@ liberada e ver o resultado dele.
 
 **O que fazer.**
 1. `src/scene/coordinates.js`, com duas funções, de latitude e longitude para ponto 3D e de
-   volta. A convenção: o eixo y aponta para o polo norte; longitude 0° em +x; longitude 90° leste
-   em −z.
+   volta. A ida (`latLonToScene`) e os quatro pontos do teste abaixo já vieram com o C2, porque a
+   luz do Sol passa por ela; falta a volta. A convenção: o eixo y aponta para o polo norte;
+   longitude 0° em +x; longitude 90° leste em −z.
    - ida: `x = cos(lat)·cos(lon)`, `y = sin(lat)`, `z = −cos(lat)·sin(lon)`;
    - volta: `lat = asin(y)`, `lon = atan2(−z, x)` (normalize o ponto para tamanho 1 antes).
 2. No `onClick` do `<mesh>` da Lua, o ponto atingido chega em `event.point`. Converter e chamar
