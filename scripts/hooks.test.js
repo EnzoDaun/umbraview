@@ -21,7 +21,7 @@ const RAIZ = process.cwd()
 const COMMIT_MSG = join(RAIZ, '.githooks', 'commit-msg')
 const BLOQUEIO = join(RAIZ, '.claude', 'hooks', 'block-git-write.sh')
 const TEM_SH = spawnSync('sh', ['-c', 'exit 0']).status === 0
-if (!TEM_SH) console.warn('ganchos.test.js: sh fora do PATH; os casos dos ganchos foram pulados')
+if (!TEM_SH) console.warn('hooks.test.js: sh fora do PATH; os casos dos ganchos foram pulados')
 
 const temporaria = mkdtempSync(join(tmpdir(), 'umbraview-ganchos-'))
 afterAll(() => rmSync(temporaria, { recursive: true, force: true }))
@@ -136,7 +136,7 @@ describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', () => {
   it('aponta o core.hooksPath para .githooks num repositório git', () => {
     const repo = join(temporaria, 'repo')
     execFileSync('git', ['init', '-q', repo])
-    execFileSync('node', [join(RAIZ, 'scripts', 'instalar-ganchos.mjs')], { cwd: repo })
+    execFileSync('node', [join(RAIZ, 'scripts', 'install-hooks.mjs')], { cwd: repo })
     const caminho = execFileSync('git', ['config', '--get', 'core.hooksPath'], { cwd: repo, encoding: 'utf8' })
     expect(caminho.trim()).toBe('.githooks')
   })
@@ -154,7 +154,7 @@ describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', () => {
     const semCasa = { ...process.env, GIT_CEILING_DIRECTORIES: casa }
     // com o teto, o git não acha a casa a partir da pasta sem git (128 = "not a git repository")
     expect(spawnSync('git', ['rev-parse', '--git-dir'], { cwd: solta, env: semCasa }).status).toBe(128)
-    const saida = spawnSync('node', [join(RAIZ, 'scripts', 'instalar-ganchos.mjs')], {
+    const saida = spawnSync('node', [join(RAIZ, 'scripts', 'install-hooks.mjs')], {
       cwd: solta,
       encoding: 'utf8',
       env: semCasa,
