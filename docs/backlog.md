@@ -260,13 +260,23 @@ branches só existem em repositório público.
 
 ### E5 · Corrigir os documentos do projeto no claude.ai
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 05/11, PR #7 · **Depende de:** nada
 
-1. Trocar "CLPS Lunar Mission Browser" por "Lunar Landing Site Navigator" / "UmbraView" nos
-   títulos: o desafio mudou de nome.
-2. Corrigir a frase "a FAQ de 2026 não proíbe": a FAQ diz "Teams are not allowed to begin
-   working on the challenges prior to the hackathon". Registrar ao lado a decisão da equipe e o
-   card P3.
+**Para que serve.** Os três documentos do projeto no claude.ai (o projeto, o escopo e o roteiro
+da apresentação para a equipe) são o que a equipe lê fora do repositório. Eles precisam dizer o
+nome atual do desafio e o que a FAQ de 2026 diz sobre começar antes do hackathon.
+
+**O que entrega.**
+- As abas do projeto e do escopo com o nome "Lunar Landing Site Navigator". O nome antigo fica só
+  como "(antes, CLPS Lunar Mission Browser)", porque o endereço da página do desafio ainda usa ele.
+- No roteiro, a resposta a "Pode programar antes do evento?" cita a FAQ ("Teams are not allowed
+  to begin working on the challenges prior to the hackathon", conferida em 05/11/2026) e a decisão
+  da equipe de começar pela orientação do orientador e da organização do evento de 2025. No
+  escopo, a tabela "Riscos" registra esse risco como aceito.
+
+**Atenção.** A página da FAQ monta o texto pelo JavaScript: uma leitura da página sem navegador
+não acha essa frase, e foi assim que um documento chegou a dizer que a FAQ não proibia. Regra do
+site do Space Apps se confere no navegador.
 
 ### E6 · Revisar PRs e levar a `develop` para a `main`
 
@@ -284,16 +294,19 @@ máquina do Marco, em que a pasta temporária fica dentro da pasta de usuário, 
 git (revisões dos PRs #2, #4 e #5).
 
 **O que entrega.** O teste monta o caso de propósito, em toda máquina: cria um repositório na
-pasta temporária e a pasta sem git dentro dele, roda o instalador com `GIT_CEILING_DIRECTORIES`
-apontando para esse repositório (o git para de procurar antes de entrar nele) e confere que o
-repositório continua sem `core.hooksPath`.
+pasta temporária e a pasta sem git dentro dele, e roda o instalador com `GIT_CEILING_DIRECTORIES`
+apontando para esse repositório, o que faz o git parar de procurar antes de entrar nele. O teste
+confere que, assim, o git não acha o repositório a partir da pasta sem git, e que o repositório
+continua sem `core.hooksPath` depois do instalador.
 
 **Pronto quando.**
-- O teste passa com a pasta temporária dentro de um repositório git. Feito: o próprio teste cria
-  esse repositório, então todo `verify` e o CI conferem. Conferido em 05/11/2026 no Linux, também
-  com a pasta temporária do sistema dentro de um repositório, e no Windows pelo `verify` de cada
-  commit do PR #6.
-- O `verify` passa.
+- O teste passa com a pasta temporária dentro de um repositório git. Feito: o próprio teste monta
+  esse repositório, então todo `verify` e o CI conferem.
+- O `verify` passa. Feito.
+
+**Conferido** em 05/11/2026: no Linux, também com a pasta temporária do sistema dentro de um
+repositório; no Windows do Enzo, no `verify` de cada commit do PR #6; e no Windows do Marco, na
+revisão do PR #6.
 
 ### E8 · Relevo dos locais da lista fora do polo
 
@@ -772,21 +785,6 @@ documento; o Enzo leva para o projeto.
 
 **Pronto quando.** Nenhuma fonte fica "a conferir".
 
-### P3 · Confirmação por escrito sobre começar antes de 14/11
-
-**Estado:** a fazer · **Depende de:** nada
-
-**Para que serve.** A FAQ do Space Apps 2026 diz que as equipes não podem começar antes do
-hackathon. A equipe começou com base no que os organizadores disseram na faculdade. Com a
-resposta por escrito, a equipe tem como mostrar isso se alguém perguntar. O histórico do código,
-com as datas, fica público quando o projeto for aberto para os juízes.
-
-**O que fazer.** Um e-mail para a organização do evento local perguntando se a equipe pode
-preparar o projeto antes de 14/11. Guardar a resposta na pasta da equipe.
-
-**Pronto quando.** A resposta está guardada, ou o e-mail foi enviado e ficou sem resposta até
-13/11 (anotar neste card).
-
 ### P4 · Texto da submissão, em inglês
 
 **Estado:** a fazer · **Depende de:** P5 ajuda; revisar em 13/11, com o guia de submissão
@@ -891,3 +889,6 @@ Ideias que apareceram e não entram agora. Voltam para a lista de cima só com o
 - Clicar em qualquer ponto da Lua inteira: a área liberada vai do polo até 84°S (card E2), e o
   resto fica para depois.
 - Modo história: contar uma missão passo a passo.
+- Pedir à organização local uma confirmação por escrito de que a equipe pode começar antes de
+  14/11 (era o card P3): o Enzo decidiu em 05/11/2026 não pedir. A equipe segue a orientação do
+  orientador e da organização do evento de 2025, e o risco está aceito no escopo (card E5).
