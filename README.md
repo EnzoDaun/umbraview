@@ -135,7 +135,7 @@ rodam com o Vitest e o Testing Library. Três coisas sobre eles:
   `timeZone: 'UTC'` passaria no CI, que roda em UTC, e erraria no computador de quem usa.
 - **O bloco "Estrutura" abaixo é conferido por teste** (`src/readmeStructure.test.js`): arquivo
   novo em `src/` fora do bloco, ou arquivo do bloco que não existe mais, reprova o `verify`.
-- **Os ganchos de git rodam pelo `sh`** (`scripts/ganchos.test.js`). No Windows, o `sh` vem com o
+- **Os ganchos de git rodam pelo `sh`** (`scripts/hooks.test.js`). No Windows, o `sh` vem com o
   Git for Windows; se o terminal não achar o `sh`, esses casos são pulados e o motivo aparece na
   saída. No CI eles sempre rodam.
 
@@ -211,8 +211,8 @@ umbraview/
 │   │   └── spice_reference.py
 │   ├── check-build.mjs
 │   ├── check-build.test.js
-│   ├── ganchos.test.js
-│   └── instalar-ganchos.mjs
+│   ├── hooks.test.js
+│   └── install-hooks.mjs
 │
 ├── src/
 │   ├── data/

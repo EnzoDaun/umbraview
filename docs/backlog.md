@@ -287,7 +287,7 @@ site do Space Apps se confere no navegador.
 **Estado:** feito em 05/11, PR #6 · **Depende de:** nada
 
 **Para que serve.** O teste "fora de um repositório git, avisa e não quebra o npm install", em
-`scripts/ganchos.test.js`, roda o `instalar-ganchos.mjs` numa pasta sem git. Se essa pasta fica
+`scripts/hooks.test.js`, roda o `install-hooks.mjs` numa pasta sem git. Se essa pasta fica
 dentro de outro repositório, o git acha o de fora: o teste falha, e o instalador grava
 `core.hooksPath = .githooks` nesse repositório, no git de quem rodou o `verify`. Era o caso da
 máquina do Marco, em que a pasta temporária fica dentro da pasta de usuário, que é um repositório

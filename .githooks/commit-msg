@@ -2,7 +2,7 @@
 # Recusa a mensagem de commit que traz o Claude como coautor (CONTRIBUTING.md, seção 4).
 #
 # Roda em todo commit feito neste clone, venha o comando de quem vier: de você, do terminal
-# do VS Code ou de uma ferramenta. O npm install liga este gancho (scripts/instalar-ganchos.mjs).
+# do VS Code ou de uma ferramenta. O npm install liga este gancho (scripts/install-hooks.mjs).
 # Sem ele, um "Co-Authored-By: Claude" esquecido entra no histórico, e histórico publicado
 # não se limpa sem reescrever a branch de todo mundo.
 #
