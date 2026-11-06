@@ -377,6 +377,32 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
 **Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
 cena, e o `verify` passa.
 
+### E12 · Nomes de variável e função em inglês
+
+**Estado:** a fazer · **Depende de:** E10, e de não haver PR aberto nos arquivos que ele muda
+
+**Para que serve.** O CLAUDE.md pede nome de variável e função em inglês e, logo abaixo, pede
+para seguir o estilo dos arquivos que já existem. Enquanto houver nome em português no código, as
+duas regras brigam: quem usa um arquivo como modelo, pessoa ou Claude, copia o português junto.
+Veio do PR #10 (card E10), que trocou só os nomes dos arquivos.
+
+**O que fazer.** Trocar para inglês os nomes de constante, variável e função declarados em
+português, e os campos que uma função devolve (o `checkBuild` devolve `lidos` e `problemas`), sem
+mudar o que o código faz. Contagem de 06/11/2026, nas declarações com `const`, `let` e `function`
+(a lista de palavras em português foi feita à mão, então pode faltar algum nome):
+- código que roda: `scripts/check-build.mjs` (9 nomes) e `scripts/install-hooks.mjs` (3);
+- testes: outros 20 arquivos de `src/` e `scripts/`. Os que têm mais são
+  `src/engine/series.test.js` (22), `src/scene/reliefMesh.test.js` (15),
+  `src/readmeStructure.test.js` (14) e `scripts/hooks.test.js` (13).
+
+Um commit por pasta, para a revisão ler só troca de nome, sem caçar mudança de comportamento no
+meio. Comentário e texto de `describe`/`it` continuam em português (CLAUDE.md). A troca mexe em
+muitas linhas de cada arquivo e briga com qualquer outro PR no mesmo arquivo: por isso a
+dependência acima.
+
+**Pronto quando.** Os nomes declarados nesses arquivos estão em inglês, o `npm run test` passa
+com o mesmo número de testes de antes da troca, e o `verify` passa.
+
 ---
 
 ## C: Marco
