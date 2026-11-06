@@ -343,16 +343,26 @@ que ele mediu.
 
 ### E10 · Nome dos scripts em inglês
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 06/11, PR #10 · **Depende de:** nada
 
 **Para que serve.** O CLAUDE.md pede nome de arquivo em inglês, e quatro arquivos de `scripts/`
-estão em português: `conferir-build.mjs`, `conferir-build.test.js`, `ganchos.test.js` e
-`instalar-ganchos.mjs`.
+estavam em português.
 
-**O que fazer.** Renomear os quatro e tudo que aponta para eles: `package.json`, o CI
-(`.github/workflows/`), o README e o CONTRIBUTING.
+**O que entrega.** Os quatro com nome em inglês:
+- `conferir-build.mjs` → `check-build.mjs`, e a função `conferirBuild` → `checkBuild`;
+- `conferir-build.test.js` → `check-build.test.js`;
+- `ganchos.test.js` → `hooks.test.js`;
+- `instalar-ganchos.mjs` → `install-hooks.mjs`.
+
+O `package.json` (scripts `conferir` e `prepare`), o README, o `.githooks/commit-msg` e o card E7
+citam os nomes novos. O comando continua `npm run conferir`. Os nomes de variável em português
+dentro dos arquivos ficaram para o card E12.
 
 **Pronto quando.** Nenhum nome em português em `scripts/`, e o `verify` e o CI passam.
+
+**Conferido:** o `verify` passa em cada commit do PR #10, no Linux e no Windows do Enzo, com o
+mesmo número de testes da `develop`; e o `npm run prepare` liga os ganchos pelo
+`install-hooks.mjs`.
 
 ### E11 · Ligar a ponte no `App.jsx`
 
