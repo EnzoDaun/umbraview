@@ -9,7 +9,9 @@ export const scene = {
   // pela cena.
   label:
     '3D view of the Moon, starting over the south pole, with the terrain at true scale and the sunlight of the current date. Drag to rotate, scroll to zoom in, click near the south pole to choose a landing site.',
-  // Aviso de clique fora da área com relevo (card C3). O limite vem do manifest.json do relevo
-  // (areaMaxLatDeg), para o texto não ficar com um número velho se a área mudar.
-  outsideArea: (limitDeg) => `No terrain data there yet. Choose a point between the south pole and ${limitDeg}°S.`,
+  // Aviso de clique fora da área que dá para escolher (card C3). O limite vem do manifest.json do
+  // relevo (areaMaxLatDeg), para o texto não ficar com um número velho se a área mudar. Não diz que
+  // falta relevo: entre 84° e uns 77°S a cena desenha o relevo grosso, e a pessoa estaria vendo
+  // montanha onde o texto diria que não há (revisão do PR #9).
+  outsideArea: (limitDeg) => `Landing sites can be chosen between the south pole and ${limitDeg}°S.`,
 }
