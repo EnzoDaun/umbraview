@@ -24,7 +24,7 @@ function arquivos(dir) {
   return saida
 }
 
-export function conferirBuild(dist) {
+export function checkBuild(dist) {
   if (!existsSync(dist)) {
     return { lidos: 0, problemas: [`build não encontrado em ${dist}: rode o build antes desta conferência`] }
   }
@@ -45,7 +45,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     console.error(`conferencia do build: REPROVADO, rodei em ${raiz}, que nao tem package.json. Rode: npm run conferir`)
     process.exit(1)
   }
-  const { lidos, problemas } = conferirBuild(join(raiz, 'dist'))
+  const { lidos, problemas } = checkBuild(join(raiz, 'dist'))
   console.log('conferencia do build')
   console.log(`  arquivos .js e .html lidos em dist/  ${lidos}`)
   if (problemas.length > 0) {
