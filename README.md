@@ -112,7 +112,7 @@ uma fonte, e a fonte fica escrita (no próprio arquivo de `src/data/` e no
 publicado vira afirmação falsa com o nome da equipe.
 
 Enquanto a fonte não chega, escreva `TODO_PREENCHER` no lugar do valor. O
-`scripts/conferir-build.mjs` roda a cada `verify` e reprova o build que tiver esse marcador,
+`scripts/check-build.mjs` roda a cada `verify` e reprova o build que tiver esse marcador,
 dizendo em qual arquivo ele está.
 
 ## Acessibilidade
@@ -209,8 +209,8 @@ umbraview/
 │   │   ├── polar_reference.py
 │   │   ├── requirements.txt
 │   │   └── spice_reference.py
-│   ├── conferir-build.mjs
-│   ├── conferir-build.test.js
+│   ├── check-build.mjs
+│   ├── check-build.test.js
 │   ├── ganchos.test.js
 │   └── instalar-ganchos.mjs
 │
