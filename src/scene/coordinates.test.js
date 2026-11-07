@@ -1,11 +1,11 @@
-/* A conversão de ponto da Lua para ponto da cena (cards C2 e C3). Os quatro pontos da convenção
- * vêm do card C3 do backlog; o último caso confere que a luz da cena sai do mesmo lado que o Sol do
- * motor, que é o erro que a troca de eixos causaria. */
+/* A conversão de ponto da Lua para ponto da cena e de volta (cards C2 e C3). Os quatro pontos da
+ * convenção vêm do card C3 do backlog; o caso do Sol confere que a luz da cena sai do mesmo lado
+ * que o Sol do motor, que é o erro que a troca de eixos causaria. */
 import { describe, expect, it } from 'vitest'
 
 import { computeEphemeris } from '../engine/ephemeris.js'
 import { unitToLatLon } from '../engine/geometry.js'
-import { engineToScene, latLonToScene } from './coordinates.js'
+import { engineToScene, latLonToScene, sceneToLatLon } from './coordinates.js'
 
 function confereVetor(recebido, esperado) {
   recebido.forEach((valor, i) => expect(valor).toBeCloseTo(esperado[i], 12))
@@ -41,5 +41,39 @@ describe('engineToScene', () => {
     const { lat, lon } = unitToLatLon(direcao)
     const tamanho = Math.hypot(...direcao)
     confereVetor(latLonToScene(lat, lon), engineToScene(direcao.map((v) => v / tamanho)))
+  })
+})
+
+function confereLatLon({ lat, lon }, latDeg, lonDeg) {
+  expect(lat).toBeCloseTo(latDeg, 12)
+  expect(lon).toBeCloseTo(lonDeg, 12)
+}
+
+describe('sceneToLatLon', () => {
+  it('volta os quatro pontos da convenção', () => {
+    confereLatLon(sceneToLatLon([1, 0, 0]), 0, 0)
+    confereLatLon(sceneToLatLon([0, 0, -1]), 0, 90)
+    expect(sceneToLatLon([0, 1, 0]).lat).toBeCloseTo(90, 12)
+    expect(sceneToLatLon([0, -1, 0]).lat).toBeCloseTo(-90, 12)
+  })
+
+  it('não depende do tamanho do vetor: o clique cai no relevo, acima ou abaixo do raio 1', () => {
+    const { lat, lon } = sceneToLatLon(latLonToScene(-87, 40).map((v) => v * 1.004))
+    expect(lat).toBeCloseTo(-87, 10)
+    expect(lon).toBeCloseTo(40, 10)
+  })
+
+  // Perto do polo, um erro pequeno no vetor vira um erro grande na longitude: é ali que a ida e
+  // volta precisa ser conferida.
+  it.each([
+    [-84, 0],
+    [-85.3, 37.1],
+    [-89.475, -137.44],
+    [-89.99, 120],
+    [-88, 179.5],
+  ])('a ida e volta de (%s°, %s°) dá o mesmo ponto', (latDeg, lonDeg) => {
+    const { lat, lon } = sceneToLatLon(latLonToScene(latDeg, lonDeg))
+    expect(lat).toBeCloseTo(latDeg, 9)
+    expect(lon).toBeCloseTo(lonDeg, 9)
   })
 })

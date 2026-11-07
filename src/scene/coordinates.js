@@ -5,9 +5,9 @@
  * (x, z, −y) daqui. A luz do Sol (C2) e o marcador do ponto escolhido (C3) passam pelas mesmas
  * funções: se cada um convertesse do seu jeito, o Sol iria para o lado errado da montanha.
  *
- * O C3 acrescenta aqui a volta, de ponto da cena para latitude e longitude.
+ * A volta, de ponto da cena para latitude e longitude, é o clique na Lua (C3).
  */
-import { latLonToUnit } from '../engine/geometry.js'
+import { latLonToUnit, unitToLatLon } from '../engine/geometry.js'
 
 export function engineToScene([x, y, z]) {
   return [x, z, -y]
@@ -18,4 +18,12 @@ export function engineToScene([x, y, z]) {
    separarem com o tempo. */
 export function latLonToScene(latDeg, lonDeg) {
   return engineToScene(latLonToUnit(latDeg, lonDeg))
+}
+
+/* Graus de um ponto qualquer da cena, de qualquer tamanho: o clique cai na superfície do relevo,
+   um pouco acima ou abaixo do raio 1. Dá lat = asin(y) e lon = atan2(−z, x) depois de passar o
+   ponto para o tamanho 1; sem isso, o asin de um y maior que 1 daria NaN. */
+export function sceneToLatLon([x, y, z]) {
+  const length = Math.hypot(x, y, z)
+  return unitToLatLon([x / length, -z / length, y / length])
 }

@@ -366,7 +366,7 @@ mesmo número de testes da `develop`; e o `npm run prepare` liga os ganchos pelo
 
 ### E11 · Ligar a ponte no `App.jsx`
 
-**Estado:** a fazer · **Depende de:** E3 (feito), C1 (feito), I1, I2 e I4
+**Estado:** a fazer · **Depende de:** E3 (feito), C1 (feito), C3, I1, I2 e I4
 
 **Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
 guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
@@ -374,8 +374,9 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
 **O que fazer.**
 1. No `App.jsx`: guardar o ponto e a data escolhidos e entregar os dois para a cena e para o
    painel. O painel recebe o que o `useSiteSky` devolve; a cena, o que o `useSubsolarPoint`
-   devolve. Ligar o `onSelect` da lista (I2), o `onChange` da data (I4) e, quando o C3 existir, o
-   `onSelect` do clique na cena.
+   devolve. Ligar o `onSelect` da lista (I2) e o `onChange` da data (I4). O C3 já guarda o ponto
+   do clique na cena num estado do `App.jsx` (`site`, ligado ao `onSelect` e ao marcador da
+   cena): é esse estado que vai para o `useSiteSky`, e a lista escolhe por ele também.
 2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
    motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
 3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
@@ -384,8 +385,8 @@ guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
    precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
    (`useSiteSky: a conta do céu falhou`).
 
-**Pronto quando.** Escolher um local na lista mostra o resultado no painel e a luz certa na
-cena, e o `verify` passa.
+**Pronto quando.** Escolher um local na lista ou clicar num ponto da cena (card C3) mostra o
+resultado no painel e a luz certa na cena, e o `verify` passa.
 
 ### E12 · Nomes de variável e função em inglês
 
@@ -538,7 +539,7 @@ contrário do Sol, e a sombra só completa. O `verify` passa no PR #8.
 
 ### C3 · Escolher um ponto clicando na Lua
 
-**Estado:** a fazer · **Depende de:** C1 (feito) e E2 (feito)
+**Estado:** feito em 06/11, PR #9 · **Depende de:** C1 (feito), C2 (feito) e E2 (feito)
 
 **Para que serve.** Além da lista de locais (I2), a pessoa pode clicar em qualquer ponto da área
 liberada e ver o resultado dele.
@@ -551,12 +552,15 @@ liberada e ver o resultado dele.
    - ida: `x = cos(lat)·cos(lon)`, `y = sin(lat)`, `z = −cos(lat)·sin(lon)`;
    - volta: `lat = asin(y)`, `lon = atan2(−z, x)` (normalize o ponto para tamanho 1 antes).
 2. No `onClick` do `<mesh>` da Lua, o ponto atingido chega em `event.point`. Converter e chamar
-   `onSelect({ lat, lon })`, que vem do `App.jsx` (E11).
+   `onSelect({ lat, lon })`, que vem do `App.jsx`. Feito com o `onClick` num `<group>` em volta da
+   esfera e da malha do relevo, e a conta em `src/scene/picking.js`: o fim de um arrasto para girar
+   a Lua também chega como clique, e é ignorado (`CLICK_MAX_DRAG_PX`). O `App.jsx` guarda o ponto
+   num estado só para a cena; entregar ele ao painel é o E11.
 3. Um marcador pequeno no ponto escolhido, também quando ele vem da lista.
 4. Clique fora da área liberada não escolhe nada e mostra um aviso curto (texto em
-   `src/data/scene.js`). A área liberada vai do polo até 84°S: é o `areaMaxLatDeg` de
-   `public/data/relief/manifest.json`, e a conta é `isInsideReliefArea(manifest, lat)`, de
-   `src/engine/reliefFiles.js`.
+   `src/data/scene.js`), que some sozinho depois de 5 segundos (decisão do Marco, 06/11). A área
+   liberada vai do polo até 84°S: é o `areaMaxLatDeg` de `public/data/relief/manifest.json`, e a
+   conta é `isInsideReliefArea(manifest, lat)`, de `src/engine/reliefFiles.js`.
 
 Quem usa teclado escolhe pela lista (I2); a cena não precisa receber foco.
 
@@ -565,8 +569,10 @@ Quem usa teclado escolhe pela lista (I2); a cena não precisa receber foco.
 alguns pontos perto do polo sul dando o mesmo ponto, comparando com `toBeCloseTo`: perto do polo,
 arredondar no meio da conta já desloca a longitude.
 
-**Pronto quando.** Os testes passam, o clique escolhe o ponto e o painel mostra o resultado dele,
-e o `verify` passa.
+**Pronto quando.** Os testes passam, o clique escolhe o ponto e o marcador aparece nele, e o
+`verify` passa. Mostrar o resultado do ponto no painel saiu deste card e foi para o E11 (decisão do
+Marco, 06/11): o painel é o I1 e a ligação é o E11, e nenhum dos dois existia quando o C3 foi feito
+(CONTRIBUTING.md, seção 1, regra 6).
 
 ### C4 · Quanto o site pesa nos notebooks da equipe
 
@@ -650,6 +656,24 @@ de volta a 8000 m, passar.
 
 **Pronto quando.** Os dois testes conferem o mesmo que antes, cada um leva menos de 0,5 s no
 `verify` do Windows de quem fizer, e o `verify` passa.
+
+### C8 · Mostrar na cena até onde dá para escolher um ponto
+
+**Estado:** a fazer · **Depende de:** C3 (feito)
+
+**Para que serve.** O relevo que a cena desenha em volta do polo vai até uns 77°S (o `far.bin`,
+que o motor usa para as montanhas distantes do horizonte), mas só dá para escolher ponto até 84°S,
+onde existe o relevo fino (card E2). Nada na tela mostra esse limite: a pessoa clica em cima de
+uma montanha entre 84° e 77°S e recebe o aviso de fora da área. Testado em 06/11/2026: um clique a
+uns 32 px do centro do polo, com a câmera na posição inicial, já cai fora da área. Veio do PR #9.
+
+**O que fazer.** Desenhar na cena um anel discreto na latitude do `areaMaxLatDeg` do
+`public/data/relief/manifest.json`, com a cor de um token, seguindo o relevo para não sumir atrás
+das montanhas. Escurecer o relevo de fora da área foi descartado na revisão do PR #9: na tela, ele
+se confundiria com sombra, que é o assunto do site.
+
+**Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
+um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
 
 ---
 
