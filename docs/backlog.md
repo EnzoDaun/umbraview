@@ -576,7 +576,7 @@ Marco, 06/11): o painel é o I1 e a ligação é o E11, e nenhum dos dois existi
 
 ### C4 · Quanto o site pesa nos notebooks da equipe
 
-**Estado:** a fazer · **Depende de:** C1 (feito), e de novo depois do C2
+**Estado:** medido no notebook do Marco em 08/11; falta o do Enzo e o do Miguel · **Depende de:** C1 (feito), e de novo depois do C2 (feito)
 
 **Para que serve.** Os juízes abrem o site num computador qualquer. Se a cena travar nos
 notebooks da equipe, vai travar lá também.
@@ -594,6 +594,62 @@ para 1,15 MB (315 kB compactado).
 
 **Pronto quando.** Uma tabela neste card com notebook, navegador, tempo, quadros por segundo e
 data; repetida depois do C2.
+
+**Medido no notebook do Marco em 08/11/2026**, das 12:43 às 13:03 (horário de Brasília). Samsung
+960XFH, i7-13700H, 32 GB, na tomada, tela de 144 Hz, Windows 11 (10.0.26200), Edge 157 e Chrome
+156. O notebook tem uma RTX 4050, mas os dois navegadores usaram a **Intel Iris Xe** (o WebGL
+informa "ANGLE (Intel, Iris Xe … D3D11)"): o Windows dá a placa integrada ao navegador quando
+ninguém configura outra coisa, e é o caso mais parecido com um computador qualquer.
+Dois momentos: (a) `0b669b9`, o merge do PR #5, só com o C1; (b) `10cd326`, a `develop` com C1,
+C2 e C3. Build com `npm run build` e site no `npm run preview`; cada linha junta 3 rodadas, com
+perfil limpo e janela de 1280 × 800.
+
+| Notebook | Data | Momento | Navegador | Até a Lua aparecer | fps girando | fps arrastando | JavaScript (gzip) |
+|---|---|---|---|---|---|---|---|
+| Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (a) só C1 | Edge 157 | 248 ms | 144 | 144 | 1.150 kB (315 kB) |
+| Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (a) só C1 | Chrome 156 | 273 ms | 144 | 144 | 1.150 kB (315 kB) |
+| Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (b) C1 + C2 + C3 | Edge 157 | 345 ms | 144 | 144 | 1.214 kB (343 kB) |
+| Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (b) C1 + C2 + C3 | Chrome 156 | 365 ms | 144 | 144 | 1.214 kB (343 kB) |
+| Enzo | a medir | (b) | | | | | |
+| Miguel | a medir | (b) | | | | | |
+
+O tempo é a mediana, contado do início da navegação até o primeiro quadro com a Lua acesa. No
+(b), a página baixa 1.595 KB, dos quais 1.258 KB são dois arquivos de relevo; com o servidor
+local, eles chegam em uns 150 ms, então numa rede de verdade o tempo até a Lua vai ser maior. O
+`dist/` tem 44 MB, quase tudo em `data/relief/`, mas a página só baixa o que usa. O card pedia
+cronômetro e o "Frame Rendering Stats" do DevTools; um script com o navegador instalado
+(playwright-core) fez a mesma medida com mais precisão e repetível. Numa das 3 rodadas do Edge no
+(b), arrastando, apareceu um quadro de 20,8 ms; nas outras, nenhum passou de 9 ms.
+
+O fps fica em 144 porque o navegador não desenha mais rápido que a tela. Isso diz que a cena não
+trava, mas não diz quanto sobra. Desligar esse limite (`--disable-gpu-vsync
+--disable-frame-rate-limit`) não serve: os quadros se acumulam na placa e a página para de 0,4 a
+2,8 s de uma vez. O que mede a folga é o **custo de cada quadro**: logo depois que o React Three
+Fiber desenha, ler 1 pixel do canvas obriga a placa a terminar o quadro, e o tempo dessa conta é
+o trabalho de CPU e GPU dele.
+
+| Momento | Navegador | Custo por quadro girando (mediana / p95) | Arrastando (mediana / p95) |
+|---|---|---|---|
+| (a) só C1 | Edge | 2,9 / 3,3 ms | 2,9 / 3,2 ms |
+| (a) só C1 | Chrome | 2,9 / 3,3 ms | 2,8 / 3,1 ms |
+| (b) C1 + C2 + C3 | Edge | 6,0 / 6,5 ms | 5,9 / 6,4 ms |
+| (b) C1 + C2 + C3 | Chrome | 6,0 / 6,6 ms | 5,9 / 6,6 ms |
+
+- O relevo e a sombra do C2 dobraram o custo do quadro, de 2,9 para 6,0 ms, e somaram 28 kB
+  (gzip) de JavaScript e uns 100 ms até a Lua aparecer.
+- Numa tela de 60 Hz, cada quadro tem 16,7 ms: a cena usa um terço. Numa de 144 Hz, tem 6,9 ms, e
+  a cena usa 6,0. Ler o pixel faz a CPU esperar a placa, então 6,0 ms é um teto, não o custo
+  exato; sem a leitura, o (b) ficou em 144 fps.
+- **Para o C6:** com placa integrada, o relevo fino tem uns 10 ms por quadro de folga para ficar
+  em 60 Hz e menos de 1 ms para ficar em 144 Hz. Proposta: o aceitável é o quadro ficar abaixo de
+  16,7 ms (60 fps) neste notebook.
+- Com a Lua parada (pedido de menos movimento), a cena continua custando 6 ms por quadro, 144
+  vezes por segundo: virou o card C9.
+- No console, só o aviso "THREE.Clock: This module has been deprecated", nos dois momentos.
+
+**Notebooks do Enzo e do Miguel:** a fazer, com o passo a passo de "O que fazer". Quem tiver tela
+de 60 Hz vê o fps parar em 60; o custo por quadro só sai com o script que o Marco usou
+(playwright-core com o Edge instalado, fora do repositório), que ele pode passar a quem quiser.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
@@ -674,6 +730,24 @@ se confundiria com sombra, que é o assunto do site.
 
 **Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
 um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
+
+### C9 · Desenhar a cena só quando algo muda
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O `<Canvas>` desenha a cena 144 vezes por segundo numa tela de 144 Hz (60 numa
+de 60 Hz), mesmo com a Lua parada. Medido no C4, em 08/11/2026: com o pedido de menos movimento, a
+Lua não gira e cada quadro custa os mesmos 6 ms de quando ela gira. Isso gasta bateria e esquenta
+o notebook sem mudar nada na tela.
+
+**O que fazer.** `frameloop="demand"` no `<Canvas>` de `src/scene/LunarScene.jsx`: o React Three
+Fiber passa a desenhar só quando algo muda (controles, luz, marcador do C3). Conferir que o giro
+automático, o arrasto com `enableDamping` e a troca de data da luz continuam desenhando; o que
+mudar a cena fora do React pede um quadro com `invalidate()`.
+
+**Pronto quando.** Com a Lua parada, a cena não desenha quadro nenhum (contando
+`requestAnimationFrame` no canvas, ou na aba Performance do DevTools); girando, arrastando e
+trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ---
 
