@@ -1,5 +1,5 @@
-/* A cena da Lua: o nome para o leitor de tela e o pedido de menos movimento (card C1), e a sombra
- * e a câmera que chega perto do relevo (card C2).
+/* A cena da Lua: o nome para o leitor de tela e o pedido de menos movimento (card C1), a sombra
+ * e a câmera que chega perto do relevo (card C2), e o marcador e o aviso do clique (card C3).
  *
  * O jsdom não tem WebGL nem matchMedia. Por isso o Canvas e os controles viram substitutos: o
  * teste confere o que a cena entrega a eles, e não o desenho. Que a Lua aparece e gira se confere
@@ -18,8 +18,12 @@ vi.mock('@react-three/fiber', () => ({
     canvas(props)
     return <div data-testid="canvas">{children}</div>
   },
+  useFrame: () => {},
 }))
-vi.mock('@react-three/drei', () => ({ OrbitControls: (props) => { controles(props); return null } }))
+vi.mock('@react-three/drei', () => ({
+  OrbitControls: (props) => { controles(props); return null },
+  Html: ({ children }) => <div data-testid="marcador">{children}</div>,
+}))
 // o relevo é baixado da página, e o jsdom não serve arquivo; a leitura tem teste próprio
 vi.mock('../hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
 
@@ -96,5 +100,26 @@ describe('LunarScene', () => {
     render(<LunarScene dateUtc={DATA} />)
     const { near } = canvas.mock.calls.at(-1)[0].camera
     expect(near).toBeLessThan(ultimosControles().minDistance - PICO_MAIS_ALTO)
+  })
+
+  it('sem ponto escolhido, não há marcador', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    expect(screen.queryByTestId('marcador')).not.toBeInTheDocument()
+  })
+
+  it('com um ponto escolhido, na cena ou na lista, mostra o marcador', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
+    expect(screen.getByTestId('marcador')).toBeInTheDocument()
+  })
+
+  it('o aviso do clique fora da área fica fora da imagem, onde o leitor de tela lê, e começa vazio', () => {
+    // dentro do role="img", o leitor de tela trata tudo como parte da imagem e não lê o aviso
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const aviso = screen.getByRole('status')
+    expect(aviso).toBeEmptyDOMElement()
+    expect(screen.getByRole('img', { name: scene.label })).not.toContainElement(aviso)
   })
 })

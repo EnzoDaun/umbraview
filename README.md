@@ -24,7 +24,8 @@ instala tudo no Windows, do zero.
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
   da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
-  abriu. O painel ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
+  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3). O painel
+  ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
@@ -218,7 +219,7 @@ umbraview/
 │   ├── data/
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
-│   │   └── scene.js                 textos da cena 3D (card C1)
+│   │   └── scene.js                 textos da cena 3D (cards C1 a C3)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
@@ -237,7 +238,8 @@ umbraview/
 │   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
-│   │   └── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
+│   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
+│   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
 │   ├── panel/                       o painel com os números do ponto escolhido (card I1)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
@@ -246,7 +248,9 @@ umbraview/
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
-│   │   ├── coordinates.js           ponto da Lua para ponto da cena: a convenção dos eixos
+│   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
+│   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
+│   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
 │   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
