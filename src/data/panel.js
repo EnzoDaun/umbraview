@@ -5,7 +5,7 @@ export const panel = {
   empty: 'Choose a landing site to see when the Sun and the Earth are above its horizon.',
   loading: 'Calculating the sky over this site…',
   // Serve para a falha de verdade e para o ponto fora da área com relevo: hoje o useSiteSky não
-  // diz qual dos dois aconteceu (sugestão de card E12, levada ao Enzo).
+  // diz qual dos dois aconteceu (card E13).
   error: "Couldn't calculate this site. It may be outside the area we have terrain for. Try another one.",
   sunNow: 'Sun now',
   earthNow: 'Earth now',
