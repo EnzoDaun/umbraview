@@ -37,8 +37,12 @@ function PanelBody({ status, sky }) {
         <span className="site-panel__number">{formatDegrees(sky.earthNow.elevationDeg)}</span>
       </Row>
       <Row label={panel.nextSunset}>
+        {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
+            Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}
         {sky.nextSunsetUtc ? (
           <span className="site-panel__number">{formatUtc(sky.nextSunsetUtc)}</span>
+        ) : sky.sunFraction === 0 ? (
+          panel.sunAlwaysHidden
         ) : (
           panel.noSunset
         )}

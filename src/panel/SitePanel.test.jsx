@@ -62,6 +62,12 @@ describe('SitePanel', () => {
     expect(valueOf(panel.nextSunset)).toHaveTextContent(panel.noSunset)
   })
 
+  it('ready com o Sol escondido o período inteiro: diz isso, e não que o Sol não se põe', () => {
+    // o nextSunsetUtc também vem null quando o Sol nunca aparece (revisão do PR #11)
+    render(<SitePanel status="ready" sky={{ ...sky, sunFraction: 0, nextSunsetUtc: null }} />)
+    expect(valueOf(panel.nextSunset)).toHaveTextContent(panel.sunAlwaysHidden)
+  })
+
   it('ready sem janela de pouso no período: diz que não há janela', () => {
     render(<SitePanel status="ready" sky={sky} />)
     expect(valueOf(panel.landingWindows)).toHaveTextContent(panel.noWindows)

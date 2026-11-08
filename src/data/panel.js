@@ -13,6 +13,7 @@ export const panel = {
   hidden: 'Hidden by terrain',
   nextSunset: 'Next sunset',
   noSunset: "The Sun doesn't set in this period.",
+  sunAlwaysHidden: 'The Sun stays behind the terrain for the whole period.',
   sunlight: 'Sunlight in the period',
   longestDark: 'Longest darkness',
   hoursUnit: 'h',
