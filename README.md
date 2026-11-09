@@ -219,7 +219,8 @@ umbraview/
 │   ├── data/
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
-│   │   └── scene.js                 textos da cena 3D (cards C1 a C3)
+│   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
+│   │   └── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
