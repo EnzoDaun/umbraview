@@ -1,11 +1,12 @@
 /* A cena da Lua: o nome para o leitor de tela e o pedido de menos movimento (card C1), a sombra
- * e a câmera que chega perto do relevo (card C2), e o marcador e o aviso do clique (card C3).
+ * e a câmera que chega perto do relevo (card C2), o marcador e o aviso do clique (card C3), e o
+ * giro sozinho que para na primeira vez que a pessoa mexe na Lua (card C5).
  *
  * O jsdom não tem WebGL nem matchMedia. Por isso o Canvas e os controles viram substitutos: o
  * teste confere o que a cena entrega a eles, e não o desenho. Que a Lua aparece e gira se confere
  * no navegador, no "Pronto quando" do card. */
-import { render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { scene } from '../data/scene.js'
 import { MOON_RADIUS_M } from '../engine/geometry.js'
@@ -47,6 +48,11 @@ describe('LunarScene', () => {
     canvas.mockClear()
   })
 
+  // um teste que falha no meio não deixa o relógio falso para os outros
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('tem o nome acessível que vem de src/data/scene.js', () => {
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
@@ -69,6 +75,41 @@ describe('LunarScene', () => {
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
     expect(ultimosControles()).toMatchObject({ autoRotate: true })
+  })
+
+  it('para de girar sozinha na primeira vez que a pessoa mexe, e não volta a girar', () => {
+    // a WCAG 2.2.2 pede um jeito de parar o que se move sozinho, e o ponto escolhido não pode sair
+    // andando da frente da pessoa (card C5)
+    vi.useFakeTimers()
+    sistemaPede(false)
+    const { rerender } = render(<LunarScene dateUtc={DATA} />)
+    expect(ultimosControles()).toMatchObject({ autoRotate: true })
+
+    // os controles chamam o onStart quando a pessoa aperta o botão esquerdo ou o do meio, usa a
+    // roda ou toca na tela
+    const { onStart } = ultimosControles()
+    expect(onStart).toBeTypeOf('function')
+    act(() => onStart())
+    expect(ultimosControles()).toMatchObject({ autoRotate: false })
+
+    // soltar o mouse (o onEnd, que também vem logo depois de cada passo da roda) e o tempo passando
+    // não religam o giro: pausar só enquanto a pessoa segura o mouse não pararia nada com a roda
+    act(() => ultimosControles().onEnd?.())
+    act(() => vi.runAllTimers())
+    expect(ultimosControles()).toMatchObject({ autoRotate: false })
+
+    // a cena desenha de novo, com um ponto escolhido, e o giro continua desligado
+    rerender(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
+    expect(ultimosControles()).toMatchObject({ autoRotate: false })
+  })
+
+  it('com o pedido de menos movimento, mexer na Lua não muda nada: ela já estava parada', () => {
+    sistemaPede(true)
+    render(<LunarScene dateUtc={DATA} />)
+    const { onStart } = ultimosControles()
+    expect(onStart).toBeTypeOf('function')
+    act(() => onStart())
+    expect(ultimosControles()).toMatchObject({ autoRotate: false, enableDamping: false })
   })
 
   it('arrastar não tira a Lua do centro, e o zoom tem limite', () => {

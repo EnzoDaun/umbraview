@@ -125,6 +125,9 @@ dizendo em qual arquivo ele está.
 - Movimento respeita `prefers-reduced-motion`: com a opção ligada no sistema, a cena 3D não
   anima a câmera sozinha e as transições somem. O `global.css` já desliga as transições; quem
   anima a cena confere a preferência no próprio componente.
+- Sem essa opção, a Lua gira devagar sozinha só até a primeira vez que a pessoa arrasta, usa a
+  roda ou clica nela sem Ctrl, Shift ou Cmd, e não volta a girar (card C5): a WCAG 2.2.2 pede um
+  jeito de parar o que se move sozinho.
 
 ## Testes
 
