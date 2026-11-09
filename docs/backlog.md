@@ -414,6 +414,43 @@ dependência acima.
 **Pronto quando.** Os nomes declarados nesses arquivos estão em inglês, o `npm run test` passa
 com o mesmo número de testes de antes da troca, e o `verify` passa.
 
+### E13 · O motivo do erro, para o painel
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O `status: 'error'` do `useSiteSky` junta dois casos que pedem respostas
+diferentes de quem usa:
+- **o ponto fora da área com relevo:** o `loadReliefLayers` recusa antes de baixar qualquer
+  ladrilho (`src/engine/reliefFiles.js`). Tentar de novo não adianta; outro ponto, dentro da
+  área, adianta;
+- **a conta que falhou:** um arquivo de relevo que não chegou (o `createReliefReader`, em
+  `src/hooks/useSiteSky.js`, confere o `response.ok`) ou que chegou com o tamanho errado
+  (`reliefFiles.js`). Aqui o ponto pode estar certo.
+
+O hook manda o motivo só para o console (`useSiteSky: a conta do céu falhou`), e a tela recebe só
+o `status`. Por isso o texto de erro do painel diz "It may be outside the area we have terrain
+for": o "may" é porque o painel não sabe qual dos dois aconteceu. O clique na cena já barra o
+ponto fora da área antes de chegar ao hook (card C3), mas os locais da lista (I2) ao norte de 84°S
+chegam, e dão erro até o card E8. Veio do PR #11 (card I1).
+
+**O que fazer.**
+1. A ponte devolve o motivo junto com o `error`. Como o motor separa os dois casos fica com o
+   Enzo; comparar o texto da mensagem do `Error` não serve, porque quebra na primeira vez que
+   alguém reescrever a frase.
+2. O campo novo entra na tabela de "O que a ponte entrega para a tela", avisando o Marco e o
+   Miguel no mesmo dia.
+3. No painel (`src/panel/SitePanel.jsx`), dois textos em `src/data/panel.js` no lugar do `error`
+   de hoje: o do ponto fora da área pede outro ponto, dentro da área; o da falha não pode
+   prometer que escolher o mesmo ponto de novo resolve, porque hoje isso não refaz a conta (card
+   E11, item 3).
+
+**Como testar.** Em `src/hooks/useSiteSky.test.js`, o teste do ponto fora da área passa a
+conferir o motivo, e um caso novo cobre o arquivo que não chega. Em `src/panel/SitePanel.test.jsx`,
+um texto para cada motivo.
+
+**Pronto quando.** O painel mostra um texto para o ponto fora da área e outro para a falha da
+conta, a tabela da ponte tem o campo novo, os testes acima passam e o `verify` passa.
+
 ---
 
 ## C: Marco
@@ -703,7 +740,7 @@ passa.
 
 ### C7 · Teste do relevo perto do limite de tempo
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 09/11, PR #14 · **Depende de:** nada
 
 **Para que serve.** O Vitest dá 5 s para cada teste. No Windows do Enzo, em 06/11/2026, o teste
 "todo vértice fica perto da superfície" (`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e
@@ -725,6 +762,20 @@ de volta a 8000 m, passar.
 
 **Pronto quando.** Os dois testes conferem o mesmo que antes, cada um leva menos de 0,5 s no
 `verify` do Windows de quem fizer, e o `verify` passa.
+
+**Conferido** em 09/11/2026, no Windows do Marco, com a suíte inteira rodando como no `verify`
+(o tempo de cada teste lido do relatório JSON do Vitest):
+
+| Teste | Antes | Depois |
+|---|---|---|
+| "todo vértice fica perto da superfície" | 3.868 ms | 79 ms |
+| "todo vértice fica no hemisfério sul da cena" | 2.093 ms | 44 ms |
+
+O primeiro confere o maior afastamento da esfera de raio 1, em metros, que é o mesmo que os dois
+limites de antes. Com o limite trocado de 8000 m para 6000 m, o teste novo reprova
+(`expected 6956.45… to be less than 6000`), o antigo também, e de volta a 8000 m o novo passa. O
+segundo, com o alcance diminuído em 1 km, reprova no teste novo e no antigo. A suíte continua com
+213 testes.
 
 ### C8 · Mostrar na cena até onde dá para escolher um ponto
 
@@ -768,8 +819,8 @@ trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ### I1 · Painel com os números do ponto escolhido
 
-**Estado:** a fazer · **Depende de:** nada para começar; o formato em "O que a ponte entrega
-para a tela" basta
+**Estado:** feito em 08/11, PR #11 · **Depende de:** nada para começar; o formato em "O que a
+ponte entrega para a tela" basta
 
 **Para que serve.** É a parte que responde em texto: "daqui, o Sol e a Terra aparecem? Até
 quando? Quando dá para pousar?". É o que os juízes vão ler.
@@ -782,6 +833,8 @@ quando? Quando dá para pousar?". É o que os juízes vão ler.
 - `ready`:
   - **Sun now** e **Earth now**: à vista ou escondido pelas montanhas, e a altura em graus;
   - **Next sunset**: data e hora em UTC, ou um texto dizendo que o Sol não se põe no período;
+    com o Sol escondido o período inteiro (`sunFraction` 0), um texto dizendo isso, porque o
+    `nextSunsetUtc` também vem `null` nesse caso (revisão do PR #11);
   - **Sunlight in the period**: porcentagem;
   - **Longest darkness**: em horas;
   - **Landing windows**: a lista de início e fim em UTC, ou um texto dizendo que não há janela no
@@ -931,6 +984,33 @@ quando outra pessoa roda tudo do zero, lendo só o README.
 **Pronto quando.** Este card tem uma linha com a data, a versão do Python (a primeira linha da
 saída do passo 2) e a saída do passo 4, que é `OK: os recortes gerados são idênticos aos do
 repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que falta no card E2.
+
+### I6 · Dizer no painel qual é o período
+
+**Estado:** a fazer · **Depende de:** I1 (feito)
+
+**Para que serve.** "Sunlight in the period" e "Longest darkness" não dizem qual é o período:
+quem lê 85.5% não sabe se é de uma semana ou de um ano. O mesmo vale para os dois textos do
+painel que terminam em "in this period" (o do pôr do Sol e o da lista de janelas). O período
+começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, hoje 30). Veio do PR
+#11 (card I1).
+
+**O que fazer.**
+1. Antes de começar, combinar com o Enzo de onde vem o fim do período. Hoje só o motor sabe a
+   duração, e o painel nem recebe a data. Dois caminhos: o `sky` passa a trazer o período pronto
+   (campo novo na tabela de "O que a ponte entrega para a tela", com aviso ao Marco no mesmo
+   dia), ou o painel recebe a data e soma o `PERIOD_DAYS`. Um detalhe pesa a favor do primeiro:
+   o motor calcula de hora em hora a partir da data (`src/engine/siteSky.js`), então o último
+   instante calculado fica uma hora antes de "data + 30 dias", e é ele o fim de uma janela com
+   "(continues)".
+2. Mostrar no painel o começo e o fim do período, em UTC, com o `formatUtc`
+   (`src/panel/format.js`). Os textos em `src/data/panel.js`.
+
+**Como testar** (`src/panel/SitePanel.test.jsx`). O `ready` mostra o começo e o fim do período em
+UTC. A suíte roda em Tóquio: se o fuso escapar, a hora sai errada e o teste pega.
+
+**Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período, os
+testes passam e o `verify` passa.
 
 ---
 

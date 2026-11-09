@@ -56,12 +56,6 @@
   color: var(--color-text-secondary);
 }
 
-.app__empty {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  max-width: 60ch;
-}
-
 .app__footer {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);

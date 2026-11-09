@@ -1,0 +1,40 @@
+/* O painel do ponto (card I1). Só tokens (tokens.css): nada de #hex nem px solto aqui. */
+.site-panel__message {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  max-width: 60ch;
+}
+
+/* O navegador põe margem no <dl> e recuo no <dd>, e o global.css não zera os dois. */
+.site-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.site-panel__label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.site-panel__value {
+  margin: 0;
+}
+
+/* O recuo que o navegador dá à lista não cabe no painel estreito (--panel-width). */
+.site-panel__windows {
+  margin: 0;
+  padding-inline-start: var(--space-4);
+}
+
+/* A data não quebra no meio: se a linha não couber, quem desce é o marcador ou o traço. */
+.site-panel__date {
+  white-space: nowrap;
+}
+
+/* Monoespaçada, como o tokens.css pede para os números do painel: todo algarismo tem a mesma
+   largura, e o número não muda de tamanho quando o valor muda. */
+.site-panel__number {
+  font-family: var(--font-mono);
+}

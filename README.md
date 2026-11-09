@@ -218,6 +218,7 @@ umbraview/
 ├── src/
 │   ├── data/
 │   │   ├── app.js                   textos da tela principal
+│   │   ├── panel.js                 textos do painel do ponto (card I1)
 │   │   └── scene.js                 textos da cena 3D (cards C1 a C3)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
@@ -239,6 +240,10 @@ umbraview/
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
+│   ├── panel/                       o painel com os números do ponto escolhido (card I1)
+│   │   ├── SitePanel.css
+│   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
+│   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
 │   ├── scene/                       a Lua em 3D (cards C1 a C3)
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
