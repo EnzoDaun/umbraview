@@ -242,7 +242,7 @@ umbraview/
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
 │   ├── panel/                       o painel do ponto: os números e a escolha do local (cards I1 e I2)
 │   │   ├── SiteList.css
-│   │   ├── SiteList.jsx             a lista de locais de pouso, agrupada por agência (card I2)
+│   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel

@@ -26,4 +26,6 @@ export const panel = {
   // A lista de locais de pouso (card I2).
   siteListLabel: 'Known sites',
   siteListPlaceholder: 'Choose a site…',
+  siteGroupLanded: 'Landed',
+  siteGroupCandidates: 'Artemis III candidate regions',
 }

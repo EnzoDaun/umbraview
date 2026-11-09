@@ -6,8 +6,14 @@ import './SiteList.css'
    cena não recebe foco, card C3). Os locais chegam por prop: os de verdade vêm de
    src/data/sites.js, e os do teste ficam no teste. */
 export function SiteList({ sites, onSelect }) {
-  // o Object.groupBy guarda a ordem em que cada agência aparece: quem decide a ordem é o sites.js
-  const byAgency = Object.entries(Object.groupBy(sites, (site) => site.agency))
+  /* Por tipo, e não por agência: com os locais de hoje, agência daria "Intuitive Machines" com 1 e
+     "NASA" com 9, e não diria que ninguém pousou nas regiões candidatas (decisão do Enzo, card I2).
+     O Object.groupBy guarda a ordem em que cada grupo aparece: quem decide a ordem é o sites.js. */
+  const groups = Object.entries(
+    Object.groupBy(sites, (site) =>
+      site.landedAtUtc ? panel.siteGroupLanded : panel.siteGroupCandidates,
+    ),
+  )
 
   return (
     <label className="site-list">
@@ -22,9 +28,9 @@ export function SiteList({ sites, onSelect }) {
         <option value="" disabled>
           {panel.siteListPlaceholder}
         </option>
-        {byAgency.map(([agency, agencySites]) => (
-          <optgroup key={agency} label={agency}>
-            {agencySites.map((site) => (
+        {groups.map(([groupLabel, groupSites]) => (
+          <optgroup key={groupLabel} label={groupLabel}>
+            {groupSites.map((site) => (
               <option key={site.id} value={site.id}>
                 {site.name}
               </option>
