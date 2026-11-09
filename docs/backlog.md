@@ -671,7 +671,7 @@ passa.
 
 ### C7 · Teste do relevo perto do limite de tempo
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 09/11, PR #14 · **Depende de:** nada
 
 **Para que serve.** O Vitest dá 5 s para cada teste. No Windows do Enzo, em 06/11/2026, o teste
 "todo vértice fica perto da superfície" (`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e
@@ -693,6 +693,20 @@ de volta a 8000 m, passar.
 
 **Pronto quando.** Os dois testes conferem o mesmo que antes, cada um leva menos de 0,5 s no
 `verify` do Windows de quem fizer, e o `verify` passa.
+
+**Conferido** em 09/11/2026, no Windows do Marco, com a suíte inteira rodando como no `verify`
+(o tempo de cada teste lido do relatório JSON do Vitest):
+
+| Teste | Antes | Depois |
+|---|---|---|
+| "todo vértice fica perto da superfície" | 3.868 ms | 79 ms |
+| "todo vértice fica no hemisfério sul da cena" | 2.093 ms | 44 ms |
+
+O primeiro confere o maior afastamento da esfera de raio 1, em metros, que é o mesmo que os dois
+limites de antes. Com o limite trocado de 8000 m para 6000 m, o teste novo reprova
+(`expected 6956.45… to be less than 6000`), o antigo também, e de volta a 8000 m o novo passa. O
+segundo, com o alcance diminuído em 1 km, reprova no teste novo e no antigo. A suíte continua com
+213 testes.
 
 ### C8 · Mostrar na cena até onde dá para escolher um ponto
 

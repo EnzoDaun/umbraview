@@ -129,19 +129,29 @@ describe('buildReliefCap, com o far.bin do site', () => {
 
   it('todo vértice fica perto da superfície: as montanhas do polo têm poucos quilômetros', () => {
     // a altura guardada vai de −15418 a 13952 meios metros, ou seja, de −7,7 km a +7,0 km
+    /* Um expect por vértice são 250 mil chamadas, e só elas levavam o teste para perto do limite
+       de 5 s do Vitest, que ele já estourou uma vez sem nada de errado na malha (card C7). O laço
+       guarda o menor e o maior raio; conferir o maior afastamento da esfera de raio 1 é o mesmo
+       que conferir os dois limites. */
+    let minRadius = Infinity
+    let maxRadius = -Infinity
     for (const p of vertices(positions)) {
-      const raio = Math.hypot(...p)
-      expect(raio).toBeGreaterThan(1 - 8000 / MOON_RADIUS_M)
-      expect(raio).toBeLessThan(1 + 8000 / MOON_RADIUS_M)
+      const radius = Math.hypot(...p)
+      minRadius = Math.min(minRadius, radius)
+      maxRadius = Math.max(maxRadius, radius)
     }
+    const maxOffsetM = Math.max(1 - minRadius, maxRadius - 1) * MOON_RADIUS_M
+    expect(maxOffsetM).toBeLessThan(8000)
   })
 
   it('todo vértice fica no hemisfério sul da cena, dentro do círculo do relevo', () => {
     const anguloMaximo = polarDistanceToAngle(manifest.far.reachM)
+    // um expect só, no fim, pelo mesmo motivo do teste de cima (card C7)
+    let maxFromPole = 0
     for (const p of vertices(positions)) {
-      const doPolo = Math.acos(-p[1] / Math.hypot(...p))
-      expect(doPolo).toBeLessThanOrEqual(anguloMaximo + 1e-6)
+      maxFromPole = Math.max(maxFromPole, Math.acos(-p[1] / Math.hypot(...p)))
     }
+    expect(maxFromPole).toBeLessThanOrEqual(anguloMaximo + 1e-6)
   })
 
   it('todo triângulo tem a frente virada para fora da Lua', () => {
