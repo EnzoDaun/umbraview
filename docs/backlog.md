@@ -597,7 +597,7 @@ data; repetida depois do C2.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
-**Estado:** a fazer · **Depende de:** C1 (feito)
+**Estado:** feito em 09/11, PR #13 · **Depende de:** C1 (feito)
 
 **Para que serve.** Sem o pedido de menos movimento no sistema, a Lua do C1 gira sozinha o tempo
 todo, e não há como pausar. A WCAG 2.2.2 (nível A) pede um jeito de pausar o que se move sozinho
@@ -614,6 +614,34 @@ a cena entregou a eles, passam a receber `autoRotate: false`.
 
 **Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
 não volta a girar; os testes passam e o `verify` passa.
+
+O `onStart` chega quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou toca na tela
+(lido no `OrbitControls` do three-stdlib, que o Drei usa). Por isso o clique comum que escolhe um
+ponto também para o giro, que é o que o "Para que serve" pede.
+
+**Conferido** em 09/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), lendo
+da página a posição da câmera e o `autoRotate` dos controles:
+- O Windows do Marco está com os "Efeitos de animação" desligados, e o navegador responde
+  `prefers-reduced-motion: reduce`: a Lua começou parada e continuou parada.
+- Sem o pedido (o `matchMedia` trocado só naquela aba), a Lua girou sozinha e parou na primeira
+  vez que a pessoa arrastou, usou a roda ou clicou para escolher um ponto, cada caso numa página
+  recarregada. Depois do deslize, a câmera ficou no mesmo lugar por 600 quadros (10 s), também
+  depois de a cena desenhar de novo.
+- O navegador estava escondido e não desenhava sozinho: os quadros foram avançados pelo `advance`
+  do React Three Fiber, que roda o mesmo código de cada quadro, inclusive o giro dos controles.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: funcionou.
+
+**Aberto.** Fica para combinar com o Enzo no PR #13 se vira card.
+- Quem usa só o teclado continua sem jeito de parar o giro: a cena não recebe foco (card C3) e os
+  controles não usam teclado. Escolher um ponto pela lista (card I2) também não vai parar o giro,
+  e o marcador continua andando. Não conferi se a WCAG aceita "parar quando a pessoa mexe" como o
+  jeito de pausar. Saídas: um botão de pausar que funcione pelo teclado, ou parar o giro quando o
+  ponto chega pela lista.
+- Com o pan desligado (`enablePan={false}`), o three-stdlib trata o clique esquerdo com Ctrl,
+  Shift ou Cmd como pan e sai antes de avisar o `onStart`. O clique continua escolhendo o ponto,
+  e aí a Lua segue girando com o marcador. Lido no código das bibliotecas, não conferido no
+  navegador. Saída: parar o giro também quando o clique escolhe um ponto (no `handleMoonClick`),
+  o que vai além do "O que fazer" deste card.
 
 ### C6 · O relevo fino de perto
 
