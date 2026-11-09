@@ -23,4 +23,7 @@ export const panel = {
   // sem o marcador, a pessoa leria aquela data como um nascer ou um pôr do Sol de verdade.
   alreadyOpen: '(already open)',
   continues: '(continues)',
+  // A lista de locais de pouso (card I2).
+  siteListLabel: 'Known sites',
+  siteListPlaceholder: 'Choose a site…',
 }

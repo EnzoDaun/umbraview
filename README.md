@@ -240,7 +240,9 @@ umbraview/
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
-│   ├── panel/                       o painel com os números do ponto escolhido (card I1)
+│   ├── panel/                       o painel do ponto: os números e a escolha do local (cards I1 e I2)
+│   │   ├── SiteList.css
+│   │   ├── SiteList.jsx             a lista de locais de pouso, agrupada por agência (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
