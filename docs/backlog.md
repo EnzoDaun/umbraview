@@ -576,7 +576,7 @@ Marco, 06/11): o painel é o I1 e a ligação é o E11, e nenhum dos dois existi
 
 ### C4 · Quanto o site pesa nos notebooks da equipe
 
-**Estado:** medido no notebook do Marco em 08/11; falta o do Enzo e o do Miguel · **Depende de:** C1 (feito), e de novo depois do C2 (feito)
+**Estado:** feito em 09/11, PR #12 · **Depende de:** C1 (feito), e de novo depois do C2 (feito)
 
 **Para que serve.** Os juízes abrem o site num computador qualquer. Se a cena travar nos
 notebooks da equipe, vai travar lá também.
@@ -610,8 +610,9 @@ perfil limpo e janela de 1280 × 800.
 | Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (a) só C1 | Chrome 156 | 273 ms | 144 | 144 | 1.150 kB (315 kB) |
 | Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (b) C1 + C2 + C3 | Edge 157 | 345 ms | 144 | 144 | 1.214 kB (343 kB) |
 | Marco (Samsung 960XFH, Iris Xe, tela de 144 Hz) | 08/11/2026 | (b) C1 + C2 + C3 | Chrome 156 | 365 ms | 144 | 144 | 1.214 kB (343 kB) |
-| Enzo | a medir | (b) | | | | | |
-| Miguel | a medir | (b) | | | | | |
+| Enzo (Dell 15 DC15250, Intel UHD, tela de 120 Hz) | 09/11/2026 | (b) C1 + C2 + C3 | Edge 157 | 479 ms | 120 | 119,9 | 1.214 kB (343 kB) |
+| Miguel (modelo não informado, Iris Xe, tela de 60 Hz) | 09/11/2026 | (b) C1 + C2 + C3 | Edge | 1.925 ms | 55,2 | 59,4 | 1.214 kB (343 kB) |
+| Miguel (modelo não informado, Iris Xe, tela de 60 Hz) | 09/11/2026 | (b) C1 + C2 + C3 | Chrome | 1.669 ms | 54,9 | 54,4 | 1.214 kB (343 kB) |
 
 O tempo é a mediana, contado do início da navegação até o primeiro quadro com a Lua acesa. No
 (b), a página baixa 1.595 KB, dos quais 1.258 KB são dois arquivos de relevo; com o servidor
@@ -619,7 +620,8 @@ local, eles chegam em uns 150 ms, então numa rede de verdade o tempo até a Lua
 `dist/` tem 44 MB, quase tudo em `data/relief/`, mas a página só baixa o que usa. O card pedia
 cronômetro e o "Frame Rendering Stats" do DevTools; um script com o navegador instalado
 (playwright-core) fez a mesma medida com mais precisão e repetível. Numa das 3 rodadas do Edge no
-(b), arrastando, apareceu um quadro de 20,8 ms; nas outras, nenhum passou de 9 ms.
+(b), arrastando, apareceu um quadro de 20,8 ms; nas outras, nenhum passou de 9 ms. O fps é a
+mediana das 3 rodadas.
 
 O fps fica em 144 porque o navegador não desenha mais rápido que a tela. Isso diz que a cena não
 trava, mas não diz quanto sobra. Desligar esse limite (`--disable-gpu-vsync
@@ -628,28 +630,39 @@ trava, mas não diz quanto sobra. Desligar esse limite (`--disable-gpu-vsync
 Fiber desenha, ler 1 pixel do canvas obriga a placa a terminar o quadro, e o tempo dessa conta é
 o trabalho de CPU e GPU dele.
 
-| Momento | Navegador | Custo por quadro girando (mediana / p95) | Arrastando (mediana / p95) |
-|---|---|---|---|
-| (a) só C1 | Edge | 2,9 / 3,3 ms | 2,9 / 3,2 ms |
-| (a) só C1 | Chrome | 2,9 / 3,3 ms | 2,8 / 3,1 ms |
-| (b) C1 + C2 + C3 | Edge | 6,0 / 6,5 ms | 5,9 / 6,4 ms |
-| (b) C1 + C2 + C3 | Chrome | 6,0 / 6,6 ms | 5,9 / 6,6 ms |
+| Notebook | Momento | Navegador | Custo por quadro girando (mediana / p95) | Arrastando (mediana / p95) |
+|---|---|---|---|---|
+| Marco | (a) só C1 | Edge | 2,9 / 3,3 ms | 2,9 / 3,2 ms |
+| Marco | (a) só C1 | Chrome | 2,9 / 3,3 ms | 2,8 / 3,1 ms |
+| Marco | (b) C1 + C2 + C3 | Edge | 6,0 / 6,5 ms | 5,9 / 6,4 ms |
+| Marco | (b) C1 + C2 + C3 | Chrome | 6,0 / 6,6 ms | 5,9 / 6,6 ms |
+| Enzo | (b) C1 + C2 + C3 | Edge | 5,2 / 12,9 ms | 5,1 / 12,7 ms |
+| Miguel | (b) C1 + C2 + C3 | Edge | 20,5 / 23,9 ms | 20,4 / 23,6 ms |
+| Miguel | (b) C1 + C2 + C3 | Chrome | 20,5 / 24,1 ms | 20,2 / 23,8 ms |
 
-- O relevo e a sombra do C2 dobraram o custo do quadro, de 2,9 para 6,0 ms, e somaram 28 kB
-  (gzip) de JavaScript e uns 100 ms até a Lua aparecer.
-- Numa tela de 60 Hz, cada quadro tem 16,7 ms: a cena usa um terço. Numa de 144 Hz, tem 6,9 ms, e
-  a cena usa 6,0. Ler o pixel faz a CPU esperar a placa, então 6,0 ms é um teto, não o custo
-  exato; sem a leitura, o (b) ficou em 144 fps.
-- **Para o C6:** com placa integrada, o relevo fino tem uns 10 ms por quadro de folga para ficar
-  em 60 Hz e menos de 1 ms para ficar em 144 Hz. Proposta: o aceitável é o quadro ficar abaixo de
-  16,7 ms (60 fps) neste notebook.
-- Com a Lua parada (pedido de menos movimento), a cena continua custando 6 ms por quadro, 144
-  vezes por segundo: virou o card C9.
-- No console, só o aviso "THREE.Clock: This module has been deprecated", nos dois momentos.
+- O relevo e a sombra do C2 dobraram o custo do quadro no notebook do Marco, de 2,9 para 6,0 ms,
+  e somaram 28 kB (gzip) de JavaScript e uns 100 ms até a Lua aparecer.
+- No do Marco e no do Enzo a cena acompanha a tela (144 e 120 Hz), com uns 5 a 6 ms por quadro.
+  Ler o pixel faz a CPU esperar a placa, então esse custo é um teto, não o custo exato.
+- **No do Miguel, a cena não fecha 60 fps.** A tela é de 60 Hz (16,7 ms por quadro), e o quadro
+  custa uns 20 ms. Sem a leitura do pixel, que também pesa, o fps ficou em 55 girando e de 54 a 59
+  arrastando, com engasgos de até 116 ms ao arrastar. A Lua levou de 1,5 a 2,6 s para aparecer,
+  mesmo com o servidor no próprio notebook; o relevo chegou em 0,5 a 0,7 s, então ele explica só
+  parte da demora.
+- **Para o C6:** no notebook mais fraco da equipe, a cena atual já passa dos 16,7 ms, então não
+  sobra folga para o relevo fino. A proposta de "aceitável = abaixo de 16,7 ms" não basta mais: o
+  C6 precisa de uma decisão da equipe antes de 14/11 (sair do escopo, ou ligar só onde a máquina
+  aguenta).
+- Com a Lua parada (pedido de menos movimento), a cena continua custando o mesmo por quadro, a
+  cada quadro da tela: virou o card C9.
+- No console, só o aviso "THREE.Clock: This module has been deprecated", em todos os notebooks.
 
-**Notebooks do Enzo e do Miguel:** a fazer, com o passo a passo de "O que fazer". Quem tiver tela
-de 60 Hz vê o fps parar em 60; o custo por quadro só sai com o script que o Marco usou
-(playwright-core com o Edge instalado, fora do repositório), que ele pode passar a quem quiser.
+**Notebooks do Enzo e do Miguel:** medidos em 09/11/2026, no mesmo commit (b) `10cd326`, com
+`npm run build`, `npm run preview` e o mesmo script do Marco (`medir2.mjs`, 3 rodadas de cada
+medida, na tomada). Os números completos estão nos comentários do PR #12. O Enzo mediu só no
+Edge; a primeira rodada dele de tempo até a Lua teve o mouse mexido sem querer (1.118 ms) e foi
+refeita. O Miguel mediu no Edge e no Chrome e não informou o modelo do notebook nem as versões dos
+navegadores.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
@@ -673,7 +686,7 @@ não volta a girar; os testes passam e o `verify` passa.
 
 ### C6 · O relevo fino de perto
 
-**Estado:** a fazer · **Depende de:** C2 (feito) e C4
+**Estado:** a fazer · **Depende de:** C2 (feito) e C4 (feito)
 
 **Para que serve.** De perto, a cena do C2 fica borrada: ela desenha o relevo grosso (`far.bin`),
 com um vértice a cada 1,9 km, e uma cratera de 1 ou 2 km vira poucos triângulos. Testado em
