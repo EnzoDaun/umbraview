@@ -687,9 +687,8 @@ o trabalho de CPU e GPU dele.
   mesmo com o servidor no próprio notebook; o relevo chegou em 0,5 a 0,7 s, então ele explica só
   parte da demora.
 - **Para o C6:** no notebook mais fraco da equipe, a cena atual já passa dos 16,7 ms, então não
-  sobra folga para o relevo fino. A proposta de "aceitável = abaixo de 16,7 ms" não basta mais: o
-  C6 precisa de uma decisão da equipe antes de 14/11 (sair do escopo, ou ligar só onde a máquina
-  aguenta).
+  sobra folga para o relevo fino. Decidido em 09/11: o relevo fino liga só onde a máquina
+  aguenta; o como está no card C6.
 - Com a Lua parada (pedido de menos movimento), a cena continua custando o mesmo por quadro, a
   cada quadro da tela: virou o card C9.
 - No console, só o aviso "THREE.Clock: This module has been deprecated", em todos os notebooks.
@@ -734,9 +733,16 @@ nítido, com 4 vezes mais vértices, e o WebGL 2 só garante textura de 2048. Ve
 do card E2) só perto de onde a câmera olha, por cima do relevo grosso, trocando os ladrilhos
 quando a câmera anda. O C4 diz quanto a cena aguenta a mais.
 
-**Pronto quando.** Com a câmera na distância mínima, uma cratera de 1 km aparece com borda e
-fundo; os quadros por segundo continuam dentro do que o C4 mediu como aceitável; e o `verify`
-passa.
+**Decidido em 09/11 (Marco), com os números do C4:** o relevo fino liga só onde a máquina
+aguenta. No notebook do Miguel, a cena de hoje já custa uns 20 ms por quadro (55 fps numa tela de
+60 Hz), então lá ele fica desligado e a cena continua como hoje. A cena mede o próprio ritmo nos
+primeiros segundos (o `PerformanceMonitor` do Drei faz isso) e só liga o relevo fino se os quadros
+ficarem abaixo de 16,7 ms; se passar disso depois de ligado, desliga de novo.
+
+**Pronto quando.** Com a câmera na distância mínima, num notebook que aguenta (o do Marco ou o do
+Enzo), uma cratera de 1 km aparece com borda e fundo, e os quadros continuam abaixo de 16,7 ms;
+num notebook que não aguenta (o do Miguel), o relevo fino fica desligado e o custo por quadro não
+passa do que o C4 mediu; e o `verify` passa.
 
 ### C7 · Teste do relevo perto do limite de tempo
 
