@@ -950,7 +950,7 @@ licença; o `verify` passa.
 
 ### I4 · Escolher a data e a hora, em UTC
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 09/11, PR #17 · **Depende de:** nada
 
 **Para que serve.** O resultado muda com a data: o mesmo ponto pode estar no Sol hoje e no escuro
 daqui a uma semana. As missões trabalham em UTC, e o site também.
