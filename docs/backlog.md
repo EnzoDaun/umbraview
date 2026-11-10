@@ -785,7 +785,7 @@ segundo, com o alcance diminuído em 1 km, reprova no teste novo e no antigo. A 
 
 ### C8 · Mostrar na cena até onde dá para escolher um ponto
 
-**Estado:** a fazer · **Depende de:** C3 (feito)
+**Estado:** feito em 09/11, PR #18 · **Depende de:** C3 (feito)
 
 **Para que serve.** O relevo que a cena desenha em volta do polo vai até uns 77°S (o `far.bin`,
 que o motor usa para as montanhas distantes do horizonte), mas só dá para escolher ponto até 84°S,
@@ -800,6 +800,23 @@ se confundiria com sombra, que é o assunto do site.
 
 **Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
 um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
+
+**Como ficou.** `src/scene/areaRing.js` calcula 720 pontos na latitude do `areaMaxLatDeg`, cada um
+300 m acima do relevo grosso daquele lugar (lido do `far.bin` pelo `reliefHeightAtM` do C3), e
+`src/scene/AreaRing.jsx` desenha a volta como uma linha fina com a cor do `--color-text-muted`. A
+linha não faz nem recebe sombra e não entra no clique (raycast desligado): o clique em cima dela
+continua chegando ao relevo. No `LunarScene.jsx`, só o import e a linha que monta o anel.
+
+**Conferido** em 09/11/2026, no `npm run build` + `npm run preview`, no Edge 157 com a Intel Iris
+Xe do notebook do Marco, com o pedido de menos movimento ligado para a câmera não andar:
+- Na posição inicial, o anel aparece em volta do polo, com uns 21 px de raio. Clicando do centro
+  para fora, de 2 em 2 px, até 20 px o ponto é escolhido; de 22 px em diante, não.
+- Na distância mínima, com a câmera inclinada até ficar em cima do anel, ele aparece como uma
+  linha contínua sobre o relevo. Um clique 6 px para dentro escolhe o ponto; 6 px para fora dá o
+  aviso "Landing sites can be chosen between the south pole and 84°S.".
+- O custo por quadro (o script do C4, 3 rodadas de cada, alternando antes e depois) foi de uns
+  6,0 ms sem o anel e 6,1 ms com ele. O fps ficou em 144, o limite da tela.
+- No console, só o aviso de sempre do `THREE.Clock`.
 
 ### C9 · Desenhar a cena só quando algo muda
 

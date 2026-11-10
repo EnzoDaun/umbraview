@@ -14,6 +14,7 @@ import { useFarRelief } from '../hooks/useFarRelief.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
+import { AreaRing } from './AreaRing.jsx'
 import { readMoonClick } from './picking.js'
 import { ReliefCap } from './ReliefCap.jsx'
 import { smoothSphereThetaLength } from './reliefMesh.js'
@@ -144,6 +145,7 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
             </mesh>
             {relief && <ReliefCap relief={relief} color={moonColor} />}
           </group>
+          {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
           <OrbitControls
             enablePan={false}
