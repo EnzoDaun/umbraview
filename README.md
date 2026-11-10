@@ -247,11 +247,13 @@ umbraview/
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
-│   ├── scene/                       a Lua em 3D (cards C1 a C3)
+│   ├── scene/                       a Lua em 3D (cards C1 a C3 e C8)
+│   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
+│   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
