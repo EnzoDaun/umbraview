@@ -859,7 +859,7 @@ trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ### C10 · Parar o giro quando um ponto é escolhido
 
-**Estado:** feito em 10/11, PR #19 · **Depende de:** C5 (feito)
+**Estado:** feito em 10/11, PR #20 · **Depende de:** C5 (feito)
 
 **Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
 esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
