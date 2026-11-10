@@ -1,6 +1,7 @@
 /* A cena da Lua: o nome para o leitor de tela e o pedido de menos movimento (card C1), a sombra
  * e a câmera que chega perto do relevo (card C2), o marcador e o aviso do clique (card C3), e o
- * giro sozinho que para na primeira vez que a pessoa mexe na Lua (card C5).
+ * giro sozinho que para na primeira vez que a pessoa mexe na Lua (card C5) ou quando um ponto é
+ * escolhido (card C10).
  *
  * O jsdom não tem WebGL nem matchMedia. Por isso o Canvas e os controles viram substitutos: o
  * teste confere o que a cena entrega a eles, e não o desenho. Que a Lua aparece e gira se confere
@@ -29,6 +30,7 @@ vi.mock('@react-three/drei', () => ({
 vi.mock('../hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
+const NEXT_DAY = new Date('2026-11-15T00:00:00Z')
 
 // o pico mais alto do far.bin: 13952 meios metros (reliefMesh.test.js)
 const PICO_MAIS_ALTO = 1 + 6976 / MOON_RADIUS_M
@@ -98,7 +100,19 @@ describe('LunarScene', () => {
     act(() => vi.runAllTimers())
     expect(ultimosControles()).toMatchObject({ autoRotate: false })
 
-    // a cena desenha de novo, com um ponto escolhido, e o giro continua desligado
+    // a cena desenha de novo, com outra data, e o giro continua desligado. Com um ponto escolhido
+    // isto não provaria nada, porque o ponto já para o giro sozinho (card C10)
+    rerender(<LunarScene dateUtc={NEXT_DAY} />)
+    expect(ultimosControles()).toMatchObject({ autoRotate: false })
+  })
+
+  it('para de girar quando um ponto é escolhido, também pela lista, sem a pessoa mexer na Lua', () => {
+    // o Ctrl, Shift ou Cmd+clique escolhe o ponto sem os controles avisarem o onStart, e a lista
+    // do I2 nem passa pelos controles: sem isto, o ponto sairia andando com a Lua (card C10)
+    sistemaPede(false)
+    const { rerender } = render(<LunarScene dateUtc={DATA} />)
+    expect(ultimosControles()).toMatchObject({ autoRotate: true })
+
     rerender(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
     expect(ultimosControles()).toMatchObject({ autoRotate: false })
   })

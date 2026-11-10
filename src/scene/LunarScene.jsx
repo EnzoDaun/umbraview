@@ -1,6 +1,7 @@
 /* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
  * luz do Sol da data escolhida e a sombra das montanhas (card C2), e o clique que escolhe um ponto,
- * com o marcador dele (card C3). O giro sozinho para na primeira vez que a pessoa mexe (card C5).
+ * com o marcador dele (card C3). O giro sozinho para na primeira vez que a pessoa mexe (card C5)
+ * ou quando um ponto é escolhido (card C10).
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
@@ -118,9 +119,9 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
 
   /* Os controles chamam isto quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou
      toca na tela, inclusive no clique que escolhe um ponto. Com o pan desligado, o botão direito e
-     o esquerdo com Ctrl, Shift ou Cmd não chegam aqui (card C5, "Aberto"). O giro desligado não
-     volta: voltar sozinho depois de um tempo seria a Lua andando de novo enquanto a pessoa lê o
-     ponto. */
+     o esquerdo com Ctrl, Shift ou Cmd não chegam aqui; o ponto que esse clique escolhe para o giro
+     pelo site, no autoRotate (card C10). O giro desligado não volta: voltar sozinho depois de um
+     tempo seria a Lua andando de novo enquanto a pessoa lê o ponto. */
   function handleControlsStart() {
     setHasMoved(true)
   }
@@ -159,11 +160,14 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
+          {/* Com um ponto escolhido, o giro para, venha ele de onde vier: o Ctrl, Shift ou
+              Cmd+clique não avisa o onStart, e a lista de locais (card I2) nem passa pelos
+              controles. Sem o !site, o marcador sairia andando com a Lua (card C10). */}
           <OrbitControls
             enablePan={false}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            autoRotate={!reducedMotion && !hasMoved}
+            autoRotate={!reducedMotion && !hasMoved && !site}
             autoRotateSpeed={AUTO_ROTATE_SPEED}
             enableDamping={!reducedMotion}
             onStart={handleControlsStart}
