@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { app } from './data/app.js'
+import { useSiteSky } from './hooks/useSiteSky.js'
 import { SitePanel } from './panel/SitePanel.jsx'
 import { LunarScene } from './scene/LunarScene.jsx'
 import './App.css'
@@ -9,13 +10,15 @@ import './App.css'
    (direita). Cada frente trabalha dentro da sua região, em componente próprio, para duas
    pessoas não mexerem nas mesmas linhas deste arquivo ao mesmo tempo. */
 export default function App() {
-  /* A data da luz da cena: por enquanto, a hora em que a página abriu. O controle de data (card I4)
-     e a ligação das partes (card E11) trocam por um estado que a pessoa muda. */
+  /* A data da luz da cena e do céu do ponto: por enquanto, a hora em que a página abriu. É a mesma
+     para os dois, para a sombra da cena e os números do painel falarem do mesmo instante. A ligação
+     do controle de data (card E14) troca por um estado que a pessoa muda. */
   const [dateUtc] = useState(() => new Date())
-  /* O ponto escolhido com o clique na cena (card C3), ou null. Por enquanto só a cena usa: o
-     marcador aparece nele. A ligação das partes (card E11) entrega o mesmo ponto ao painel, pelo
-     useSiteSky, e liga a lista de locais (card I2) a este mesmo estado. */
+  /* O ponto escolhido com o clique na cena (card C3), ou null. A cena põe o marcador nele, e o
+     painel mostra o céu dele (card E11). A lista de locais (card E14) escolhe por este mesmo
+     estado. */
   const [site, setSite] = useState(null)
+  const { status, sky } = useSiteSky(site, dateUtc)
 
   return (
     <div className="app">
@@ -32,7 +35,7 @@ export default function App() {
 
         <section className="app__panel" aria-labelledby="panel-title">
           <h2 id="panel-title" className="app__region-title">{app.panel.title}</h2>
-          <SitePanel status="idle" sky={null} />
+          <SitePanel status={status} sky={sky} />
         </section>
       </main>
 

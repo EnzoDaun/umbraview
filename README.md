@@ -24,13 +24,14 @@ instala tudo no Windows, do zero.
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
   da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
-  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3). O painel
-  ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
+  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3), e o painel
+  da direita mostra o céu desse ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o
+  próximo pôr do Sol, a luz no período e as janelas de pouso.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
-  `useSubsolarPoint`, a direção do Sol. A cena já usa o `useSubsolarPoint`; o `useSiteSky` ainda
-  não está ligado à tela (card E11).
+  `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
+  `useSiteSky` e entrega o resultado ao painel.
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
