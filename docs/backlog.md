@@ -8,12 +8,12 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
 card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
-**Quem não é de dev (Mateus B., Matheus).** Vocês não usam o GitHub: o Enzo manda os cards de
-vocês em PDF, e manda de novo quando eles mudarem. O que vocês precisam ler vai no fim do PDF:
-as fontes de dados do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou vídeo, numa pasta
-compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como feito e leva o
-resultado para o projeto. Se usarem IA para gerar imagem, música, vídeo ou texto que entra no
-projeto, avisem o Enzo: o texto de uso de IA precisa dizer isso.
+**Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
+manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
+do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou
+vídeo, numa pasta compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como
+feito e leva o resultado para o projeto. Se usar IA para gerar imagem, música, vídeo ou texto que
+entra no projeto, avise o Enzo: o texto de uso de IA precisa dizer isso.
 
 **Achou algo que não é do seu card?** Vira card novo, no fim da área certa, com o próximo
 número. Não resolva no meio do card que você está fazendo.
@@ -985,7 +985,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com o Matheus (V2)
+**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.
@@ -1138,7 +1138,7 @@ licença.
    citação. Copie a frase e o link.
 2. Ler os termos de participação do Space Apps 2026 (página "Legal" do site) e conferir que a
    licença do projeto, MIT, atende ao que eles pedem.
-3. Conferir a licença da música que o Matheus escolher (V3) e da fonte de letra do site, que o
+3. Conferir a licença da música escolhida no V3 e da fonte de letra do site, que o
    Miguel escolhe.
 
 **Entrega.** A condição de uso de cada fonte, com a frase e o link, numa planilha ou num
@@ -1182,7 +1182,9 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: Matheus
+## V: em aberto
+
+Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
 
 ### V1 · Roteiro e storyboard do vídeo
 

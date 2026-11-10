@@ -3,7 +3,7 @@
 Do computador sem nada até o site rodando e o `verify` passando. Faça na ordem: cada passo
 confere o anterior.
 
-**Não vai programar (Mateus B., Matheus)?** Este guia não é para você, e você não precisa do
+**Não vai programar (Mateus B.)?** Este guia não é para você, e você não precisa do
 GitHub. As suas tarefas chegam pelo Enzo, num PDF tirado do [backlog](backlog.md), e as entregas
 vão para a pasta compartilhada da equipe.
 
