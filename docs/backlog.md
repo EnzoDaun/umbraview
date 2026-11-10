@@ -859,7 +859,7 @@ trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ### C10 · Parar o giro quando um ponto é escolhido
 
-**Estado:** a fazer · **Depende de:** C5
+**Estado:** feito em 10/11, PR #19 · **Depende de:** C5 (feito)
 
 **Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
 esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
@@ -875,6 +875,21 @@ clique, por isso ficou de fora.
 
 **Pronto quando.** O teste acima passa; a linha do README (seção "Acessibilidade") deixa de dizer
 "sem Ctrl, Shift ou Cmd"; e o `verify` passa.
+
+**Conferido** em 10/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), com os
+"Efeitos de animação" do Windows do Marco ligados, lendo da página o `autoRotate` dos controles e
+a posição da câmera (os quadros avançados pelo `advance` do React Three Fiber, como no C5):
+- Shift+clique perto do polo: o ponto foi escolhido, o marcador apareceu e o `autoRotate` foi a
+  `false` com o `hasMoved` ainda `false`, ou seja, o clique não avisou o `onStart` e quem parou o
+  giro foi o ponto escolhido. Depois do resto do deslize, a câmera ficou parada por 1.100 quadros.
+- Clique comum, numa página recarregada: escolheu o ponto e parou o giro pelo `onStart`, como no
+  C5.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: o Shift+clique
+  perto do polo, sem mexer na Lua antes, escolheu o ponto e parou o giro.
+- No teste do C5, o `rerender` do fim passou a trocar a data, e não o ponto: com o C10, um ponto
+  escolhido já para o giro, e aquele trecho passaria mesmo com o C5 quebrado. Conferido com uma
+  quebra que esquece o `hasMoved` quando a cena desenha de novo: o teste com a data reprova, o com
+  o ponto passa.
 
 **Aberto.** Um jeito de pausar pelo teclado antes de a pessoa escolher qualquer ponto (a WCAG
 2.2.2 junto com a 2.1.1, "tudo operável pelo teclado"). Decidimos depois do I2.
