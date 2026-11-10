@@ -381,44 +381,14 @@ controle de data.
 **Pronto quando.** Clicar num ponto da cena mostra o resultado dele no painel, e o `verify` passa.
 Feito: `src/App.test.jsx` escolhe um ponto pelo `onSelect` que o `App` entrega à cena (o clique
 não dá para simular sem WebGL) e confere que o painel mostra o aviso de calculando no mesmo render
-e depois a porcentagem de Sol que o motor dá para aquele ponto na hora em que a página abriu.
+e depois, número por número, o céu que o motor dá para aquele ponto na hora em que a página abriu.
+Com o céu calculado 6 h depois, o teste reprova: a altura da Terra muda no painel.
 
 **Conferido** em 10/11/2026, no `npm run build` + `npm run preview`, num Chromium sem placa de
 vídeo (SwiftShader), com o pedido de menos movimento ligado: um clique perto do polo põe o
 marcador, o painel mostra o aviso de calculando na hora e os números do ponto depois; um clique
 fora da área mostra o aviso da cena e não muda o painel. No console, só o aviso de sempre do
 `THREE.Clock`.
-
-### E14 · Ligar a lista e a data no `App.jsx`
-
-**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
-
-**Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
-abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
-escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #19.
-
-**O que fazer.**
-1. No `App.jsx`, a data vira um estado que o `onChange` do controle de data (I4) muda, e o
-   `onSelect` da lista (I2) chama o mesmo `setSite` do clique na cena. A cena e o painel continuam
-   recebendo a mesma data.
-2. Não trocar a data guardada por uma data inválida: uma data inválida (`Invalid Date`) não tem
-   posição do Sol no motor, e o `useSubsolarPoint` derruba a tela. O controle do I4 não chama o
-   `onChange` com o campo vazio (PR #17).
-3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
-   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
-   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
-   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
-   (`useSiteSky: a conta do céu falhou`).
-4. Digitar o ano no campo do I4 pode pedir uma conta por tecla: digitando 2026, o campo passou
-   por 0002, 0020 e 0202, e cada um é uma data válida (visto pelo Miguel no PR #17, com a cena
-   sozinha; com o painel ligado, ainda não foi testado). Cada troca de data refaz a posição do Sol
-   e da Terra do período (`PERIOD_DAYS`, `src/engine/config.js`, com o tempo medido). Medir com o
-   painel ligado antes de decidir o que fazer.
-5. O comentário do controle de data que aponta para o "card E11, item 2" passa a apontar para o
-   item 2 deste card.
-
-**Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
-luz certa na cena, também só com o teclado, e o `verify` passa.
 
 ### E12 · Nomes de variável e função em inglês
 
@@ -482,6 +452,37 @@ um texto para cada motivo.
 
 **Pronto quando.** O painel mostra um texto para o ponto fora da área e outro para a falha da
 conta, a tabela da ponte tem o campo novo, os testes acima passam e o `verify` passa.
+
+### E14 · Ligar a lista e a data no `App.jsx`
+
+**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
+
+**Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
+abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
+escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #19.
+
+**O que fazer.**
+1. No `App.jsx`, a data vira um estado que o `onChange` do controle de data (I4) muda, e o
+   `onSelect` da lista (I2) chama o mesmo `setSite` do clique na cena. A cena e o painel continuam
+   recebendo a mesma data.
+2. Não trocar a data guardada por uma data inválida: uma data inválida (`Invalid Date`) não tem
+   posição do Sol no motor, e o `useSubsolarPoint` derruba a tela. O controle do I4 não chama o
+   `onChange` com o campo vazio (PR #17).
+3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
+   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
+   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
+   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
+   (`useSiteSky: a conta do céu falhou`).
+4. Digitar o ano no campo do I4 pode pedir uma conta por tecla: digitando 2026, o campo passou
+   por 0002, 0020 e 0202, e cada um é uma data válida (visto pelo Miguel no PR #17, com a cena
+   sozinha; com o painel ligado, ainda não foi testado). Cada troca de data refaz a posição do Sol
+   e da Terra do período (`PERIOD_DAYS`, `src/engine/config.js`, com o tempo medido). Medir com o
+   painel ligado antes de decidir o que fazer.
+5. Os dois comentários do controle de data que citam o E11 (o de quem guarda a data e o do
+   "item 2") passam a citar este card.
+
+**Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
+luz certa na cena, também só com o teclado, e o `verify` passa.
 
 ---
 
@@ -891,7 +892,7 @@ trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ### C10 · Parar o giro quando um ponto é escolhido
 
-**Estado:** a fazer · **Depende de:** C5 (feito)
+**Estado:** a fazer · **Depende de:** C5
 
 **Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
 esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
