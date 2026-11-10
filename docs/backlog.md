@@ -8,12 +8,12 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
 card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
-**Quem não é de dev (Mateus B., Matheus).** Vocês não usam o GitHub: o Enzo manda os cards de
-vocês em PDF, e manda de novo quando eles mudarem. O que vocês precisam ler vai no fim do PDF:
-as fontes de dados do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou vídeo, numa pasta
-compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como feito e leva o
-resultado para o projeto. Se usarem IA para gerar imagem, música, vídeo ou texto que entra no
-projeto, avisem o Enzo: o texto de uso de IA precisa dizer isso.
+**Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
+manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
+do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou
+vídeo, numa pasta compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como
+feito e leva o resultado para o projeto. Se usar IA para gerar imagem, música, vídeo ou texto que
+entra no projeto, avise o Enzo: o texto de uso de IA precisa dizer isso.
 
 **Achou algo que não é do seu card?** Vira card novo, no fim da área certa, com o próximo
 número. Não resolva no meio do card que você está fazendo.
@@ -702,7 +702,7 @@ navegadores.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
-**Estado:** a fazer · **Depende de:** C1 (feito)
+**Estado:** feito em 09/11, PR #13 · **Depende de:** C1 (feito)
 
 **Para que serve.** Sem o pedido de menos movimento no sistema, a Lua do C1 gira sozinha o tempo
 todo, e não há como pausar. A WCAG 2.2.2 (nível A) pede um jeito de pausar o que se move sozinho
@@ -719,6 +719,27 @@ a cena entregou a eles, passam a receber `autoRotate: false`.
 
 **Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
 não volta a girar; os testes passam e o `verify` passa.
+
+O `onStart` chega quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou toca na tela
+(lido no `OrbitControls` do three-stdlib, que o Drei usa). Por isso o clique comum que escolhe um
+ponto também para o giro, que é o que o "Para que serve" pede.
+
+**Conferido** em 09/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), lendo
+da página a posição da câmera e o `autoRotate` dos controles:
+- O Windows do Marco está com os "Efeitos de animação" desligados, e o navegador responde
+  `prefers-reduced-motion: reduce`: a Lua começou parada e continuou parada.
+- Sem o pedido (o `matchMedia` trocado só naquela aba), a Lua girou sozinha e parou na primeira
+  vez que a pessoa arrastou, usou a roda ou clicou para escolher um ponto, cada caso numa página
+  recarregada. Depois do deslize, a câmera ficou no mesmo lugar por 600 quadros (10 s), também
+  depois de a cena desenhar de novo.
+- O navegador estava escondido e não desenhava sozinho: os quadros foram avançados pelo `advance`
+  do React Three Fiber, que roda o mesmo código de cada quadro, inclusive o giro dos controles.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: funcionou.
+
+**O que ficou para depois** virou o card C10, na revisão do PR #13. O Enzo conferiu no navegador
+em 09/11/2026 que o Shift+clique escolhe o ponto e a Lua continua girando (o three-stdlib trata o
+clique com Ctrl, Shift ou Cmd como pan e não avisa o `onStart`); o mesmo vai acontecer com a lista
+do I2.
 
 ### C6 · O relevo fino de perto
 
@@ -785,7 +806,7 @@ segundo, com o alcance diminuído em 1 km, reprova no teste novo e no antigo. A 
 
 ### C8 · Mostrar na cena até onde dá para escolher um ponto
 
-**Estado:** a fazer · **Depende de:** C3 (feito)
+**Estado:** feito em 09/11, PR #18 · **Depende de:** C3 (feito)
 
 **Para que serve.** O relevo que a cena desenha em volta do polo vai até uns 77°S (o `far.bin`,
 que o motor usa para as montanhas distantes do horizonte), mas só dá para escolher ponto até 84°S,
@@ -800,6 +821,23 @@ se confundiria com sombra, que é o assunto do site.
 
 **Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
 um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
+
+**Como ficou.** `src/scene/areaRing.js` calcula 720 pontos na latitude do `areaMaxLatDeg`, cada um
+300 m acima do relevo grosso daquele lugar (lido do `far.bin` pelo `reliefHeightAtM` do C3), e
+`src/scene/AreaRing.jsx` desenha a volta como uma linha fina com a cor do `--color-text-muted`. A
+linha não faz nem recebe sombra e não entra no clique (raycast desligado): o clique em cima dela
+continua chegando ao relevo. No `LunarScene.jsx`, só o import e a linha que monta o anel.
+
+**Conferido** em 09/11/2026, no `npm run build` + `npm run preview`, no Edge 157 com a Intel Iris
+Xe do notebook do Marco, com o pedido de menos movimento ligado para a câmera não andar:
+- Na posição inicial, o anel aparece em volta do polo, com uns 21 px de raio. Clicando do centro
+  para fora, de 2 em 2 px, até 20 px o ponto é escolhido; de 22 px em diante, não.
+- Na distância mínima, com a câmera inclinada até ficar em cima do anel, ele aparece como uma
+  linha contínua sobre o relevo. Um clique 6 px para dentro escolhe o ponto; 6 px para fora dá o
+  aviso "Landing sites can be chosen between the south pole and 84°S.".
+- O custo por quadro (o script do C4, 3 rodadas de cada, alternando antes e depois) foi de uns
+  6,0 ms sem o anel e 6,1 ms com ele. O fps ficou em 144, o limite da tela.
+- No console, só o aviso de sempre do `THREE.Clock`.
 
 ### C9 · Desenhar a cena só quando algo muda
 
@@ -818,6 +856,43 @@ mudar a cena fora do React pede um quadro com `invalidate()`.
 **Pronto quando.** Com a Lua parada, a cena não desenha quadro nenhum (contando
 `requestAnimationFrame` no canvas, ou na aba Performance do DevTools); girando, arrastando e
 trocando a data, tudo aparece como antes; e o `verify` passa.
+
+### C10 · Parar o giro quando um ponto é escolhido
+
+**Estado:** feito em 10/11, PR #20 · **Depende de:** C5 (feito)
+
+**Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
+esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
+Veio da revisão do PR #13.
+
+**O que fazer.** O `site` já chega à cena como prop. Com
+`autoRotate={!reducedMotion && !hasMoved && !site}` em `src/scene/LunarScene.jsx`, o clique com
+tecla e a lista ficam cobertos sem mexer no I2. Parar o giro no `handleMoonClick` cobriria só o
+clique, por isso ficou de fora.
+
+**Como testar** (`src/scene/LunarScene.test.jsx`). Com os mesmos substitutos do C5: um teste dá
+`rerender` com `site`, sem chamar o `onStart`, e o `autoRotate` vai a `false`.
+
+**Pronto quando.** O teste acima passa; a linha do README (seção "Acessibilidade") deixa de dizer
+"sem Ctrl, Shift ou Cmd"; e o `verify` passa.
+
+**Conferido** em 10/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), com os
+"Efeitos de animação" do Windows do Marco ligados, lendo da página o `autoRotate` dos controles e
+a posição da câmera (os quadros avançados pelo `advance` do React Three Fiber, como no C5):
+- Shift+clique perto do polo: o ponto foi escolhido, o marcador apareceu e o `autoRotate` foi a
+  `false` com o `hasMoved` ainda `false`, ou seja, o clique não avisou o `onStart` e quem parou o
+  giro foi o ponto escolhido. Depois do resto do deslize, a câmera ficou parada por 1.100 quadros.
+- Clique comum, numa página recarregada: escolheu o ponto e parou o giro pelo `onStart`, como no
+  C5.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: o Shift+clique
+  perto do polo, sem mexer na Lua antes, escolheu o ponto e parou o giro.
+- No teste do C5, o `rerender` do fim passou a trocar a data, e não o ponto: com o C10, um ponto
+  escolhido já para o giro, e aquele trecho passaria mesmo com o C5 quebrado. Conferido com uma
+  quebra que esquece o `hasMoved` quando a cena desenha de novo: o teste com a data reprova, o com
+  o ponto passa.
+
+**Aberto.** Um jeito de pausar pelo teclado antes de a pessoa escolher qualquer ponto (a WCAG
+2.2.2 junto com a 2.1.1, "tudo operável pelo teclado"). Decidimos depois do I2.
 
 ---
 
@@ -925,7 +1000,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com o Matheus (V2)
+**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.
@@ -1078,7 +1153,7 @@ licença.
    citação. Copie a frase e o link.
 2. Ler os termos de participação do Space Apps 2026 (página "Legal" do site) e conferir que a
    licença do projeto, MIT, atende ao que eles pedem.
-3. Conferir a licença da música que o Matheus escolher (V3) e da fonte de letra do site, que o
+3. Conferir a licença da música escolhida no V3 e da fonte de letra do site, que o
    Miguel escolhe.
 
 **Entrega.** A condição de uso de cada fonte, com a frase e o link, numa planilha ou num
@@ -1122,7 +1197,9 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: Matheus
+## V: em aberto
+
+Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
 
 ### V1 · Roteiro e storyboard do vídeo
 
