@@ -43,9 +43,9 @@ das montanhas em volta?** Quatro peças fazem isso:
   escolher o local e a data.
 
 O ponto e a data escolhidos ficam guardados no `App.jsx`, que entrega os dois para a cena e
-para o painel. Quem liga isso no `App.jsx` é o card E11. Os cards C1 e I1 só trocam, cada um, a
-linha do texto vazio da própria região pelo componente novo. Assim o Marco e o Miguel não
-editam as mesmas linhas ao mesmo tempo.
+para o painel. Quem liga isso no `App.jsx` são os cards E11 (o clique na cena) e E14 (a lista e
+a data). Os cards C1 e I1 só trocam, cada um, a linha do texto vazio da própria região pelo
+componente novo. Assim o Marco e o Miguel não editam as mesmas linhas ao mesmo tempo.
 
 ### O que a ponte entrega para a tela
 
@@ -364,33 +364,65 @@ dentro dos arquivos ficaram para o card E12.
 mesmo número de testes da `develop`; e o `npm run prepare` liga os ganchos pelo
 `install-hooks.mjs`.
 
-### E11 · Ligar a ponte no `App.jsx`
+### E11 · Ligar o clique na cena ao painel
 
-**Estado:** a fazer · **Depende de:** E3 (feito), C1 (feito), C3, I1, I2 e I4
+**Estado:** feito em 10/11, PR #19 · **Depende de:** E3 (feito), C1 (feito), C3 (feito) e I1 (feito)
 
-**Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
-guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
+**Para que serve.** É aqui que o site passa a responder: o ponto clicado na cena (card C3) vai
+para o `useSiteSky`, e o painel (card I1) mostra o céu dele. A lista de locais e o controle de data
+ficaram para o card E14, porque dependem do I2 e do I4, que ainda não existiam
+(CONTRIBUTING.md, seção 1, regra 6).
+
+**O que entrega.** No `App.jsx`, o ponto do clique (`site`) e a data vão para o `useSiteSky`, e o
+`{ status, sky }` que ele devolve vai para o `SitePanel`. A data é a hora em que a página abriu, a
+mesma da luz da cena, para a sombra e os números falarem do mesmo instante, até o E14 ligar o
+controle de data.
+
+**Pronto quando.** Clicar num ponto da cena mostra o resultado dele no painel, e o `verify` passa.
+Feito: `src/App.test.jsx` escolhe um ponto pelo `onSelect` que o `App` entrega à cena (o clique
+não dá para simular sem WebGL) e confere que o painel mostra o aviso de calculando no mesmo render
+e depois a porcentagem de Sol que o motor dá para aquele ponto na hora em que a página abriu.
+
+**Conferido** em 10/11/2026, no `npm run build` + `npm run preview`, num Chromium sem placa de
+vídeo (SwiftShader), com o pedido de menos movimento ligado: um clique perto do polo põe o
+marcador, o painel mostra o aviso de calculando na hora e os números do ponto depois; um clique
+fora da área mostra o aviso da cena e não muda o painel. No console, só o aviso de sempre do
+`THREE.Clock`.
+
+### E14 · Ligar a lista e a data no `App.jsx`
+
+**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
+
+**Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
+abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
+escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #19.
 
 **O que fazer.**
-1. No `App.jsx`: guardar o ponto e a data escolhidos e entregar os dois para a cena e para o
-   painel. O painel recebe o que o `useSiteSky` devolve; a cena, o que o `useSubsolarPoint`
-   devolve. Ligar o `onSelect` da lista (I2) e o `onChange` da data (I4). O C3 já guarda o ponto
-   do clique na cena num estado do `App.jsx` (`site`, ligado ao `onSelect` e ao marcador da
-   cena): é esse estado que vai para o `useSiteSky`, e a lista escolhe por ele também.
-2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
-   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
+1. No `App.jsx`, a data vira um estado que o `onChange` do controle de data (I4) muda, e o
+   `onSelect` da lista (I2) chama o mesmo `setSite` do clique na cena. A cena e o painel continuam
+   recebendo a mesma data.
+2. Não trocar a data guardada por uma data inválida: uma data inválida (`Invalid Date`) não tem
+   posição do Sol no motor, e o `useSubsolarPoint` derruba a tela. O controle do I4 não chama o
+   `onChange` com o campo vazio (PR #17).
 3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
    ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
    refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
    precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
    (`useSiteSky: a conta do céu falhou`).
+4. Digitar o ano no campo do I4 pode pedir uma conta por tecla: digitando 2026, o campo passou
+   por 0002, 0020 e 0202, e cada um é uma data válida (visto pelo Miguel no PR #17, com a cena
+   sozinha; com o painel ligado, ainda não foi testado). Cada troca de data refaz a posição do Sol
+   e da Terra do período (`PERIOD_DAYS`, `src/engine/config.js`, com o tempo medido). Medir com o
+   painel ligado antes de decidir o que fazer.
+5. O comentário do controle de data que aponta para o "card E11, item 2" passa a apontar para o
+   item 2 deste card.
 
-**Pronto quando.** Escolher um local na lista ou clicar num ponto da cena (card C3) mostra o
-resultado no painel e a luz certa na cena, e o `verify` passa.
+**Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
+luz certa na cena, também só com o teclado, e o `verify` passa.
 
 ### E12 · Nomes de variável e função em inglês
 
-**Estado:** a fazer · **Depende de:** E10, e de não haver PR aberto nos arquivos que ele muda
+**Estado:** a fazer · **Depende de:** E10 (feito), e de não haver PR aberto nos arquivos que ele muda
 
 **Para que serve.** O CLAUDE.md pede nome de variável e função em inglês e, logo abaixo, pede
 para seguir o estilo dos arquivos que já existem. Enquanto houver nome em português no código, as
@@ -442,7 +474,7 @@ chegam, e dão erro até o card E8. Veio do PR #11 (card I1).
 3. No painel (`src/panel/SitePanel.jsx`), dois textos em `src/data/panel.js` no lugar do `error`
    de hoje: o do ponto fora da área pede outro ponto, dentro da área; o da falha não pode
    prometer que escolher o mesmo ponto de novo resolve, porque hoje isso não refaz a conta (card
-   E11, item 3).
+   E14, item 3).
 
 **Como testar.** Em `src/hooks/useSiteSky.test.js`, o teste do ponto fora da área passa a
 conferir o motivo, e um caso novo cobre o arquivo que não chega. Em `src/panel/SitePanel.test.jsx`,
@@ -859,7 +891,7 @@ trocando a data, tudo aparece como antes; e o `verify` passa.
 
 ### C10 · Parar o giro quando um ponto é escolhido
 
-**Estado:** a fazer · **Depende de:** C5
+**Estado:** a fazer · **Depende de:** C5 (feito)
 
 **Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
 esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
@@ -970,7 +1002,7 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
    teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
    sobrar tempo.
-2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E11.
+2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E14.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
 
@@ -1021,7 +1053,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 2. **O erro mais provável deste card:** o `datetime-local` não guarda fuso, e
    `new Date(valor)` lê o valor no fuso do computador. Leia como UTC: `new Date(valor + ':00Z')`.
    Para pôr uma data no campo: `data.toISOString().slice(0, 16)`.
-3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E11.
+3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E14.
 
 **Como testar** (`src/panel/DateTimeControl.test.jsx`).
 - Digitar `2026-11-14T03:00` resulta num `Date` com `getUTCHours() === 3`. A suíte roda em
