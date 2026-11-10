@@ -6,7 +6,7 @@
 import { readFile as readFromDisk } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.jsx'
@@ -14,7 +14,7 @@ import { app } from './data/app.js'
 import { panel } from './data/panel.js'
 import { scene } from './data/scene.js'
 import { createSiteSky } from './engine/siteSky.js'
-import { formatPercent } from './panel/format.js'
+import { SitePanel } from './panel/SitePanel.jsx'
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }) => <div data-testid="canvas">{children}</div>,
@@ -88,7 +88,7 @@ describe('App, o ponto escolhido na cena vai para o painel (card E11)', () => {
   it(
     'o painel passa a calcular e mostra o céu que o motor dá para o ponto na hora em que a página abriu',
     async () => {
-      // só o relógio é falso: os temporizadores continuam de verdade, para o findByText esperar a conta
+      // só o relógio é falso: os temporizadores continuam de verdade, para o waitFor esperar a conta
       vi.useFakeTimers({ toFake: ['Date'] })
       vi.setSystemTime(PAGE_OPENED_AT)
       // o relevo vem do disco no lugar do servidor, como no useSiteSky.test.js
@@ -98,15 +98,20 @@ describe('App, o ponto escolhido na cena vai para o painel (card E11)', () => {
       })
 
       render(<App />)
-      const painel = screen.getByRole('region', { name: app.panel.title })
-      expect(within(painel).getByText(panel.empty)).toBeInTheDocument()
+      const panelRegion = screen.getByRole('region', { name: app.panel.title })
+      expect(within(panelRegion).getByText(panel.empty)).toBeInTheDocument()
 
       act(() => sceneProps.onSelect(TOP_1))
       // no mesmo render da escolha, e não depois: sem isso, a pessoa clica e nada muda até a conta acabar
-      expect(within(painel).getByText(panel.loading)).toBeInTheDocument()
+      expect(within(panelRegion).getByText(panel.loading)).toBeInTheDocument()
 
+      /* O painel inteiro, número por número, tem que ser o do céu que o motor dá para o ponto na hora
+         em que a página abriu. Conferir um número só não bastava: neste ponto o Sol fica à vista o
+         período inteiro, e a porcentagem dá 100% também com a data errada; com o céu calculado 6 h
+         depois, a altura da Terra muda de -5.0° para -4.8° (revisão do PR #19). */
       const expected = await createSiteSky(readRelief)(TOP_1, PAGE_OPENED_AT.getTime())
-      expect(await within(painel).findByText(formatPercent(expected.sunFraction), {}, WAIT)).toBeInTheDocument()
+      const { container: expectedPanel } = render(<SitePanel status="ready" sky={expected} />)
+      await waitFor(() => expect(within(panelRegion).getByRole('status').textContent).toBe(expectedPanel.textContent), WAIT)
     },
     SLOW_TEST_MS,
   )
