@@ -30,8 +30,8 @@ instala tudo no Windows, do zero.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
-  `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`, e o painel, o
-  `useSiteSky`.
+  `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
+  `useSiteSky` e entrega o resultado ao painel.
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
