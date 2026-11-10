@@ -702,7 +702,7 @@ navegadores.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
-**Estado:** a fazer · **Depende de:** C1 (feito)
+**Estado:** feito em 09/11, PR #13 · **Depende de:** C1 (feito)
 
 **Para que serve.** Sem o pedido de menos movimento no sistema, a Lua do C1 gira sozinha o tempo
 todo, e não há como pausar. A WCAG 2.2.2 (nível A) pede um jeito de pausar o que se move sozinho
@@ -719,6 +719,27 @@ a cena entregou a eles, passam a receber `autoRotate: false`.
 
 **Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
 não volta a girar; os testes passam e o `verify` passa.
+
+O `onStart` chega quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou toca na tela
+(lido no `OrbitControls` do three-stdlib, que o Drei usa). Por isso o clique comum que escolhe um
+ponto também para o giro, que é o que o "Para que serve" pede.
+
+**Conferido** em 09/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), lendo
+da página a posição da câmera e o `autoRotate` dos controles:
+- O Windows do Marco está com os "Efeitos de animação" desligados, e o navegador responde
+  `prefers-reduced-motion: reduce`: a Lua começou parada e continuou parada.
+- Sem o pedido (o `matchMedia` trocado só naquela aba), a Lua girou sozinha e parou na primeira
+  vez que a pessoa arrastou, usou a roda ou clicou para escolher um ponto, cada caso numa página
+  recarregada. Depois do deslize, a câmera ficou no mesmo lugar por 600 quadros (10 s), também
+  depois de a cena desenhar de novo.
+- O navegador estava escondido e não desenhava sozinho: os quadros foram avançados pelo `advance`
+  do React Three Fiber, que roda o mesmo código de cada quadro, inclusive o giro dos controles.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: funcionou.
+
+**O que ficou para depois** virou o card C10, na revisão do PR #13. O Enzo conferiu no navegador
+em 09/11/2026 que o Shift+clique escolhe o ponto e a Lua continua girando (o three-stdlib trata o
+clique com Ctrl, Shift ou Cmd como pan e não avisa o `onStart`); o mesmo vai acontecer com a lista
+do I2.
 
 ### C6 · O relevo fino de perto
 
@@ -818,6 +839,28 @@ mudar a cena fora do React pede um quadro com `invalidate()`.
 **Pronto quando.** Com a Lua parada, a cena não desenha quadro nenhum (contando
 `requestAnimationFrame` no canvas, ou na aba Performance do DevTools); girando, arrastando e
 trocando a data, tudo aparece como antes; e o `verify` passa.
+
+### C10 · Parar o giro quando um ponto é escolhido
+
+**Estado:** a fazer · **Depende de:** C5
+
+**Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
+esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
+Veio da revisão do PR #13.
+
+**O que fazer.** O `site` já chega à cena como prop. Com
+`autoRotate={!reducedMotion && !hasMoved && !site}` em `src/scene/LunarScene.jsx`, o clique com
+tecla e a lista ficam cobertos sem mexer no I2. Parar o giro no `handleMoonClick` cobriria só o
+clique, por isso ficou de fora.
+
+**Como testar** (`src/scene/LunarScene.test.jsx`). Com os mesmos substitutos do C5: um teste dá
+`rerender` com `site`, sem chamar o `onStart`, e o `autoRotate` vai a `false`.
+
+**Pronto quando.** O teste acima passa; a linha do README (seção "Acessibilidade") deixa de dizer
+"sem Ctrl, Shift ou Cmd"; e o `verify` passa.
+
+**Aberto.** Um jeito de pausar pelo teclado antes de a pessoa escolher qualquer ponto (a WCAG
+2.2.2 junto com a 2.1.1, "tudo operável pelo teclado"). Decidimos depois do I2.
 
 ---
 

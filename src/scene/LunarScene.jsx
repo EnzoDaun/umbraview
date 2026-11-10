@@ -1,12 +1,12 @@
 /* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
  * luz do Sol da data escolhida e a sombra das montanhas (card C2), e o clique que escolhe um ponto,
- * com o marcador dele (card C3).
+ * com o marcador dele (card C3). O giro sozinho para na primeira vez que a pessoa mexe (card C5).
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
@@ -88,6 +88,9 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   const sunlightColor = token('--color-sunlight')
   const [notice, showNotice] = useTimedNotice(NOTICE_DURATION_MS)
   const manifest = relief?.manifest ?? null
+  /* Se a pessoa já mexeu na Lua. Sem isto, ela giraria sozinha o tempo todo, sem jeito de parar
+     (a WCAG 2.2.2 pede um), e o ponto escolhido sairia andando da frente da pessoa (card C5). */
+  const [hasMoved, setHasMoved] = useState(false)
 
   const sunPosition = useMemo(() => sunLightPosition(subsolar), [subsolar])
   /* O alvo da luz precisa estar na cena para o three saber onde ele fica; solto, ele conta como
@@ -110,6 +113,15 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
     if (!result) return
     if (result.outside) showNotice(scene.outsideArea(Math.abs(manifest.areaMaxLatDeg)))
     else onSelect(result.site)
+  }
+
+  /* Os controles chamam isto quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou
+     toca na tela, inclusive no clique que escolhe um ponto. Com o pan desligado, o botão direito e
+     o esquerdo com Ctrl, Shift ou Cmd não chegam aqui (card C5, "Aberto"). O giro desligado não
+     volta: voltar sozinho depois de um tempo seria a Lua andando de novo enquanto a pessoa lê o
+     ponto. */
+  function handleControlsStart() {
+    setHasMoved(true)
   }
 
   return (
@@ -149,9 +161,10 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
             enablePan={false}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            autoRotate={!reducedMotion}
+            autoRotate={!reducedMotion && !hasMoved}
             autoRotateSpeed={AUTO_ROTATE_SPEED}
             enableDamping={!reducedMotion}
+            onStart={handleControlsStart}
           />
         </Canvas>
       </div>
