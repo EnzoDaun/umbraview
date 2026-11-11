@@ -1,7 +1,7 @@
 /* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
  * luz do Sol da data escolhida e a sombra das montanhas (card C2), e o clique que escolhe um ponto,
  * com o marcador dele (card C3). O giro sozinho para na primeira vez que a pessoa mexe (card C5)
- * ou quando um ponto é escolhido (card C10).
+ * ou quando um ponto é escolhido (card C10), e a cena só desenha quando algo muda (card C9).
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
@@ -69,6 +69,19 @@ const SHADOW_NORMAL_BIAS = 0.0002
    0.186, que troca por este e avisa no console a cada página aberta. */
 const SHADOW_TYPE = 'percentage'
 
+/* Com a Lua parada, a cena só desenha quando algo muda. Desenhando a cada quadro da tela, ela
+   parada custava os mesmos 6 ms por quadro de quando gira, 144 vezes por segundo numa tela de
+   144 Hz, gastando bateria sem mudar nada (card C4). Pedem quadro sozinhos: os controles quando a
+   pessoa move a câmera, inclusive no deslize depois de soltar o mouse (o OrbitControls do Drei
+   chama o invalidate), e o React Three Fiber quando uma prop muda ou um objeto entra na cena (a
+   luz de outra data, o relevo que chega, o marcador). O que mudar a cena por fora do React precisa
+   pedir o quadro com invalidate().
+   Enquanto ela gira sozinha, a cena desenha todo quadro: o passo do giro em cada quadro fica abaixo
+   do que os controles contam como mudança, e eles não pedem o quadro seguinte. Só com o 'demand',
+   a Lua desenharia um quadro e não sairia do lugar (card C9). */
+const FRAME_LOOP_ROTATING = 'always'
+const FRAME_LOOP_STILL = 'demand'
+
 /* Quanto tempo o aviso de clique fora da área fica na tela, em milissegundos: o bastante para ler
    uma frase curta sem cobrir a Lua depois disso. Não é token porque não é duração de animação. */
 const NOTICE_DURATION_MS = 5000
@@ -93,6 +106,10 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   /* Se a pessoa já mexeu na Lua. Sem isto, ela giraria sozinha o tempo todo, sem jeito de parar
      (a WCAG 2.2.2 pede um), e o ponto escolhido sairia andando da frente da pessoa (card C5). */
   const [hasMoved, setHasMoved] = useState(false)
+  /* Com um ponto escolhido, o giro para, venha ele de onde vier: o Ctrl, Shift ou Cmd+clique não
+     avisa o onStart, e a lista de locais (card I2) nem passa pelos controles. Sem o !site, o
+     marcador sairia andando com a Lua (card C10). */
+  const autoRotate = !reducedMotion && !hasMoved && !site
 
   const sunPosition = useMemo(() => sunLightPosition(subsolar), [subsolar])
   /* O alvo da luz precisa estar na cena para o three saber onde ele fica; solto, ele conta como
@@ -129,7 +146,11 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   return (
     <div className="lunar-scene">
       <div className="lunar-scene__view" role="img" aria-label={scene.label}>
-        <Canvas shadows={SHADOW_TYPE} camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}>
+        <Canvas
+          frameloop={autoRotate ? FRAME_LOOP_ROTATING : FRAME_LOOP_STILL}
+          shadows={SHADOW_TYPE}
+          camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}
+        >
           <ambientLight intensity={AMBIENT_INTENSITY} />
           <primitive object={sunTarget} />
           <directionalLight
@@ -160,14 +181,11 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
-          {/* Com um ponto escolhido, o giro para, venha ele de onde vier: o Ctrl, Shift ou
-              Cmd+clique não avisa o onStart, e a lista de locais (card I2) nem passa pelos
-              controles. Sem o !site, o marcador sairia andando com a Lua (card C10). */}
           <OrbitControls
             enablePan={false}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            autoRotate={!reducedMotion && !hasMoved && !site}
+            autoRotate={autoRotate}
             autoRotateSpeed={AUTO_ROTATE_SPEED}
             enableDamping={!reducedMotion}
             onStart={handleControlsStart}
