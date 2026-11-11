@@ -1232,7 +1232,7 @@ regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
 ---
 
-<!-- Os cards P e V vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
+<!-- Os cards P vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
 repositório. O que eles precisam ler vai nos anexos do PDF: a tabela de dados do CREDITS.md
 (anexo A) e o texto em inglês de docs/uso-de-ia.md (anexo B). -->
 ## P: Mateus Berlingieri
@@ -1334,9 +1334,7 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: em aberto
-
-Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
+## V: Miguel
 
 ### V1 · Roteiro e storyboard do vídeo
 
@@ -1350,8 +1348,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Roteiro em três partes: o problema (por que a luz e a Terra importam para pousar), o UmbraView
    funcionando (escolher um local, ver o Sol e a Terra, ver as janelas de pouso) e o resultado.
 2. Storyboard: uma linha por cena, com a duração, o que aparece na tela e a legenda em inglês.
-3. A lista das gravações de tela que vão ser necessárias, para quem é de dev gravar quando a tela
-   estiver pronta.
+3. A lista das gravações de tela que vão ser necessárias, para gravar quando a tela estiver
+   pronta.
 4. A duração sai do guia de submissão de 13/11. Monte o roteiro em blocos que dê para cortar,
    para servir tanto a uma versão curta quanto a uma longa.
 
@@ -1359,7 +1357,7 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada; combinar a fonte de letra com o Miguel
+**Estado:** a fazer · **Depende de:** nada
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
@@ -1382,8 +1380,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
    licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
-   qualquer janela, para acertar a configuração. O site ainda não está publicado: a gravação dele
-   fica para quando o Enzo publicar, ou é feita junto com alguém de dev.
+   qualquer janela, para acertar a configuração. O site ainda não está publicado (card E4): a
+   gravação dele sai do `npm run preview`, que mostra a versão final do site.
 3. Legenda em inglês: um arquivo `.srt` de modelo e o estilo definido (fonte, tamanho, posição).
 
 **Pronto quando.** Tudo na pasta compartilhada, com a licença da música anotada.
