@@ -23,6 +23,11 @@ export const panel = {
   // sem o marcador, a pessoa leria aquela data como um nascer ou um pôr do Sol de verdade.
   alreadyOpen: '(already open)',
   continues: '(continues)',
+  // A lista de locais de pouso (card I2).
+  siteListLabel: 'Known sites',
+  siteListPlaceholder: 'Choose a site…',
+  siteGroupLanded: 'Landed',
+  siteGroupCandidates: 'Artemis III candidate regions',
   // O controle de data e hora (card I4).
   dateTimeLabel: 'Date and time (UTC)',
   dateTimeNow: 'Now',
