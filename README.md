@@ -24,13 +24,14 @@ instala tudo no Windows, do zero.
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
   da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
-  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3). O painel
-  ainda está vazio, com o texto que aparece enquanto não há nada para mostrar.
+  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3), e o painel
+  da direita mostra o céu desse ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o
+  próximo pôr do Sol, a luz no período e as janelas de pouso.
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
-  `useSubsolarPoint`, a direção do Sol. A cena já usa o `useSubsolarPoint`; o `useSiteSky` ainda
-  não está ligado à tela (card E11).
+  `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
+  `useSiteSky` e entrega o resultado ao painel.
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
@@ -125,6 +126,9 @@ dizendo em qual arquivo ele está.
 - Movimento respeita `prefers-reduced-motion`: com a opção ligada no sistema, a cena 3D não
   anima a câmera sozinha e as transições somem. O `global.css` já desliga as transições; quem
   anima a cena confere a preferência no próprio componente.
+- Sem essa opção, a Lua gira devagar sozinha só até a pessoa arrastar ou usar a roda nela, ou até
+  um ponto ser escolhido, e não volta a girar (cards C5 e C10): a WCAG 2.2.2 pede um jeito de parar
+  o que se move sozinho.
 
 ## Testes
 
@@ -241,17 +245,21 @@ umbraview/
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
-│   ├── panel/                       o painel do ponto: os números e a escolha do local (cards I1 e I2)
+│   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
+│   │   ├── DateTimeControl.css
+│   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
 │   │   ├── SiteList.css
 │   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
-│   ├── scene/                       a Lua em 3D (cards C1 a C3)
+│   ├── scene/                       a Lua em 3D (cards C1 a C3 e C8)
+│   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
+│   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin

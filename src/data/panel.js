@@ -28,4 +28,7 @@ export const panel = {
   siteListPlaceholder: 'Choose a site…',
   siteGroupLanded: 'Landed',
   siteGroupCandidates: 'Artemis III candidate regions',
+  // O controle de data e hora (card I4).
+  dateTimeLabel: 'Date and time (UTC)',
+  dateTimeNow: 'Now',
 }

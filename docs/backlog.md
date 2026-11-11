@@ -8,12 +8,12 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
 card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
-**Quem não é de dev (Mateus B., Matheus).** Vocês não usam o GitHub: o Enzo manda os cards de
-vocês em PDF, e manda de novo quando eles mudarem. O que vocês precisam ler vai no fim do PDF:
-as fontes de dados do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou vídeo, numa pasta
-compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como feito e leva o
-resultado para o projeto. Se usarem IA para gerar imagem, música, vídeo ou texto que entra no
-projeto, avisem o Enzo: o texto de uso de IA precisa dizer isso.
+**Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
+manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
+do projeto (anexo A) e o texto de uso de IA (anexo B). A entrega é planilha, texto, imagem ou
+vídeo, numa pasta compartilhada com a equipe. Avise o Enzo quando terminar; ele marca o card como
+feito e leva o resultado para o projeto. Se usar IA para gerar imagem, música, vídeo ou texto que
+entra no projeto, avise o Enzo: o texto de uso de IA precisa dizer isso.
 
 **Achou algo que não é do seu card?** Vira card novo, no fim da área certa, com o próximo
 número. Não resolva no meio do card que você está fazendo.
@@ -43,9 +43,9 @@ das montanhas em volta?** Quatro peças fazem isso:
   escolher o local e a data.
 
 O ponto e a data escolhidos ficam guardados no `App.jsx`, que entrega os dois para a cena e
-para o painel. Quem liga isso no `App.jsx` é o card E11. Os cards C1 e I1 só trocam, cada um, a
-linha do texto vazio da própria região pelo componente novo. Assim o Marco e o Miguel não
-editam as mesmas linhas ao mesmo tempo.
+para o painel. Quem liga isso no `App.jsx` são os cards E11 (o clique na cena) e E14 (a lista e
+a data). Os cards C1 e I1 só trocam, cada um, a linha do texto vazio da própria região pelo
+componente novo. Assim o Marco e o Miguel não editam as mesmas linhas ao mesmo tempo.
 
 ### O que a ponte entrega para a tela
 
@@ -364,33 +364,35 @@ dentro dos arquivos ficaram para o card E12.
 mesmo número de testes da `develop`; e o `npm run prepare` liga os ganchos pelo
 `install-hooks.mjs`.
 
-### E11 · Ligar a ponte no `App.jsx`
+### E11 · Ligar o clique na cena ao painel
 
-**Estado:** a fazer · **Depende de:** E3 (feito), C1 (feito), C3, I1, I2 e I4
+**Estado:** feito em 10/11, PR #19 · **Depende de:** E3 (feito), C1 (feito), C3 (feito) e I1 (feito)
 
-**Para que serve.** É aqui que o site passa a responder: o ponto e a data escolhidos ficam
-guardados no `App.jsx`, que entrega os dois para a cena e para o painel.
+**Para que serve.** É aqui que o site passa a responder: o ponto clicado na cena (card C3) vai
+para o `useSiteSky`, e o painel (card I1) mostra o céu dele. A lista de locais e o controle de data
+ficaram para o card E14, porque dependem do I2 e do I4, que ainda não existiam
+(CONTRIBUTING.md, seção 1, regra 6).
 
-**O que fazer.**
-1. No `App.jsx`: guardar o ponto e a data escolhidos e entregar os dois para a cena e para o
-   painel. O painel recebe o que o `useSiteSky` devolve; a cena, o que o `useSubsolarPoint`
-   devolve. Ligar o `onSelect` da lista (I2) e o `onChange` da data (I4). O C3 já guarda o ponto
-   do clique na cena num estado do `App.jsx` (`site`, ligado ao `onSelect` e ao marcador da
-   cena): é esse estado que vai para o `useSiteSky`, e a lista escolhe por ele também.
-2. Não trocar a data guardada por uma data inválida: o campo do I4 vazio dá `Invalid Date`, o
-   motor não tem posição do Sol para ela, e o `useSubsolarPoint` derruba a tela.
-3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
-   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
-   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
-   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
-   (`useSiteSky: a conta do céu falhou`).
+**O que entrega.** No `App.jsx`, o ponto do clique (`site`) e a data vão para o `useSiteSky`, e o
+`{ status, sky }` que ele devolve vai para o `SitePanel`. A data é a hora em que a página abriu, a
+mesma da luz da cena, para a sombra e os números falarem do mesmo instante, até o E14 ligar o
+controle de data.
 
-**Pronto quando.** Escolher um local na lista ou clicar num ponto da cena (card C3) mostra o
-resultado no painel e a luz certa na cena, e o `verify` passa.
+**Pronto quando.** Clicar num ponto da cena mostra o resultado dele no painel, e o `verify` passa.
+Feito: `src/App.test.jsx` escolhe um ponto pelo `onSelect` que o `App` entrega à cena (o clique
+não dá para simular sem WebGL) e confere que o painel mostra o aviso de calculando no mesmo render
+e depois, número por número, o céu que o motor dá para aquele ponto na hora em que a página abriu.
+Com o céu calculado 6 h depois, o teste reprova: a altura da Terra muda no painel.
+
+**Conferido** em 10/11/2026, no `npm run build` + `npm run preview`, num Chromium sem placa de
+vídeo (SwiftShader), com o pedido de menos movimento ligado: um clique perto do polo põe o
+marcador, o painel mostra o aviso de calculando na hora e os números do ponto depois; um clique
+fora da área mostra o aviso da cena e não muda o painel. No console, só o aviso de sempre do
+`THREE.Clock`.
 
 ### E12 · Nomes de variável e função em inglês
 
-**Estado:** a fazer · **Depende de:** E10, e de não haver PR aberto nos arquivos que ele muda
+**Estado:** a fazer · **Depende de:** E10 (feito), e de não haver PR aberto nos arquivos que ele muda
 
 **Para que serve.** O CLAUDE.md pede nome de variável e função em inglês e, logo abaixo, pede
 para seguir o estilo dos arquivos que já existem. Enquanto houver nome em português no código, as
@@ -442,7 +444,7 @@ chegam, e dão erro até o card E8. Veio do PR #11 (card I1).
 3. No painel (`src/panel/SitePanel.jsx`), dois textos em `src/data/panel.js` no lugar do `error`
    de hoje: o do ponto fora da área pede outro ponto, dentro da área; o da falha não pode
    prometer que escolher o mesmo ponto de novo resolve, porque hoje isso não refaz a conta (card
-   E11, item 3).
+   E14, item 3).
 
 **Como testar.** Em `src/hooks/useSiteSky.test.js`, o teste do ponto fora da área passa a
 conferir o motivo, e um caso novo cobre o arquivo que não chega. Em `src/panel/SitePanel.test.jsx`,
@@ -450,6 +452,37 @@ um texto para cada motivo.
 
 **Pronto quando.** O painel mostra um texto para o ponto fora da área e outro para a falha da
 conta, a tabela da ponte tem o campo novo, os testes acima passam e o `verify` passa.
+
+### E14 · Ligar a lista e a data no `App.jsx`
+
+**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
+
+**Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
+abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
+escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #19.
+
+**O que fazer.**
+1. No `App.jsx`, a data vira um estado que o `onChange` do controle de data (I4) muda, e o
+   `onSelect` da lista (I2) chama o mesmo `setSite` do clique na cena. A cena e o painel continuam
+   recebendo a mesma data.
+2. Não trocar a data guardada por uma data inválida: uma data inválida (`Invalid Date`) não tem
+   posição do Sol no motor, e o `useSubsolarPoint` derruba a tela. O controle do I4 não chama o
+   `onChange` com o campo vazio (PR #17).
+3. Decidir o que a tela oferece quando o `useSiteSky` devolve `error`. Escolher de novo o mesmo
+   ponto na mesma data não refaz a conta, porque o pedido é o mesmo; trocar de ponto ou de data
+   refaz, e o `siteSky.js` tenta de novo o arquivo que falhou. Um botão de "tentar de novo"
+   precisa de um jeito novo de pedir a mesma conta ao hook. O motivo do erro aparece no console
+   (`useSiteSky: a conta do céu falhou`).
+4. Digitar o ano no campo do I4 pode pedir uma conta por tecla: digitando 2026, o campo passou
+   por 0002, 0020 e 0202, e cada um é uma data válida (visto pelo Miguel no PR #17, com a cena
+   sozinha; com o painel ligado, ainda não foi testado). Cada troca de data refaz a posição do Sol
+   e da Terra do período (`PERIOD_DAYS`, `src/engine/config.js`, com o tempo medido). Medir com o
+   painel ligado antes de decidir o que fazer.
+5. Os dois comentários do controle de data que citam o E11 (o de quem guarda a data e o do
+   "item 2") passam a citar este card.
+
+**Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
+luz certa na cena, também só com o teclado, e o `verify` passa.
 
 ---
 
@@ -702,7 +735,7 @@ navegadores.
 
 ### C5 · Parar o giro quando a pessoa mexe na Lua
 
-**Estado:** a fazer · **Depende de:** C1 (feito)
+**Estado:** feito em 09/11, PR #13 · **Depende de:** C1 (feito)
 
 **Para que serve.** Sem o pedido de menos movimento no sistema, a Lua do C1 gira sozinha o tempo
 todo, e não há como pausar. A WCAG 2.2.2 (nível A) pede um jeito de pausar o que se move sozinho
@@ -719,6 +752,27 @@ a cena entregou a eles, passam a receber `autoRotate: false`.
 
 **Pronto quando.** No `npm run dev`, a Lua gira sozinha até a primeira vez que a pessoa mexe, e
 não volta a girar; os testes passam e o `verify` passa.
+
+O `onStart` chega quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou toca na tela
+(lido no `OrbitControls` do three-stdlib, que o Drei usa). Por isso o clique comum que escolhe um
+ponto também para o giro, que é o que o "Para que serve" pede.
+
+**Conferido** em 09/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), lendo
+da página a posição da câmera e o `autoRotate` dos controles:
+- O Windows do Marco está com os "Efeitos de animação" desligados, e o navegador responde
+  `prefers-reduced-motion: reduce`: a Lua começou parada e continuou parada.
+- Sem o pedido (o `matchMedia` trocado só naquela aba), a Lua girou sozinha e parou na primeira
+  vez que a pessoa arrastou, usou a roda ou clicou para escolher um ponto, cada caso numa página
+  recarregada. Depois do deslize, a câmera ficou no mesmo lugar por 600 quadros (10 s), também
+  depois de a cena desenhar de novo.
+- O navegador estava escondido e não desenhava sozinho: os quadros foram avançados pelo `advance`
+  do React Three Fiber, que roda o mesmo código de cada quadro, inclusive o giro dos controles.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: funcionou.
+
+**O que ficou para depois** virou o card C10, na revisão do PR #13. O Enzo conferiu no navegador
+em 09/11/2026 que o Shift+clique escolhe o ponto e a Lua continua girando (o three-stdlib trata o
+clique com Ctrl, Shift ou Cmd como pan e não avisa o `onStart`); o mesmo vai acontecer com a lista
+do I2.
 
 ### C6 · O relevo fino de perto
 
@@ -785,7 +839,7 @@ segundo, com o alcance diminuído em 1 km, reprova no teste novo e no antigo. A 
 
 ### C8 · Mostrar na cena até onde dá para escolher um ponto
 
-**Estado:** a fazer · **Depende de:** C3 (feito)
+**Estado:** feito em 09/11, PR #18 · **Depende de:** C3 (feito)
 
 **Para que serve.** O relevo que a cena desenha em volta do polo vai até uns 77°S (o `far.bin`,
 que o motor usa para as montanhas distantes do horizonte), mas só dá para escolher ponto até 84°S,
@@ -800,6 +854,23 @@ se confundiria com sombra, que é o assunto do site.
 
 **Pronto quando.** Com a câmera na posição inicial e na distância mínima, o anel aparece em 84°S;
 um clique dentro dele escolhe o ponto e um fora dá o aviso; e o `verify` passa.
+
+**Como ficou.** `src/scene/areaRing.js` calcula 720 pontos na latitude do `areaMaxLatDeg`, cada um
+300 m acima do relevo grosso daquele lugar (lido do `far.bin` pelo `reliefHeightAtM` do C3), e
+`src/scene/AreaRing.jsx` desenha a volta como uma linha fina com a cor do `--color-text-muted`. A
+linha não faz nem recebe sombra e não entra no clique (raycast desligado): o clique em cima dela
+continua chegando ao relevo. No `LunarScene.jsx`, só o import e a linha que monta o anel.
+
+**Conferido** em 09/11/2026, no `npm run build` + `npm run preview`, no Edge 157 com a Intel Iris
+Xe do notebook do Marco, com o pedido de menos movimento ligado para a câmera não andar:
+- Na posição inicial, o anel aparece em volta do polo, com uns 21 px de raio. Clicando do centro
+  para fora, de 2 em 2 px, até 20 px o ponto é escolhido; de 22 px em diante, não.
+- Na distância mínima, com a câmera inclinada até ficar em cima do anel, ele aparece como uma
+  linha contínua sobre o relevo. Um clique 6 px para dentro escolhe o ponto; 6 px para fora dá o
+  aviso "Landing sites can be chosen between the south pole and 84°S.".
+- O custo por quadro (o script do C4, 3 rodadas de cada, alternando antes e depois) foi de uns
+  6,0 ms sem o anel e 6,1 ms com ele. O fps ficou em 144, o limite da tela.
+- No console, só o aviso de sempre do `THREE.Clock`.
 
 ### C9 · Desenhar a cena só quando algo muda
 
@@ -818,6 +889,43 @@ mudar a cena fora do React pede um quadro com `invalidate()`.
 **Pronto quando.** Com a Lua parada, a cena não desenha quadro nenhum (contando
 `requestAnimationFrame` no canvas, ou na aba Performance do DevTools); girando, arrastando e
 trocando a data, tudo aparece como antes; e o `verify` passa.
+
+### C10 · Parar o giro quando um ponto é escolhido
+
+**Estado:** feito em 10/11, PR #20 · **Depende de:** C5 (feito)
+
+**Para que serve.** Hoje, o ponto escolhido com Ctrl, Shift ou Cmd+clique sai andando com a Lua:
+esse clique escolhe o ponto, mas não para o giro do C5. Com a lista do I2 vai acontecer o mesmo.
+Veio da revisão do PR #13.
+
+**O que fazer.** O `site` já chega à cena como prop. Com
+`autoRotate={!reducedMotion && !hasMoved && !site}` em `src/scene/LunarScene.jsx`, o clique com
+tecla e a lista ficam cobertos sem mexer no I2. Parar o giro no `handleMoonClick` cobriria só o
+clique, por isso ficou de fora.
+
+**Como testar** (`src/scene/LunarScene.test.jsx`). Com os mesmos substitutos do C5: um teste dá
+`rerender` com `site`, sem chamar o `onStart`, e o `autoRotate` vai a `false`.
+
+**Pronto quando.** O teste acima passa; a linha do README (seção "Acessibilidade") deixa de dizer
+"sem Ctrl, Shift ou Cmd"; e o `verify` passa.
+
+**Conferido** em 10/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), com os
+"Efeitos de animação" do Windows do Marco ligados, lendo da página o `autoRotate` dos controles e
+a posição da câmera (os quadros avançados pelo `advance` do React Three Fiber, como no C5):
+- Shift+clique perto do polo: o ponto foi escolhido, o marcador apareceu e o `autoRotate` foi a
+  `false` com o `hasMoved` ainda `false`, ou seja, o clique não avisou o `onStart` e quem parou o
+  giro foi o ponto escolhido. Depois do resto do deslize, a câmera ficou parada por 1.100 quadros.
+- Clique comum, numa página recarregada: escolheu o ponto e parou o giro pelo `onStart`, como no
+  C5.
+- O Marco conferiu a olho no navegador dele, no mesmo dia, com o `npm run dev`: o Shift+clique
+  perto do polo, sem mexer na Lua antes, escolheu o ponto e parou o giro.
+- No teste do C5, o `rerender` do fim passou a trocar a data, e não o ponto: com o C10, um ponto
+  escolhido já para o giro, e aquele trecho passaria mesmo com o C5 quebrado. Conferido com uma
+  quebra que esquece o `hasMoved` quando a cena desenha de novo: o teste com a data reprova, o com
+  o ponto passa.
+
+**Aberto.** Um jeito de pausar pelo teclado antes de a pessoa escolher qualquer ponto (a WCAG
+2.2.2 junto com a 2.1.1, "tudo operável pelo teclado"). Decidimos depois do I2.
 
 ---
 
@@ -910,7 +1018,7 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
    teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
    sobrar tempo.
-2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E11.
+2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E14.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
 
@@ -925,7 +1033,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com o Matheus (V2)
+**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.
@@ -950,7 +1058,7 @@ licença; o `verify` passa.
 
 ### I4 · Escolher a data e a hora, em UTC
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 09/11, PR #17 · **Depende de:** nada
 
 **Para que serve.** O resultado muda com a data: o mesmo ponto pode estar no Sol hoje e no escuro
 daqui a uma semana. As missões trabalham em UTC, e o site também.
@@ -961,7 +1069,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 2. **O erro mais provável deste card:** o `datetime-local` não guarda fuso, e
    `new Date(valor)` lê o valor no fuso do computador. Leia como UTC: `new Date(valor + ':00Z')`.
    Para pôr uma data no campo: `data.toISOString().slice(0, 16)`.
-3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E11.
+3. Ao mudar, chamar `onChange(dateUtc)`, que o `App.jsx` liga no E14.
 
 **Como testar** (`src/panel/DateTimeControl.test.jsx`).
 - Digitar `2026-11-14T03:00` resulta num `Date` com `getUTCHours() === 3`. A suíte roda em
@@ -1078,7 +1186,7 @@ licença.
    citação. Copie a frase e o link.
 2. Ler os termos de participação do Space Apps 2026 (página "Legal" do site) e conferir que a
    licença do projeto, MIT, atende ao que eles pedem.
-3. Conferir a licença da música que o Matheus escolher (V3) e da fonte de letra do site, que o
+3. Conferir a licença da música escolhida no V3 e da fonte de letra do site, que o
    Miguel escolhe.
 
 **Entrega.** A condição de uso de cada fonte, com a frase e o link, numa planilha ou num
@@ -1122,7 +1230,9 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: Matheus
+## V: em aberto
+
+Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
 
 ### V1 · Roteiro e storyboard do vídeo
 
