@@ -49,4 +49,15 @@ describe('DateTimeControl', () => {
     fireEvent.change(screen.getByLabelText(panel.dateTimeLabel), { target: { value: '' } })
     expect(onChange).not.toHaveBeenCalled()
   })
+
+  it('ano de cinco dígitos não chama o onChange: também daria data inválida (card E14)', () => {
+    // o campo aceita anos depois de 9999, mas o Date só lê esse texto com um + na frente
+    // (+010000-...): sem ele, dá Invalid Date, que derrubaria a tela como o campo vazio
+    const onChange = vi.fn()
+    render(<DateTimeControl dateUtc={dateUtc} onChange={onChange} />)
+    fireEvent.change(screen.getByLabelText(panel.dateTimeLabel), {
+      target: { value: '10000-01-01T00:00' },
+    })
+    expect(onChange).not.toHaveBeenCalled()
+  })
 })
