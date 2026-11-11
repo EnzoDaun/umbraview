@@ -874,7 +874,7 @@ Xe do notebook do Marco, com o pedido de menos movimento ligado para a câmera n
 
 ### C9 · Desenhar a cena só quando algo muda
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 11/11, PR #22 · **Depende de:** nada
 
 **Para que serve.** O `<Canvas>` desenha a cena 144 vezes por segundo numa tela de 144 Hz (60 numa
 de 60 Hz), mesmo com a Lua parada. Medido no C4, em 08/11/2026: com o pedido de menos movimento, a
@@ -889,6 +889,34 @@ mudar a cena fora do React pede um quadro com `invalidate()`.
 **Pronto quando.** Com a Lua parada, a cena não desenha quadro nenhum (contando
 `requestAnimationFrame` no canvas, ou na aba Performance do DevTools); girando, arrastando e
 trocando a data, tudo aparece como antes; e o `verify` passa.
+
+**O que mudou do "O que fazer":** só o `frameloop="demand"` fez a Lua parar de girar sozinha. Ela
+desenhava um quadro e ficava no lugar. O passo do giro em cada quadro (2,6 × 10⁻⁵ rad, com o
+deslize) fica muito abaixo do que o `OrbitControls` do three-stdlib conta como mudança (`EPS =
+1e-6`, comparado com 6,9 × 10⁻¹⁰), e por isso ele não chama o `invalidate`. Ficou assim: `always`
+enquanto a Lua gira sozinha, e `demand` quando ela está parada (depois que a pessoa mexe, card C5;
+com um ponto escolhido, card C10; ou com o pedido de menos movimento). O desperdício que o C4 mediu
+era justamente com a Lua parada.
+
+**Conferido** em 11/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), com os
+"Efeitos de animação" do Windows do Marco ligados. Os quadros foram contados pelo
+`renderer.info.render.frame` do three:
+
+| Situação | `develop` antes | Com o C9 |
+|---|---|---|
+| Girando sozinha | 300 quadros em 5 s | 300 em 5 s (`always`), e a câmera anda |
+| Parada, depois da roda | 300 em 5 s | 0 em 10 s (`demand`), com a Lua aproximada na tela |
+| Arrasto e deslize | (desenha sempre) | quadros no arrasto, 75 no deslize, depois 0 em 10 s |
+| Clique perto do polo | (desenha sempre) | 2 quadros, o marcador a 0,5 px do clique e o painel com o céu do ponto; depois 0 em 8 s |
+| Data 7 dias depois (mudada no estado do `App`, porque quem liga o controle é o E14) | (desenha sempre) | 5 quadros, a luz em outra direção e a sombra no lado novo; depois 0 em 8 s |
+| Janela em tamanho de tablet | (desenha sempre) | 2 quadros, a cena no tamanho novo; depois 0 em 6 s |
+
+O Marco conferiu no mesmo dia, no Edge dele, com o `npm run dev` e o "Frame Rendering Stats" do
+DevTools: funcionou.
+
+- **Para o C6:** o `PerformanceMonitor` do Drei mede dentro do `useFrame`, então só mede quando a
+  cena desenha. Com a Lua parada não há quadro para medir: a medida tem que acontecer enquanto ela
+  gira ou enquanto a pessoa mexe, ou o C6 pede alguns quadros só para medir.
 
 ### C10 · Parar o giro quando um ponto é escolhido
 
