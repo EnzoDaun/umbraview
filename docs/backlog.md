@@ -312,9 +312,9 @@ revisão do PR #6.
 
 **Estado:** a fazer · **Depende de:** P1 (a lista de locais)
 
-**Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da lista
-(Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e até este card o
-painel mostra erro para eles.
+**Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da
+planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e
+eles ficam fora da lista até este card.
 
 **O que fazer.**
 1. No script de `scripts/prepare-data/`, um recorte por local da lista ao norte de 84°S, dos
@@ -432,8 +432,8 @@ diferentes de quem usa:
 O hook manda o motivo só para o console (`useSiteSky: a conta do céu falhou`), e a tela recebe só
 o `status`. Por isso o texto de erro do painel diz "It may be outside the area we have terrain
 for": o "may" é porque o painel não sabe qual dos dois aconteceu. O clique na cena já barra o
-ponto fora da área antes de chegar ao hook (card C3), mas os locais da lista (I2) ao norte de 84°S
-chegam, e dão erro até o card E8. Veio do PR #11 (card I1).
+ponto fora da área antes de chegar ao hook (card C3), e a lista (I2) só traz locais dentro dela: o
+`src/data/sites.test.js` reprova o local ao norte de 84°S. Veio do PR #11 (card I1).
 
 **O que fazer.**
 1. A ponte devolve o motivo junto com o `error`. Como o motor separa os dois casos fica com o
@@ -1010,23 +1010,33 @@ O sorteio tem de propósito ponto claro e ponto escuro, em dez faixas de Sol.
 **Estado:** a fazer · **Depende de:** P1 para os dados de verdade; o componente começa antes,
 com dados de teste
 
-**Para que serve.** É o caminho mais rápido para ver um resultado: escolher "Apollo 11" numa
+**Para que serve.** É o caminho mais rápido para ver um resultado: escolher "Athena (IM-2)" numa
 lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo teclado.
 
 **O que fazer.**
-1. `src/panel/SiteList.jsx`: um `<select>` com `<label>`, com os locais agrupados por agência
-   (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
-   teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
-   sobrar tempo.
+1. `src/panel/SiteList.jsx`: um `<select>` com `<label>`, com os locais agrupados por tipo
+   (`<optgroup>`): "Landed" para os que já pousaram e "Artemis III candidate regions" para as
+   regiões candidatas, que não têm data de pouso. Por tipo, e não por agência: com os locais
+   previstos (o IM-2 e as 9 regiões candidatas), agência daria um grupo "Intuitive Machines" com
+   um local e um "NASA" com nove, e não diria que ninguém pousou nas regiões candidatas (decisão
+   do Enzo). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com teclado e
+   com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se sobrar tempo.
 2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E14.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
+   Só entram os locais que o site calcula, os que ficam dentro do relevo, até 84°S (card E2): um
+   local ao norte disso daria erro no painel. Por isso a lista sai só com o IM-2: as 9 regiões
+   candidatas do Artemis III ficaram para o card I7, e os outros locais da planilha esperam o
+   card E8.
 
 **Como testar.**
 - `src/panel/SiteList.test.jsx`: escolher uma opção com `userEvent.selectOptions` chama o
   `onSelect` com o local certo (os locais de teste ficam no próprio arquivo de teste).
 - `src/data/sites.test.js`: todo local tem `sourceUrl` começando com `https://`, `lat` entre −90 e
-  90, `lon` entre −180 e 180, e nenhum `id` se repete.
+  90, `lon` entre −180 e 180, nenhum `id` se repete, e todo local fica dentro da área com relevo,
+  pelo `isInsideReliefArea` (`src/engine/reliefFiles.js`) com o `areaMaxLatDeg` de
+  `public/data/relief/manifest.json`: a mesma regra com que o motor recusa o ponto e o clique na
+  cena barra.
 
 **Pronto quando.** Os testes passam, dá para escolher só com o teclado (Tab até a lista, setas,
 Enter), e o `verify` passa.
@@ -1125,6 +1135,37 @@ UTC. A suíte roda em Tóquio: se o fuso escapar, a hora sai errada e o teste pe
 
 **Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período, os
 testes passam e o `verify` passa.
+
+### I7 · As 9 regiões do Artemis III na lista
+
+**Estado:** a fazer · **Depende de:** as coordenadas das 9 regiões
+
+**Para que serve.** A lista de locais (card I2) já separa as regiões candidatas num grupo
+próprio, "Artemis III candidate regions": um local com `landedAtUtc: null` cai nele. O I2 saiu
+só com o IM-2, porque as coordenadas das regiões não chegaram a tempo. Veio da divisão do I2
+(CONTRIBUTING.md, seção 1, regra 6). Se o Enzo preferir fazer este card, ele passa para a área
+E, com o próximo número.
+
+**O que já se sabe.**
+- Os nomes, de fonte primária ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)):
+  Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton, Nobile Rim 1,
+  Nobile Rim 2, de Gerlache Rim 2 e Slater Plain. Esse documento não dá coordenada.
+- Não existe ponto oficial de cada região. O Enzo pensou em calcular o centro de cada uma pelos
+  limites do USGS. Coordenada estimada não entra (README, "Nenhum dado inventado").
+- **Alerta.** A [página do mosaico da LROC para Peak Near Cabeus B](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2)
+  dá o centro em lat −83.6 e lon 291.2 leste (−68.8 na faixa de −180 a 180 do `sites.js`), e a
+  faixa de latitude de −84.06 a −83.21 (conferido pelo Miguel em 11/11/2026). O centro fica ao
+  norte do `areaMaxLatDeg` (−84.0, `public/data/relief/manifest.json`): essa região ficaria fora
+  da área que o site calcula, e o teste da área (`src/data/sites.test.js`) a barraria. As outras
+  8 não foram conferidas.
+
+**O que fazer.**
+1. Para cada região com coordenada e fonte: uma linha em `src/data/sites.js`, com
+   `landedAtUtc: null`, e a fonte no CREDITS.md, junto com o documento dos nomes.
+2. A região que cair ao norte de 84°S fica fora da lista até o card E8, pela mesma regra do I2.
+
+**Pronto quando.** As regiões com coordenada e fonte aparecem no grupo "Artemis III candidate
+regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
 ---
 
