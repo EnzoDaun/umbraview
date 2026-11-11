@@ -23,10 +23,12 @@ instala tudo no Windows, do zero.
   e o painel do ponto escolhido (direita).
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
-  da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
-  abriu. Um clique perto do polo escolhe um ponto e põe um marcador nele (card C3), e o painel
-  da direita mostra o céu desse ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o
-  próximo pôr do Sol, a luz no período e as janelas de pouso.
+  da data e a sombra das montanhas (card C2). Um clique perto do polo escolhe um ponto e põe um
+  marcador nele (card C3), e o painel da direita mostra o céu desse ponto na mesma data (cards I1
+  e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no período e as janelas de pouso.
+- No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
+  (card I2), e a data e a hora em UTC, que começam na hora em que a página abriu (card I4). Os
+  dois mudam a cena e o painel juntos (card E14).
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
