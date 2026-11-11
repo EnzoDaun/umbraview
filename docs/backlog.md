@@ -1007,7 +1007,7 @@ O sorteio tem de propósito ponto claro e ponto escuro, em dez faixas de Sol.
 
 ### I2 · Lista de locais de pouso
 
-**Estado:** a fazer · **Depende de:** P1 para os dados de verdade; o componente começa antes,
+**Estado:** feito em 11/11, PR #23 · **Depende de:** P1 para os dados de verdade; o componente começa antes,
 com dados de teste
 
 **Para que serve.** É o caminho mais rápido para ver um resultado: escolher "Athena (IM-2)" numa
