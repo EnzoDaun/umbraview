@@ -3,6 +3,7 @@
  * textos vêm de src/data/panel.js, para o teste não repetir o inglês. */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { panel } from '../data/panel.js'
@@ -30,6 +31,27 @@ const sites = [
   },
 ]
 
+/* A lista do jeito que o App.jsx usa (card E14): quem guarda o ponto escolhido é o pai, e o ponto
+   também pode vir do clique na cena, que não é um local da lista. */
+function ListAndScene({ onSelect }) {
+  const [site, setSite] = useState(null)
+  return (
+    <>
+      <SiteList
+        sites={sites}
+        selectedId={site?.id}
+        onSelect={(chosen) => {
+          onSelect(chosen)
+          setSite(chosen)
+        }}
+      />
+      <button type="button" onClick={() => setSite({ lat: -89.9, lon: 0 })}>
+        click on the scene
+      </button>
+    </>
+  )
+}
+
 describe('SiteList', () => {
   it('começa no aviso, e não num local: escolher o primeiro local também tem que chamar o onSelect', () => {
     render(<SiteList sites={sites} onSelect={() => {}} />)
@@ -53,5 +75,22 @@ describe('SiteList', () => {
     await userEvent.selectOptions(screen.getByLabelText(panel.siteListLabel), 'Site L2')
     // o objeto inteiro, e não só o id: o useSiteSky precisa do lat, do lon e do name
     expect(onSelect).toHaveBeenCalledExactlyOnceWith(sites[2])
+  })
+
+  it('mostra o local escolhido, e volta ao aviso quando o ponto vem do clique na cena (card E14)', async () => {
+    // sem isso, a lista continuaria dizendo "Site L2" com o painel mostrando o ponto clicado
+    const onSelect = vi.fn()
+    render(<ListAndScene onSelect={onSelect} />)
+    const list = screen.getByLabelText(panel.siteListLabel)
+
+    await userEvent.selectOptions(list, 'Site L2')
+    expect(list).toHaveDisplayValue('Site L2')
+
+    await userEvent.click(screen.getByRole('button', { name: 'click on the scene' }))
+    expect(list).toHaveDisplayValue(panel.siteListPlaceholder)
+
+    // e o mesmo local pode ser escolhido de novo, porque a lista mudou de verdade
+    await userEvent.selectOptions(list, 'Site L2')
+    expect(onSelect).toHaveBeenCalledTimes(2)
   })
 })

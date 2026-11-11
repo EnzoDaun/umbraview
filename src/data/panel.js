@@ -4,9 +4,11 @@
 export const panel = {
   empty: 'Choose a landing site to see when the Sun and the Earth are above its horizon.',
   loading: 'Calculating the sky over this site…',
-  // Serve para a falha de verdade e para o ponto fora da área com relevo: hoje o useSiteSky não
-  // diz qual dos dois aconteceu (card E13).
-  error: "Couldn't calculate this site. It may be outside the area we have terrain for. Try another one.",
+  // A conta que falhou: um arquivo de relevo que não chegou ou que chegou com o tamanho errado
+  // (reliefFiles.js). O motor também recusa o ponto fora da área, mas esse ponto não chega ao
+  // painel: o clique na cena barra (card C3), e a lista só tem locais dentro (card I2).
+  // Recarregar a página refaz a conta; escolher o mesmo ponto de novo, não (card E14).
+  error: "Couldn't calculate this site. Reload the page to try again.",
   sunNow: 'Sun now',
   earthNow: 'Earth now',
   visible: 'In view',

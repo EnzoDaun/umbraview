@@ -418,7 +418,13 @@ com o mesmo número de testes de antes da troca, e o `verify` passa.
 
 ### E13 · O motivo do erro, para o painel
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** fechado em 11/11, PR #26, sem código · **Depende de:** nada
+
+**Por que fechou.** O ponto fora da área não chega mais ao painel: o clique na cena barra (card
+C3), e a lista só tem locais dentro dela (card I2, com o teste da área no `sites.test.js`). O
+único erro que sobra é a conta que falhou, e o texto de erro do painel passou a falar só dela
+(card E14). O motor continua recusando o ponto fora da área, e o motivo continua indo para o
+console.
 
 **Para que serve.** O `status: 'error'` do `useSiteSky` junta dois casos que pedem respostas
 diferentes de quem usa:
@@ -455,7 +461,7 @@ conta, a tabela da ponte tem o campo novo, os testes acima passam e o `verify` p
 
 ### E14 · Ligar a lista e a data no `App.jsx`
 
-**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
+**Estado:** feito em 11/11, PR #26 · **Depende de:** E11 (feito), I2 (feito) e I4 (feito)
 
 **Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
 abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
@@ -480,6 +486,35 @@ escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #1
    painel ligado antes de decidir o que fazer.
 5. Os dois comentários do controle de data que citam o E11 (o de quem guarda a data e o do
    "item 2") passam a citar este card.
+
+**Como ficou.**
+- A lista mostra o local escolhido e volta ao "Choose a site…" quando o ponto vem do clique na
+  cena: sem isso, ela continuaria mostrando o último local com o painel em outro ponto.
+- Item 2: a guarda ficou no `DateTimeControl.jsx`, junto da do campo vazio. Além do campo vazio,
+  o ano depois de 9999 também dá data inválida: o campo aceita, mas o `Date` só lê esse ano com um
+  `+` na frente.
+- Item 3: o texto de erro do painel diz para recarregar a página, que sempre refaz a conta. Um
+  botão de "tentar de novo" precisaria de um jeito novo de pedir a mesma conta ao hook, só para
+  fazer o que recarregar já faz. O E13 fechou junto.
+- Item 4: não precisou de nada. Cada troca de data custa uma conta curta, e o `useSiteSky` já
+  descarta o resultado de um pedido velho (medido abaixo).
+
+**Conferido** em 11/11/2026, no Chromium do Playwright (153, sem placa de vídeo: o WebGL é por
+software), com o build no `npm run preview`:
+- O primeiro Tab da página chega à lista, com o anel de foco; a seta para baixo escolhe o Athena
+  (IM-2), o marcador aparece na cena e o painel mostra o céu dele.
+- Com o Athena escolhido, digitar 2027 no ano: o campo passou por 0002, 0020, 0202 e 2027, e cada
+  um pediu uma conta, de 23 a 32 ms entre o "Calculating…" e os números. Entre uma tecla e outra a
+  página levou de 0,7 a 1,4 s: é o quadro da cena nesse Chromium sem placa de vídeo (617 a 867 ms
+  por quadro, medido com a Lua girando), e não a conta. Com placa de vídeo, o quadro é de uns 6 ms
+  (card C4).
+- Digitar 10000 no ano: o campo não aceitou e ficou em 2027. A guarda do ano depois de 9999 está
+  provada no teste do `DateTimeControl`; em outro navegador, não conferi.
+- O clique na Lua depois da lista faz a lista voltar ao aviso, e escolher o Athena de novo volta a
+  mostrar o céu dele.
+- Com os ladrilhos de relevo respondendo 404, o painel mostra "Couldn't calculate this site.
+  Reload the page to try again." e o motivo vai para o console.
+- O console ficou sem erro, fora os do 404 de propósito.
 
 **Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
 luz certa na cena, também só com o teclado, e o `verify` passa.
@@ -1197,7 +1232,7 @@ regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
 ---
 
-<!-- Os cards P e V vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
+<!-- Os cards P vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
 repositório. O que eles precisam ler vai nos anexos do PDF: a tabela de dados do CREDITS.md
 (anexo A) e o texto em inglês de docs/uso-de-ia.md (anexo B). -->
 ## P: Mateus Berlingieri
@@ -1299,9 +1334,7 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: em aberto
-
-Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
+## V: Miguel
 
 ### V1 · Roteiro e storyboard do vídeo
 
@@ -1315,8 +1348,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Roteiro em três partes: o problema (por que a luz e a Terra importam para pousar), o UmbraView
    funcionando (escolher um local, ver o Sol e a Terra, ver as janelas de pouso) e o resultado.
 2. Storyboard: uma linha por cena, com a duração, o que aparece na tela e a legenda em inglês.
-3. A lista das gravações de tela que vão ser necessárias, para quem é de dev gravar quando a tela
-   estiver pronta.
+3. A lista das gravações de tela que vão ser necessárias, para gravar quando a tela estiver
+   pronta.
 4. A duração sai do guia de submissão de 13/11. Monte o roteiro em blocos que dê para cortar,
    para servir tanto a uma versão curta quanto a uma longa.
 
@@ -1324,7 +1357,7 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada; combinar a fonte de letra com o Miguel
+**Estado:** a fazer · **Depende de:** nada
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
@@ -1347,8 +1380,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
    licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
-   qualquer janela, para acertar a configuração. O site ainda não está publicado: a gravação dele
-   fica para quando o Enzo publicar, ou é feita junto com alguém de dev.
+   qualquer janela, para acertar a configuração. O site ainda não está publicado (card E4): a
+   gravação dele sai do `npm run preview`, que mostra a versão final do site.
 3. Legenda em inglês: um arquivo `.srt` de modelo e o estilo definido (fonte, tamanho, posição).
 
 **Pronto quando.** Tudo na pasta compartilhada, com a licença da música anotada.
