@@ -1,7 +1,7 @@
 /* A cena da Lua: o nome para o leitor de tela e o pedido de menos movimento (card C1), a sombra
  * e a câmera que chega perto do relevo (card C2), o marcador e o aviso do clique (card C3), e o
  * giro sozinho que para na primeira vez que a pessoa mexe na Lua (card C5) ou quando um ponto é
- * escolhido (card C10).
+ * escolhido (card C10), e a cena que só desenha quando algo muda (card C9).
  *
  * O jsdom não tem WebGL nem matchMedia. Por isso o Canvas e os controles viram substitutos: o
  * teste confere o que a cena entrega a eles, e não o desenho. Que a Lua aparece e gira se confere
@@ -133,6 +133,30 @@ describe('LunarScene', () => {
     expect(props.enablePan).toBe(false)
     expect(props.minDistance).toBeGreaterThan(1)
     expect(props.maxDistance).toBeGreaterThan(props.minDistance)
+  })
+
+  it('enquanto gira sozinha, desenha todo quadro; depois que a pessoa mexe, só quando algo muda', () => {
+    // girando sozinha, o passo de cada quadro é menor do que os controles contam como mudança, e
+    // eles não pedem o quadro seguinte: só com o 'demand', a Lua não sairia do lugar (card C9)
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('always')
+
+    // parada, a cena ainda custava 6 ms por quadro, 144 vezes por segundo (medido no C4)
+    act(() => ultimosControles().onStart())
+    expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('demand')
+  })
+
+  it('com o pedido de menos movimento, a Lua não gira e a cena só desenha quando algo muda', () => {
+    sistemaPede(true)
+    render(<LunarScene dateUtc={DATA} />)
+    expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('demand')
+  })
+
+  it('com um ponto escolhido, a Lua para e a cena só desenha quando algo muda', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
+    expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('demand')
   })
 
   it('liga a sombra, que é o assunto do C2', () => {
