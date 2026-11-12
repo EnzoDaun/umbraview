@@ -329,7 +329,7 @@ recortes está anotado aqui, e a conferência também.
 
 ### E9 · Testes do motor sem o navegador simulado
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 11/11, PR #25 · **Depende de:** nada
 
 **Para que serve.** Todos os testes rodam dentro do jsdom, o navegador simulado, inclusive os do
 motor, que não usam tela. Em 29/10/2026, o Vitest avisou que criar o jsdom levou 67% do tempo
@@ -340,6 +340,17 @@ que ele mediu.
 `npm run test` antes e depois.
 
 **Pronto quando.** O `verify` passa e os dois tempos estão anotados aqui.
+
+**Medido** em 10/11/2026, no Linux (2 processadores), com a suíte inteira (`npx vitest run`, 241
+testes; a duração é a do relatório JSON do Vitest), três rodadas de cada:
+
+| Ambiente dos 12 arquivos de teste de `src/engine/` e `scripts/` | Duração da suíte |
+|---|---|
+| jsdom, o navegador simulado (antes) | 30,3 a 34,7 s |
+| Node (depois) | 22,1 a 24,0 s |
+
+O Vitest 5 respeita o comentário: um teste com ele vê o `document` indefinido; sem ele, vê o do
+jsdom. A regra para teste novo nessas pastas está no `vite.config.js`.
 
 ### E10 · Nome dos scripts em inglês
 
@@ -518,6 +529,30 @@ software), com o build no `npm run preview`:
 
 **Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
 luz certa na cena, também só com o teclado, e o `verify` passa.
+
+### E15 · O teste dos ganchos que estoura o tempo no Windows de vez em quando
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O teste "aponta o core.hooksPath para .githooks num repositório git"
+(`scripts/hooks.test.js`) abre o `git` e o `node` três vezes, e o Vitest dá 5 s para cada teste.
+No Windows do Enzo ele costuma levar menos de 1 s, mas em 10/11/2026, entre 16h30 e 17h10, levou
+6,3 s e 9,4 s dentro do `verify`, e reprovou os dois; numa terceira rodada, outro teste da suíte
+falhou, sem o nome registrado. Teste que passa ou não conforme o computador está ocupado ensina a
+rodar de novo até passar (card C7). Veio do PR #25 (card E9).
+
+**O que se sabe** (no Windows do Enzo, com o relatório JSON do Vitest):
+- Sozinho, o arquivo dos ganchos dá de 212 a 238 ms nesse teste, no Node ou no jsdom (10/11/2026).
+- Na suíte inteira, em 11/11/2026, deu de 562 a 698 ms em 6 rodadas: com os ganchos no Node ou no
+  jsdom, e logo depois do `lint` ou não. Não é o card E9 nem a ordem do `verify`.
+- A causa da lentidão de 10/11 não foi achada.
+
+**O que fazer.** Dar aos testes de `scripts/hooks.test.js` que abrem processos um limite de tempo
+próprio (o terceiro argumento do `it`), com o motivo no comentário, e medir no notebook do Miguel,
+onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de todo teste que falhar.
+
+**Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
+`verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
 
 ---
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 /* O motor é JavaScript puro: não importa React nem a cena 3D, e não mexe na página.
  *
  * É isso que deixa o mesmo código rodar no teste, no navegador e, se o card E3 precisar, num Web

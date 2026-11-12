@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 
 import { HORIZON, MIN_LANDING_WINDOW_HOURS, NEAR_LAYER_UP_TO_M, PERIOD_DAYS } from './config.js'

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { readFile as readFromDisk } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
