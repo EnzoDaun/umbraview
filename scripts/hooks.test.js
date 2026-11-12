@@ -24,6 +24,14 @@ const BLOQUEIO = join(RAIZ, '.claude', 'hooks', 'block-git-write.sh')
 const TEM_SH = spawnSync('sh', ['-c', 'exit 0']).status === 0
 if (!TEM_SH) console.warn('hooks.test.js: sh fora do PATH; os casos dos ganchos foram pulados')
 
+/* O limite de tempo dos testes que abrem processos (sh, git, node), no lugar dos 5 s do Vitest
+   (card E15, com os tempos medidos). Num Windows ocupado, abrir um processo pode levar segundos,
+   e com 5 s o verify reprova sem nada errado nos ganchos: estes testes conferem o que os ganchos
+   fazem, e não a velocidade da máquina. São 30 s, acima do pior tempo medido. A chamada ao
+   processo trava o teste até o processo sair, e o Vitest só compara o tempo quando o teste
+   termina: o limite maior não faz a suíte esperar mais por um processo que travou. */
+const PROCESS_TEST_TIMEOUT_MS = 30000
+
 const temporaria = mkdtempSync(join(tmpdir(), 'umbraview-ganchos-'))
 afterAll(() => rmSync(temporaria, { recursive: true, force: true }))
 
@@ -47,7 +55,7 @@ function bloqueio(comando) {
   return r.status === 2 && /Bloqueado pela politica/.test(r.stderr) ? 'bloqueia' : `erro ${r.status}: ${r.stderr}`
 }
 
-describe.skipIf(!TEM_SH)('gancho commit-msg', () => {
+describe.skipIf(!TEM_SH)('gancho commit-msg', { timeout: PROCESS_TEST_TIMEOUT_MS }, () => {
   it('aceita mensagem normal, inclusive com a palavra claude no assunto', () => {
     expect(commitMsg('adiciona painel do ponto\n')).toBe('aceita')
     expect(commitMsg('documenta como usar o claude no projeto\n')).toBe('aceita')
@@ -64,7 +72,7 @@ describe.skipIf(!TEM_SH)('gancho commit-msg', () => {
   })
 })
 
-describe.skipIf(!TEM_SH)('bloqueio de git no Claude Code', () => {
+describe.skipIf(!TEM_SH)('bloqueio de git no Claude Code', { timeout: PROCESS_TEST_TIMEOUT_MS }, () => {
   it.each([
     'git commit -m "x"',
     'git push origin develop',
@@ -133,7 +141,7 @@ describe('configuração do Claude Code da equipe (.claude/settings.json)', () =
   })
 })
 
-describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', () => {
+describe.skipIf(!TEM_SH)('instalação dos ganchos pelo npm install', { timeout: PROCESS_TEST_TIMEOUT_MS }, () => {
   it('aponta o core.hooksPath para .githooks num repositório git', () => {
     const repo = join(temporaria, 'repo')
     execFileSync('git', ['init', '-q', repo])
