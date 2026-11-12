@@ -1081,9 +1081,9 @@ dentro do próprio arquivo de teste, nunca em `src/data/`.
 **Cuidado.** `elevationDeg` negativo com `visible: true` não é erro (veja "O que a ponte entrega
 para a tela"). Mostre os dois como chegam.
 
-**A janela mínima ainda está em aberto.** O painel só lista janelas que duram pelo menos
-`MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`), um valor provisório. Combine o valor com o
-Enzo e o Marco antes de fazer a lista de janelas. Para essa conversa, medido em 30/10/2026 com
+**A janela mínima: 24 h.** O painel só lista janelas que duram pelo menos
+`MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`). O valor era provisório, 144 h, e ficou em
+24 h por decisão do Enzo em 12/11 (card I6), com esta medição, feita em 30/10/2026 com
 `node scripts/prepare-data/window-lengths.mjs`: a porcentagem dos pontos de comparação com a NASA
 que têm pelo menos uma janela deste tamanho, contando a partir de 14/11/2026.
 
@@ -1208,32 +1208,55 @@ quando outra pessoa roda tudo do zero, lendo só o README.
 saída do passo 2) e a saída do passo 4, que é `OK: os recortes gerados são idênticos aos do
 repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que falta no card E2.
 
-### I6 · Dizer no painel qual é o período
+### I6 · Dizer no painel qual é o período e quanto dura cada janela
 
 **Estado:** a fazer · **Depende de:** I1 (feito)
 
 **Para que serve.** "Sunlight in the period" e "Longest darkness" não dizem qual é o período:
 quem lê 85.5% não sabe se é de uma semana ou de um ano. O mesmo vale para os dois textos do
 painel que terminam em "in this period" (o do pôr do Sol e o da lista de janelas). O período
-começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, hoje 30). Veio do PR
-#11 (card I1).
+começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, hoje 30). Na lista de
+janelas falta também quanto cada uma dura: quem lê quer saber quantos dias dá para operar, sem
+fazer a conta de cabeça. Veio do PR #11 (card I1).
+
+**Decisões do Enzo em 12/11.** O motor é dele, e ele autorizou as mudanças no motor neste card.
+- O período vem do motor: o `sky` ganha `period: { startUtc, endUtc }`. O `endUtc` é o último
+  instante calculado, a data mais 719 h, porque o motor faz 720 contas de hora em hora a partir da
+  data (`src/engine/siteSky.js`). Se o painel somasse 30 dias, o fim ficaria 1 h depois da última
+  conta, uma janela "(continues)" pareceria acabar antes do período, e a regra do `PERIOD_DAYS`
+  ficaria em dois lugares.
+- A duração de cada janela também vem do motor, porque a tela não faz conta: cada item de
+  `landingWindows` ganha `durationHours`, calculado a partir dos próprios `startUtc` e `endUtc`,
+  para os três nunca discordarem. Na janela cortada pelo período, é a duração da parte dentro
+  dele.
+- A janela mínima (`MIN_LANDING_WINDOW_HOURS`) cai de 144 h para 24 h. O motivo está no
+  comentário dela, em `src/engine/config.js`.
+- Os dois campos novos entram na tabela de "O que a ponte entrega para a tela", com aviso ao
+  Marco no mesmo dia.
 
 **O que fazer.**
-1. Antes de começar, combinar com o Enzo de onde vem o fim do período. Hoje só o motor sabe a
-   duração, e o painel nem recebe a data. Dois caminhos: o `sky` passa a trazer o período pronto
-   (campo novo na tabela de "O que a ponte entrega para a tela", com aviso ao Marco no mesmo
-   dia), ou o painel recebe a data e soma o `PERIOD_DAYS`. Um detalhe pesa a favor do primeiro:
-   o motor calcula de hora em hora a partir da data (`src/engine/siteSky.js`), então o último
-   instante calculado fica uma hora antes de "data + 30 dias", e é ele o fim de uma janela com
-   "(continues)".
-2. Mostrar no painel o começo e o fim do período, em UTC, com o `formatUtc`
-   (`src/panel/format.js`). Os textos em `src/data/panel.js`.
+1. `src/engine/summary.js`: o `period` e o `durationHours`, e as linhas da tabela da ponte.
+2. `src/engine/config.js`: a janela mínima de 24 h.
+3. No painel, uma linha "Period" entre "Earth now" e "Next sunset", com o começo e o fim em UTC
+   pelo `formatUtc` (`src/panel/format.js`): as duas linhas de cima são o primeiro instante do
+   período, e as de baixo valem para o período inteiro.
+4. Na lista de janelas, a duração de cada uma em dias e horas ("6 d 4 h"; abaixo de um dia, só
+   horas, "18 h"), por uma função nova em `src/panel/format.js`. Na janela cortada pelo período,
+   com "≥" na frente, para o número não parecer exato quando não é. Os textos de tela em
+   `src/data/panel.js`.
 
-**Como testar** (`src/panel/SitePanel.test.jsx`). O `ready` mostra o começo e o fim do período em
-UTC. A suíte roda em Tóquio: se o fuso escapar, a hora sai errada e o teste pega.
+**Como testar.**
+- `src/engine/summary.test.js`: o período vai do primeiro ao último instante calculado (com o fim
+  em 720 h, o teste falha), e a duração de uma janela inteira e de uma cortada é exatamente o fim
+  menos o começo.
+- `src/engine/config.test.js`: a janela mínima é de 24 h.
+- `src/panel/format.test.js`: a duração em dias e horas, e só em horas abaixo de um dia.
+- `src/panel/SitePanel.test.jsx`: o `ready` mostra o começo e o fim do período em UTC, e a
+  duração de cada janela, com "≥" só na cortada. A suíte roda em Tóquio: se o fuso escapar, a
+  hora sai errada e o teste pega.
 
-**Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período, os
-testes passam e o `verify` passa.
+**Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período e quanto
+dura cada janela, o Marco foi avisado dos dois campos novos, os testes passam e o `verify` passa.
 
 ### I7 · As 9 regiões do Artemis III na lista
 

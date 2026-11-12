@@ -27,12 +27,13 @@ export const HORIZON = Object.freeze({
    do LDEM_60S_240MPP_ADJ (os dois no CREDITS.md). */
 export const NEAR_LAYER_UP_TO_M = 10000
 
-/* Janela de pouso mínima: 6 dias seguidos com Sol e Terra à vista. É escolha provisória da equipe,
-   sem requisito de missão por trás; o valor final se combina com o Marco e o Miguel antes do
-   painel (card I1), porque decide se a lista de janelas aparece vazia; a medição para essa
-   conversa está no card I1. Muda aqui, e só aqui.
+/* Janela de pouso mínima: 1 dia seguido com Sol e Terra à vista. Decisão do Enzo em 12/11/2026
+   (card I6): os 144 h de antes não tinham requisito de missão por trás. Pela medição do card I1,
+   nos pontos sorteados de 85° a 90°S em 30 dias, com 144 h só 38% têm janela, e com 24 h, 58%; os
+   outros 42% não têm nem um dia seguido de Sol e Terra. Zerar o mínimo encheria a lista de pedaços
+   de poucas horas. Muda aqui, e só aqui.
    Janela cortada no começo ou no fim do período entra mesmo mais curta (series.js). */
-export const MIN_LANDING_WINDOW_HOURS = 144
+export const MIN_LANDING_WINDOW_HOURS = 24
 
 /* O período que a tela mostra para um ponto, a partir da data escolhida. 30 dias cobrem um dia
    lunar inteiro (29,5 dias: o tempo que o Sol leva para dar uma volta no céu da Lua), então todo

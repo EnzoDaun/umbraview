@@ -31,8 +31,10 @@ describe('parâmetros do motor (config.js)', () => {
     expect(Object.isFrozen(HORIZON)).toBe(true)
   })
 
-  it('a janela mínima de pouso é um número de horas positivo', () => {
-    expect(MIN_LANDING_WINDOW_HOURS).toBeGreaterThan(0)
+  it('a janela mínima de pouso é de 24 h, decisão do Enzo em 12/11 (card I6)', () => {
+    // o mínimo decide quais pontos mostram janela (medição no card I1): trocar o valor é decisão
+    // da equipe, e não ajuste de código, por isso o teste segura o número
+    expect(MIN_LANDING_WINDOW_HOURS).toBe(24)
   })
 
   it('o período da tela cobre um dia lunar inteiro, em dias inteiros', () => {
