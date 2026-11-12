@@ -36,6 +36,13 @@ function PanelBody({ status, sky }) {
         {' · '}
         <span className="site-panel__number">{formatDegrees(sky.earthNow.elevationDeg)}</span>
       </Row>
+      {/* entre o agora e o resto: as duas linhas de cima são o primeiro instante do período, e
+          as de baixo valem para o período inteiro */}
+      <Row label={panel.period}>
+        <span className="site-panel__number site-panel__date">{formatUtc(sky.period.startUtc)}</span>
+        {' – '}
+        <span className="site-panel__number site-panel__date">{formatUtc(sky.period.endUtc)}</span>
+      </Row>
       <Row label={panel.nextSunset}>
         {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
             Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}

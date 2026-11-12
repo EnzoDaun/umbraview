@@ -16,6 +16,8 @@ const sky = {
   sunFraction: 0.855,
   longestDarkHours: 36,
   landingWindows: [],
+  // o fim é o começo mais 719 h, o último instante que o motor calcula (summary.js)
+  period: { startUtc: new Date('2026-11-14T00:00:00Z'), endUtc: new Date('2026-12-13T23:00:00Z') },
 }
 
 // o valor que a tela mostra ao lado de um rótulo: o <dd> logo depois do <dt>
@@ -42,6 +44,12 @@ describe('SitePanel', () => {
     render(<SitePanel status="ready" sky={sky} />)
     expect(valueOf(panel.sunNow).textContent).toBe(`${panel.visible} · -0.8°`)
     expect(valueOf(panel.earthNow).textContent).toBe(`${panel.hidden} · 3.2°`)
+  })
+
+  it('ready: mostra o começo e o fim do período em UTC', () => {
+    render(<SitePanel status="ready" sky={sky} />)
+    // em Tóquio seriam 14 Nov, 09:00 e 14 Dec, 08:00
+    expect(valueOf(panel.period).textContent).toBe('14 Nov 2026, 00:00 UTC – 13 Dec 2026, 23:00 UTC')
   })
 
   it('ready: mostra a luz do período e a maior escuridão', () => {
