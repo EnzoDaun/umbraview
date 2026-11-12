@@ -21,10 +21,21 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthNow', 'landingWindows', 'longestDarkHours', 'nextSunsetUtc', 'sunFraction', 'sunNow'],
+      ['earthNow', 'landingWindows', 'longestDarkHours', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
     )
     expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
     expect(Object.keys(sky.earthNow).sort()).toEqual(['elevationDeg', 'visible'])
+  })
+
+  it('o período vai do primeiro ao último instante calculado, onde termina a janela que continua', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    // dez instantes de hora em hora: o último é a hora 9, e não a 10
+    expect(sky.period).toEqual({
+      startUtc: new Date('2026-11-14T03:00:00Z'),
+      endUtc: new Date('2026-11-14T12:00:00Z'),
+    })
+    const continues = sky.landingWindows.find((j) => j.endsAfterPeriod)
+    expect(continues.endUtc).toEqual(sky.period.endUtc)
   })
 
   it('o agora é o primeiro instante da série', () => {

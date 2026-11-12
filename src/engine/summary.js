@@ -39,5 +39,8 @@ export function summarizeSky(series, { minWindowHours }) {
       startsBeforePeriod: w.startsBeforePeriod,
       endsAfterPeriod: w.endsAfterPeriod,
     })),
+    // o fim é o último instante calculado, e não o começo mais PERIOD_DAYS: é onde termina uma
+    // janela com endsAfterPeriod, e assim a duração do período fica só no siteSky.js
+    period: { startUtc: at(0), endUtc: at((series.count - 1) * stepHours) },
   }
 }
