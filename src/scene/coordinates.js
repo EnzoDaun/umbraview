@@ -13,6 +13,13 @@ export function engineToScene([x, y, z]) {
   return [x, z, -y]
 }
 
+/* A volta do engineToScene, sem mudar o tamanho do vetor. O relevo fino (card C6) acha o
+   ladrilho embaixo da câmera pela posição dela na cena, e a grade dos ladrilhos está na convenção
+   do motor (unitToPolarXY). */
+export function sceneToEngine([x, y, z]) {
+  return [x, -z, y]
+}
+
 /* Graus para o vetor de tamanho 1 da cena: x = cos(lat)·cos(lon), y = sin(lat),
    z = −cos(lat)·sin(lon). Passa pelo latLonToUnit do motor para as duas convenções não se
    separarem com o tempo. */
