@@ -1297,7 +1297,7 @@ testes passam e o `verify` passa.
 ### I7 · As 9 regiões do Artemis III na lista
 
 **Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
-novo: o próximo card da área I é o I8.
+novo.
 
 ---
 
