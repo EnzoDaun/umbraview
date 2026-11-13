@@ -1141,7 +1141,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
+**Estado:** feito em 11/11, PR #24 · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.

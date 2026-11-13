@@ -57,5 +57,7 @@ Licenças lidas nos metadados de cada pacote instalado, em 29/10/2026.
 
 ## Imagem, música e fonte de letra
 
-Nenhuma ainda. O vídeo e a identidade visual entram aqui quando forem escolhidos (cards V2 e
-V3).
+A fonte do texto do site: Fira Sans, pelo pacote
+[`@fontsource/fira-sans`](https://www.npmjs.com/package/@fontsource/fira-sans) 5.3.0, licença
+OFL-1.1 (conferida no npm e no `package.json` do pacote em `node_modules`, em 11/11/2026). O
+vídeo e a identidade visual entram aqui quando forem escolhidos (cards V2 e V3).
