@@ -33,12 +33,19 @@ export function summarizeSky(series, { minWindowHours }) {
     nextSunsetUtc: sunsetHours === null ? null : at(sunsetHours),
     sunFraction: sunTotal / series.count,
     longestDarkHours: longestDark * stepHours,
-    landingWindows: findLandingWindows(series, minWindowHours).map((w) => ({
-      startUtc: at(w.startHours),
-      endUtc: at(w.endHours),
-      startsBeforePeriod: w.startsBeforePeriod,
-      endsAfterPeriod: w.endsAfterPeriod,
-    })),
+    landingWindows: findLandingWindows(series, minWindowHours).map((w) => {
+      const startUtc = at(w.startHours)
+      const endUtc = at(w.endHours)
+      return {
+        startUtc,
+        endUtc,
+        // dos próprios Date, e não das horas da série: o Date corta a fração de milissegundo, e a
+        // duração discordaria do começo e do fim que a tela mostra
+        durationHours: (endUtc - startUtc) / HOUR_MS,
+        startsBeforePeriod: w.startsBeforePeriod,
+        endsAfterPeriod: w.endsAfterPeriod,
+      }
+    }),
     // o fim é o último instante calculado, e não o começo mais PERIOD_DAYS: é onde termina uma
     // janela com endsAfterPeriod, e assim a duração do período fica só no siteSky.js
     period: { startUtc: at(0), endUtc: at((series.count - 1) * stepHours) },
