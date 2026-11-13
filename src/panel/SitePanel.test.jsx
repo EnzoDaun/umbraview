@@ -81,23 +81,34 @@ describe('SitePanel', () => {
     expect(valueOf(panel.landingWindows)).toHaveTextContent(panel.noWindows)
   })
 
-  it('ready com janelas: início e fim em UTC, e o marcador só na ponta cortada pelo período', () => {
+  it('ready com janelas: duração, início e fim em UTC, e o marcador e o "≥" só na janela cortada pelo período', () => {
+    // só uma janela pode estar aberta em cada ponta do período: a do começo e a do fim do sky acima
     const landingWindows = [
       {
         startUtc: new Date('2026-11-14T00:00:00Z'),
-        endUtc: new Date('2026-11-16T07:30:00Z'),
+        endUtc: new Date('2026-11-14T18:00:00Z'),
+        durationHours: 18,
         startsBeforePeriod: true,
         endsAfterPeriod: false,
       },
       {
         startUtc: new Date('2026-11-20T05:00:00Z'),
-        endUtc: new Date('2026-11-26T18:00:00Z'),
+        endUtc: new Date('2026-11-26T09:00:00Z'),
+        durationHours: 148,
         startsBeforePeriod: false,
         endsAfterPeriod: false,
       },
       {
-        startUtc: new Date('2026-12-10T11:00:00Z'),
+        startUtc: new Date('2026-12-01T10:00:00Z'),
+        endUtc: new Date('2026-12-02T16:00:00Z'),
+        durationHours: 30,
+        startsBeforePeriod: false,
+        endsAfterPeriod: false,
+      },
+      {
+        startUtc: new Date('2026-12-13T22:40:00Z'),
         endUtc: new Date('2026-12-13T23:00:00Z'),
+        durationHours: 1 / 3,
         startsBeforePeriod: false,
         endsAfterPeriod: true,
       },
@@ -106,9 +117,10 @@ describe('SitePanel', () => {
 
     const items = within(valueOf(panel.landingWindows)).getAllByRole('listitem')
     expect(items.map((item) => item.textContent)).toEqual([
-      `14 Nov 2026, 00:00 UTC ${panel.alreadyOpen} – 16 Nov 2026, 07:30 UTC`,
-      '20 Nov 2026, 05:00 UTC – 26 Nov 2026, 18:00 UTC',
-      `10 Dec 2026, 11:00 UTC – 13 Dec 2026, 23:00 UTC ${panel.continues}`,
+      `≥ 18 h · 14 Nov 2026, 00:00 UTC ${panel.alreadyOpen} – 14 Nov 2026, 18:00 UTC`,
+      '6 d 4 h · 20 Nov 2026, 05:00 UTC – 26 Nov 2026, 09:00 UTC',
+      '1 d 6 h · 1 Dec 2026, 10:00 UTC – 2 Dec 2026, 16:00 UTC',
+      `≥ 20 min · 13 Dec 2026, 22:40 UTC – 13 Dec 2026, 23:00 UTC ${panel.continues}`,
     ])
   })
 })

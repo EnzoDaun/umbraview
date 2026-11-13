@@ -1240,17 +1240,19 @@ fazer a conta de cabeça. Veio do PR #11 (card I1).
 3. No painel, uma linha "Period" entre "Earth now" e "Next sunset", com o começo e o fim em UTC
    pelo `formatUtc` (`src/panel/format.js`): as duas linhas de cima são o primeiro instante do
    período, e as de baixo valem para o período inteiro.
-4. Na lista de janelas, a duração de cada uma em dias e horas ("6 d 4 h"; abaixo de um dia, só
-   horas, "18 h"), por uma função nova em `src/panel/format.js`. Na janela cortada pelo período,
-   com "≥" na frente, para o número não parecer exato quando não é. Os textos de tela em
-   `src/data/panel.js`.
+4. Na lista de janelas, a duração de cada uma na frente, separada por " · ", pelo `formatDuration`
+   (`src/panel/format.js`): em dias e horas ("6 d 4 h"), o dia inteiro sem o zero ("2 d"), abaixo
+   de um dia só horas ("18 h"), e abaixo de 1 h em minutos ("20 min"), para não aparecer "0 h". Na
+   janela cortada pelo período, com "≥" grudado no número ("≥ 18 h"), para ele não parecer exato
+   quando não é. O "d", o "h" e o "min" ficam no `format.js`, junto do número, como o ° e o UTC.
 
 **Como testar.**
 - `src/engine/summary.test.js`: o período vai do primeiro ao último instante calculado (com o fim
   em 720 h, o teste falha), e a duração de uma janela inteira e de uma cortada é exatamente o fim
   menos o começo.
 - `src/engine/config.test.js`: a janela mínima é de 24 h.
-- `src/panel/format.test.js`: a duração em dias e horas, e só em horas abaixo de um dia.
+- `src/panel/format.test.js`: a duração em dias e horas, o dia inteiro sem o zero, só horas abaixo
+  de um dia e minutos abaixo de 1 h; uma janela de 24 h com o milissegundo cortado não vira 23 h.
 - `src/panel/SitePanel.test.jsx`: o `ready` mostra o começo e o fim do período em UTC, e a
   duração de cada janela, com "≥" só na cortada. A suíte roda em Tóquio: se o fuso escapar, a
   hora sai errada e o teste pega.

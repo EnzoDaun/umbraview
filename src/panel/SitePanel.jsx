@@ -1,5 +1,5 @@
 import { panel } from '../data/panel.js'
-import { formatDegrees, formatPercent, formatUtc } from './format.js'
+import { formatDegrees, formatDuration, formatPercent, formatUtc } from './format.js'
 import './SitePanel.css'
 
 /* Os números do ponto escolhido, em texto (card I1). Recebe o { status, sky } do useSiteSky, no
@@ -68,6 +68,13 @@ function PanelBody({ status, sky }) {
           <ul className="site-panel__windows">
             {sky.landingWindows.map((landingWindow) => (
               <li key={landingWindow.startUtc.getTime()}>
+                {/* na frente, para correr o olho pela lista atrás da janela mais longa; o "≥" na
+                    cortada pelo período, porque a janela dura mais do que a parte dentro dele */}
+                <span className="site-panel__number site-panel__duration">
+                  {(landingWindow.startsBeforePeriod || landingWindow.endsAfterPeriod) && '≥ '}
+                  {formatDuration(landingWindow.durationHours)}
+                </span>
+                {' · '}
                 <span className="site-panel__number site-panel__date">
                   {formatUtc(landingWindow.startUtc)}
                 </span>
