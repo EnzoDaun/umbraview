@@ -586,7 +586,7 @@ tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
   USGS desenhou, calculado de uma fonte, com o método no código e testado. O nome leva
   "(center)", para o painel não parecer um ponto de pouso oficial.
 - O contorno copiado fica em `scripts/references/artemis-regions.geojson`, e dois testes de
-  `src/data/sites.test.js` amarram a lista a ele: a coordenada de cada região é o centro do
+  `src/data/sites.test.js` amarram a lista a ele: a coordenada e o nome de cada região são os do
   contorno, e a lista traz toda região com o centro dentro da área com relevo, e só elas.
 - Entram 7 das 9. Peak near Cabeus B (centro em −83,6375°) e Nobile Rim 2 (−83,9541°) ficam ao
   norte de 84°S e esperam o card E8. A Mons Mouton Plateau entra pelo centro (−84,3347°), mas a
@@ -594,17 +594,22 @@ tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
 - O card E2 e o `scripts/prepare-data/prepare_relief.py` diziam que até 84°S cabiam as regiões do
   Artemis III: valia para as 13 de 2022. Os dois foram corrigidos.
 
-**Conferido** em 12/11/2026:
-- A área calculada de cada contorno bate com a `Area_km2` do USGS nas 9 regiões. O centro da
-  Peak near Cabeus B (−83,6375°, −68,7495°) bate com a
-  [página do mosaico da LROC](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2) que
-  o Miguel achou em 11/11 (−83,6° e 291,2° leste).
+**Conferido** em 12 e 13/11/2026:
+- A área calculada de cada contorno bate com a `Area_km2` do USGS nas 9 regiões. O Marco refez os
+  7 centros em Python, sem o `measurePolarPolygon`, e eles batem com o `sites.js` até a 4ª casa
+  decimal (13/11).
+- A caixa que a
+  [página do mosaico da LROC](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2) dá
+  para a Peak near Cabeus B (latitude de −84,06 a −83,21, longitude de −72,47 a −64,80) bate com os
+  cantos do contorno do USGS. A página foi achada pelo Miguel em 11/11, e a caixa, conferida pelo
+  Marco em 13/11.
 - No Chromium do Playwright, com o build no `npm run preview`: as 7 regiões aparecem no grupo, em
   ordem alfabética; escolher Haworth (center) põe o marcador na cena e mostra o céu no painel;
   digitar "h" com a lista em foco pula para Haworth; o console ficou sem erro.
-- Cada teste novo pega o erro dele: trocar um dígito de uma coordenada reprova só o teste da
-  coordenada; tirar uma região reprova só o teste de quais regiões estão na lista; pôr a Nobile
-  Rim 2 reprova esse e o da área com relevo.
+- Cada teste novo pega o erro dele: trocar um dígito de uma coordenada, ou trocar os nomes de
+  Haworth e Malapert Massif entre si, reprova só o teste da coordenada e do nome; tirar uma região
+  reprova só o teste de quais regiões estão na lista; pôr a Nobile Rim 2 reprova esse e o da área
+  com relevo.
 
 **Pronto quando.** As regiões com o centro dentro da área aparecem no grupo "Artemis III
 candidate regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
