@@ -1291,6 +1291,46 @@ E, com o próximo número.
 **Pronto quando.** As regiões com coordenada e fonte aparecem no grupo "Artemis III candidate
 regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
+### I8 · Próximo nascer do Sol no painel
+
+**Estado:** a fazer · **Depende de:** I6 (mexe nos mesmos arquivos: `summary.js`, a tabela da
+ponte e o `SitePanel.jsx`)
+
+**Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
+nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
+quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. Aprovado pelo Enzo em
+12/11, junto com o I6.
+
+**O que o motor já tem.** Conferido no código em 12/11/2026: o `nextChange('sun', series, 0)`
+(`src/engine/series.js`) devolve `{ visibleNow, hours }`, as horas até o Sol mudar de estado, pela
+regra da metade do disco, a mesma do `sunNow.visible`. Hoje ele só é usado nos testes
+(`src/engine/series.test.js`).
+- Com o Sol escondido no primeiro instante (`visibleNow: false`), `hours` é quando ele volta: é o
+  caso deste card.
+- **Cuidado:** com o Sol à vista, o `nextChange` devolve o **pôr**, e não o nascer. Não dá para
+  ler o resultado dele como "próximo nascer" sem olhar o `visibleNow`.
+- Com o Sol escondido até o fim do período, `hours` é `null`.
+
+**O que fazer.**
+1. `src/engine/summary.js`: campo novo no `sky`, `nextSunriseUtc`: um `Date`, ou `null` com o Sol
+   à vista agora ou se ele não volta no período. Sai do `nextChange('sun', series, 0)`, só quando
+   o `visibleNow` é `false`, convertido pelo mesmo `at()` do `nextSunsetUtc`. O motor é do Enzo; a
+   mudança está autorizada por ele, como no I6.
+2. Linha nova na tabela de "O que a ponte entrega para a tela", avisando o Marco no mesmo dia.
+3. `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com a data em
+   UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período inteiro, o
+   `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card I1).
+
+**Como testar.**
+- `src/engine/summary.test.js`: com o Sol escondido no primeiro instante, o `nextSunriseUtc` é a
+  hora em que metade do disco volta; com o Sol à vista, é `null`, e não o pôr que o `nextChange`
+  devolveria; com o Sol escondido o período inteiro, `null`.
+- `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em UTC (a suíte
+  roda em Tóquio); com o Sol à vista, a linha não aparece.
+
+**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, o Marco foi
+avisado do campo novo, os testes passam e o `verify` passa.
+
 ---
 
 <!-- Os cards P vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
