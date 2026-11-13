@@ -1,6 +1,8 @@
 /* Os locais de pouso da lista (cards I2 e E16), um objeto por linha da planilha do P1, revisada
  * pelo Enzo. Linha sem fonte não entra, e nenhuma coordenada é estimada (README, "Nenhum dado
- * inventado"). As fontes também estão no CREDITS.md.
+ * inventado"). A coordenada das regiões candidatas do Artemis III é o centro do contorno que o
+ * USGS desenhou para cada uma (o comentário delas, mais abaixo, diz como). As fontes também estão
+ * no CREDITS.md.
  *
  * Só entram os locais que o site calcula hoje, os que ficam dentro do relevo, até 84°S (card E2).
  * Das 9 regiões candidatas do Artemis III, Nobile Rim 2 e Peak near Cabeus B têm o centro ao norte
