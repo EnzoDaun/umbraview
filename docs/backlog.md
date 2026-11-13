@@ -312,9 +312,9 @@ revisão do PR #6.
 
 **Estado:** a fazer · **Depende de:** P1 (a lista de locais)
 
-**Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da lista
-(Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e até este card o
-painel mostra erro para eles.
+**Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da
+planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e
+eles ficam fora da lista até este card.
 
 **O que fazer.**
 1. No script de `scripts/prepare-data/`, um recorte por local da lista ao norte de 84°S, dos
@@ -329,7 +329,7 @@ recortes está anotado aqui, e a conferência também.
 
 ### E9 · Testes do motor sem o navegador simulado
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 11/11, PR #25 · **Depende de:** nada
 
 **Para que serve.** Todos os testes rodam dentro do jsdom, o navegador simulado, inclusive os do
 motor, que não usam tela. Em 29/10/2026, o Vitest avisou que criar o jsdom levou 67% do tempo
@@ -340,6 +340,17 @@ que ele mediu.
 `npm run test` antes e depois.
 
 **Pronto quando.** O `verify` passa e os dois tempos estão anotados aqui.
+
+**Medido** em 10/11/2026, no Linux (2 processadores), com a suíte inteira (`npx vitest run`, 241
+testes; a duração é a do relatório JSON do Vitest), três rodadas de cada:
+
+| Ambiente dos 12 arquivos de teste de `src/engine/` e `scripts/` | Duração da suíte |
+|---|---|
+| jsdom, o navegador simulado (antes) | 30,3 a 34,7 s |
+| Node (depois) | 22,1 a 24,0 s |
+
+O Vitest 5 respeita o comentário: um teste com ele vê o `document` indefinido; sem ele, vê o do
+jsdom. A regra para teste novo nessas pastas está no `vite.config.js`.
 
 ### E10 · Nome dos scripts em inglês
 
@@ -418,7 +429,13 @@ com o mesmo número de testes de antes da troca, e o `verify` passa.
 
 ### E13 · O motivo do erro, para o painel
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** fechado em 11/11, PR #26, sem código · **Depende de:** nada
+
+**Por que fechou.** O ponto fora da área não chega mais ao painel: o clique na cena barra (card
+C3), e a lista só tem locais dentro dela (card I2, com o teste da área no `sites.test.js`). O
+único erro que sobra é a conta que falhou, e o texto de erro do painel passou a falar só dela
+(card E14). O motor continua recusando o ponto fora da área, e o motivo continua indo para o
+console.
 
 **Para que serve.** O `status: 'error'` do `useSiteSky` junta dois casos que pedem respostas
 diferentes de quem usa:
@@ -432,8 +449,8 @@ diferentes de quem usa:
 O hook manda o motivo só para o console (`useSiteSky: a conta do céu falhou`), e a tela recebe só
 o `status`. Por isso o texto de erro do painel diz "It may be outside the area we have terrain
 for": o "may" é porque o painel não sabe qual dos dois aconteceu. O clique na cena já barra o
-ponto fora da área antes de chegar ao hook (card C3), mas os locais da lista (I2) ao norte de 84°S
-chegam, e dão erro até o card E8. Veio do PR #11 (card I1).
+ponto fora da área antes de chegar ao hook (card C3), e a lista (I2) só traz locais dentro dela: o
+`src/data/sites.test.js` reprova o local ao norte de 84°S. Veio do PR #11 (card I1).
 
 **O que fazer.**
 1. A ponte devolve o motivo junto com o `error`. Como o motor separa os dois casos fica com o
@@ -455,7 +472,7 @@ conta, a tabela da ponte tem o campo novo, os testes acima passam e o `verify` p
 
 ### E14 · Ligar a lista e a data no `App.jsx`
 
-**Estado:** a fazer · **Depende de:** E11 (feito), I2 e I4
+**Estado:** feito em 11/11, PR #26 · **Depende de:** E11 (feito), I2 (feito) e I4 (feito)
 
 **Para que serve.** Com o E11, o site responde ao clique na cena, sempre na hora em que a página
 abriu. Este card liga os outros dois controles: a lista de locais (I2), que também é o jeito de
@@ -481,8 +498,61 @@ escolher pelo teclado, e a data e a hora (I4). Veio da divisão do E11, no PR #1
 5. Os dois comentários do controle de data que citam o E11 (o de quem guarda a data e o do
    "item 2") passam a citar este card.
 
+**Como ficou.**
+- A lista mostra o local escolhido e volta ao "Choose a site…" quando o ponto vem do clique na
+  cena: sem isso, ela continuaria mostrando o último local com o painel em outro ponto.
+- Item 2: a guarda ficou no `DateTimeControl.jsx`, junto da do campo vazio. Além do campo vazio,
+  o ano depois de 9999 também dá data inválida: o campo aceita, mas o `Date` só lê esse ano com um
+  `+` na frente.
+- Item 3: o texto de erro do painel diz para recarregar a página, que sempre refaz a conta. Um
+  botão de "tentar de novo" precisaria de um jeito novo de pedir a mesma conta ao hook, só para
+  fazer o que recarregar já faz. O E13 fechou junto.
+- Item 4: não precisou de nada. Cada troca de data custa uma conta curta, e o `useSiteSky` já
+  descarta o resultado de um pedido velho (medido abaixo).
+
+**Conferido** em 11/11/2026, no Chromium do Playwright (153, sem placa de vídeo: o WebGL é por
+software), com o build no `npm run preview`:
+- O primeiro Tab da página chega à lista, com o anel de foco; a seta para baixo escolhe o Athena
+  (IM-2), o marcador aparece na cena e o painel mostra o céu dele.
+- Com o Athena escolhido, digitar 2027 no ano: o campo passou por 0002, 0020, 0202 e 2027, e cada
+  um pediu uma conta, de 23 a 32 ms entre o "Calculating…" e os números. Entre uma tecla e outra a
+  página levou de 0,7 a 1,4 s: é o quadro da cena nesse Chromium sem placa de vídeo (617 a 867 ms
+  por quadro, medido com a Lua girando), e não a conta. Com placa de vídeo, o quadro é de uns 6 ms
+  (card C4).
+- Digitar 10000 no ano: o campo não aceitou e ficou em 2027. A guarda do ano depois de 9999 está
+  provada no teste do `DateTimeControl`; em outro navegador, não conferi.
+- O clique na Lua depois da lista faz a lista voltar ao aviso, e escolher o Athena de novo volta a
+  mostrar o céu dele.
+- Com os ladrilhos de relevo respondendo 404, o painel mostra "Couldn't calculate this site.
+  Reload the page to try again." e o motivo vai para o console.
+- O console ficou sem erro, fora os do 404 de propósito.
+
 **Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
 luz certa na cena, também só com o teclado, e o `verify` passa.
+
+### E15 · O teste dos ganchos que estoura o tempo no Windows de vez em quando
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** O teste "aponta o core.hooksPath para .githooks num repositório git"
+(`scripts/hooks.test.js`) abre o `git` e o `node` três vezes, e o Vitest dá 5 s para cada teste.
+No Windows do Enzo ele costuma levar menos de 1 s, mas em 10/11/2026, entre 16h30 e 17h10, levou
+6,3 s e 9,4 s dentro do `verify`, e reprovou os dois; numa terceira rodada, outro teste da suíte
+falhou, sem o nome registrado. Teste que passa ou não conforme o computador está ocupado ensina a
+rodar de novo até passar (card C7). Veio do PR #25 (card E9).
+
+**O que se sabe** (no Windows do Enzo, com o relatório JSON do Vitest):
+- Sozinho, o arquivo dos ganchos dá de 212 a 238 ms nesse teste, no Node ou no jsdom (10/11/2026).
+- Na suíte inteira, em 11/11/2026, deu de 562 a 698 ms em 6 rodadas: com os ganchos no Node ou no
+  jsdom, e logo depois do `lint` ou não. Não é o card E9 nem a ordem do `verify`.
+- A causa da lentidão de 10/11 não foi achada.
+
+**O que fazer.** Dar aos testes de `scripts/hooks.test.js` que abrem processos um limite de tempo
+próprio (o terceiro argumento do `it`), com o motivo no comentário, e medir no notebook do Miguel,
+onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de todo teste que falhar.
+
+**Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
+`verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
 
 ---
 
@@ -1424,26 +1494,36 @@ O sorteio tem de propósito ponto claro e ponto escuro, em dez faixas de Sol.
 
 ### I2 · Lista de locais de pouso
 
-**Estado:** a fazer · **Depende de:** P1 para os dados de verdade; o componente começa antes,
+**Estado:** feito em 11/11, PR #23 · **Depende de:** P1 para os dados de verdade; o componente começa antes,
 com dados de teste
 
-**Para que serve.** É o caminho mais rápido para ver um resultado: escolher "Apollo 11" numa
+**Para que serve.** É o caminho mais rápido para ver um resultado: escolher "Athena (IM-2)" numa
 lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo teclado.
 
 **O que fazer.**
-1. `src/panel/SiteList.jsx`: um `<select>` com `<label>`, com os locais agrupados por agência
-   (`<optgroup>`). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com
-   teclado e com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se
-   sobrar tempo.
+1. `src/panel/SiteList.jsx`: um `<select>` com `<label>`, com os locais agrupados por tipo
+   (`<optgroup>`): "Landed" para os que já pousaram e "Artemis III candidate regions" para as
+   regiões candidatas, que não têm data de pouso. Por tipo, e não por agência: com os locais
+   previstos (o IM-2 e as 9 regiões candidatas), agência daria um grupo "Intuitive Machines" com
+   um local e um "NASA" com nove, e não diria que ninguém pousou nas regiões candidatas (decisão
+   do Enzo). Por que um `<select>` comum, e não uma lista desenhada: ele já funciona com teclado e
+   com leitor de tela sem esforço nenhum. Uma lista mais bonita fica para depois, se sobrar tempo.
 2. Ao escolher, chamar `onSelect(site)`, que o `App.jsx` liga no E14.
 3. Quando o P1 entregar a planilha: `src/data/sites.js`, um objeto por linha, no formato
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
+   Só entram os locais que o site calcula, os que ficam dentro do relevo, até 84°S (card E2): um
+   local ao norte disso daria erro no painel. Por isso a lista sai só com o IM-2: as 9 regiões
+   candidatas do Artemis III ficaram para o card I7, e os outros locais da planilha esperam o
+   card E8.
 
 **Como testar.**
 - `src/panel/SiteList.test.jsx`: escolher uma opção com `userEvent.selectOptions` chama o
   `onSelect` com o local certo (os locais de teste ficam no próprio arquivo de teste).
 - `src/data/sites.test.js`: todo local tem `sourceUrl` começando com `https://`, `lat` entre −90 e
-  90, `lon` entre −180 e 180, e nenhum `id` se repete.
+  90, `lon` entre −180 e 180, nenhum `id` se repete, e todo local fica dentro da área com relevo,
+  pelo `isInsideReliefArea` (`src/engine/reliefFiles.js`) com o `areaMaxLatDeg` de
+  `public/data/relief/manifest.json`: a mesma regra com que o motor recusa o ponto e o clique na
+  cena barra.
 
 **Pronto quando.** Os testes passam, dá para escolher só com o teclado (Tab até a lista, setas,
 Enter), e o `verify` passa.
@@ -1543,9 +1623,40 @@ UTC. A suíte roda em Tóquio: se o fuso escapar, a hora sai errada e o teste pe
 **Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período, os
 testes passam e o `verify` passa.
 
+### I7 · As 9 regiões do Artemis III na lista
+
+**Estado:** a fazer · **Depende de:** as coordenadas das 9 regiões
+
+**Para que serve.** A lista de locais (card I2) já separa as regiões candidatas num grupo
+próprio, "Artemis III candidate regions": um local com `landedAtUtc: null` cai nele. O I2 saiu
+só com o IM-2, porque as coordenadas das regiões não chegaram a tempo. Veio da divisão do I2
+(CONTRIBUTING.md, seção 1, regra 6). Se o Enzo preferir fazer este card, ele passa para a área
+E, com o próximo número.
+
+**O que já se sabe.**
+- Os nomes, de fonte primária ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)):
+  Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton, Nobile Rim 1,
+  Nobile Rim 2, de Gerlache Rim 2 e Slater Plain. Esse documento não dá coordenada.
+- Não existe ponto oficial de cada região. O Enzo pensou em calcular o centro de cada uma pelos
+  limites do USGS. Coordenada estimada não entra (README, "Nenhum dado inventado").
+- **Alerta.** A [página do mosaico da LROC para Peak Near Cabeus B](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2)
+  dá o centro em lat −83.6 e lon 291.2 leste (−68.8 na faixa de −180 a 180 do `sites.js`), e a
+  faixa de latitude de −84.06 a −83.21 (conferido pelo Miguel em 11/11/2026). O centro fica ao
+  norte do `areaMaxLatDeg` (−84.0, `public/data/relief/manifest.json`): essa região ficaria fora
+  da área que o site calcula, e o teste da área (`src/data/sites.test.js`) a barraria. As outras
+  8 não foram conferidas.
+
+**O que fazer.**
+1. Para cada região com coordenada e fonte: uma linha em `src/data/sites.js`, com
+   `landedAtUtc: null`, e a fonte no CREDITS.md, junto com o documento dos nomes.
+2. A região que cair ao norte de 84°S fica fora da lista até o card E8, pela mesma regra do I2.
+
+**Pronto quando.** As regiões com coordenada e fonte aparecem no grupo "Artemis III candidate
+regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
+
 ---
 
-<!-- Os cards P e V vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
+<!-- Os cards P vão em PDF para quem não usa o GitHub: escreva sem citar arquivo do
 repositório. O que eles precisam ler vai nos anexos do PDF: a tabela de dados do CREDITS.md
 (anexo A) e o texto em inglês de docs/uso-de-ia.md (anexo B). -->
 ## P: Mateus Berlingieri
@@ -1647,9 +1758,7 @@ que mostrem iluminação no polo sul ou ajudem a planejar pouso.
 
 ---
 
-## V: em aberto
-
-Estes cards estão sem dono. Quem pegar um deles avisa o Enzo.
+## V: Miguel
 
 ### V1 · Roteiro e storyboard do vídeo
 
@@ -1663,8 +1772,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Roteiro em três partes: o problema (por que a luz e a Terra importam para pousar), o UmbraView
    funcionando (escolher um local, ver o Sol e a Terra, ver as janelas de pouso) e o resultado.
 2. Storyboard: uma linha por cena, com a duração, o que aparece na tela e a legenda em inglês.
-3. A lista das gravações de tela que vão ser necessárias, para quem é de dev gravar quando a tela
-   estiver pronta.
+3. A lista das gravações de tela que vão ser necessárias, para gravar quando a tela estiver
+   pronta.
 4. A duração sai do guia de submissão de 13/11. Monte o roteiro em blocos que dê para cortar,
    para servir tanto a uma versão curta quanto a uma longa.
 
@@ -1672,7 +1781,7 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada; combinar a fonte de letra com o Miguel
+**Estado:** a fazer · **Depende de:** nada
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
@@ -1695,8 +1804,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
    licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
-   qualquer janela, para acertar a configuração. O site ainda não está publicado: a gravação dele
-   fica para quando o Enzo publicar, ou é feita junto com alguém de dev.
+   qualquer janela, para acertar a configuração. O site ainda não está publicado (card E4): a
+   gravação dele sai do `npm run preview`, que mostra a versão final do site.
 3. Legenda em inglês: um arquivo `.srt` de modelo e o estilo definido (fonte, tamanho, posição).
 
 **Pronto quando.** Tudo na pasta compartilhada, com a licença da música anotada.

@@ -1,3 +1,4 @@
+// @vitest-environment node
 /* A conferência do build (scripts/check-build.mjs) barra o marcador de rascunho
  * TODO_PREENCHER antes de o site ir ao ar. Aqui ela roda contra pastas montadas na hora,
  * para provar que acha o marcador e que não reprova build limpo. */

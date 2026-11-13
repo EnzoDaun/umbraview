@@ -1,3 +1,4 @@
+// @vitest-environment node
 /* As duas travas que impedem o Claude de aparecer como coautor ou de mexer no git sozinho
  * (CONTRIBUTING.md, seção 4):
  *

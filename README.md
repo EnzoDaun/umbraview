@@ -23,12 +23,15 @@ instala tudo no Windows, do zero.
   e o painel do ponto escolhido (direita).
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
-  da data e a sombra das montanhas (card C2); por enquanto, a data é a hora em que a página
-  abriu. De perto, onde a máquina aguenta, o relevo fino (dos dados de 80 m) cobre a tela, com um
-  vértice a cada 400 m no meio dela e a cada 800 m em volta, e a luz dos 80 m em toda parte: as
-  crateras pequenas aparecem (card C6). Um clique perto do polo escolhe um ponto e põe um
-  marcador nele (card C3), e o painel da direita mostra o céu desse ponto na mesma data (cards I1
-  e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no período e as janelas de pouso.
+  da data e a sombra das montanhas (card C2). De perto, onde a máquina aguenta, o relevo fino (dos
+  dados de 80 m) cobre a tela, com um vértice a cada 400 m no meio dela e a cada 800 m em volta, e
+  a luz dos 80 m em toda parte: as crateras pequenas aparecem (card C6). Um clique perto do polo
+  escolhe um ponto e põe um marcador nele (card C3), e o painel da direita mostra o céu desse
+  ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
+  período e as janelas de pouso.
+- No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
+  (card I2), e a data e a hora em UTC, que começam na hora em que a página abriu (card I4). Os
+  dois mudam a cena e o painel juntos (card E14).
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
@@ -225,7 +228,8 @@ umbraview/
 │   ├── data/
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
-│   │   └── scene.js                 textos da cena 3D (cards C1 a C3)
+│   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
+│   │   └── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
@@ -247,9 +251,11 @@ umbraview/
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
-│   ├── panel/                       o painel com os números do ponto escolhido (card I1)
+│   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
 │   │   ├── DateTimeControl.css
 │   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
+│   │   ├── SiteList.css
+│   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
