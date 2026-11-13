@@ -1210,7 +1210,7 @@ repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que 
 
 ### I6 · Dizer no painel qual é o período e quanto dura cada janela
 
-**Estado:** a fazer · **Depende de:** I1 (feito)
+**Estado:** feito em 12/11, PR #29 · **Depende de:** I1 (feito)
 
 **Para que serve.** "Sunlight in the period" e "Longest darkness" não dizem qual é o período:
 quem lê 85.5% não sabe se é de uma semana ou de um ano. O mesmo vale para os dois textos do
