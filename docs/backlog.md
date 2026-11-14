@@ -65,7 +65,11 @@ Miguel no mesmo dia.
 | `sky.earthNow.elevationDeg` | número | O mesmo, para a Terra. |
 | `sky.earthNow.visible` | `true` ou `false` | Alguma parte da Terra está acima das montanhas. |
 | `sky.nextSunsetUtc` | `Date` ou `null` | Quando metade do Sol some atrás das montanhas. `null` se ele não se põe no período. |
+| `sky.nextSunriseUtc` | `Date` ou `null` | Com o Sol escondido agora, quando metade dele volta. `null` com o Sol à vista agora (e não o pôr) ou se ele não volta no período. |
+| `sky.nextEarthsetUtc` | `Date` ou `null` | Quando a última parte da Terra some atrás das montanhas. Com a Terra escondida agora, é o pôr depois da volta, como no `nextSunsetUtc`. `null` se ela não se põe no período. |
+| `sky.nextEarthriseUtc` | `Date` ou `null` | Com a Terra escondida agora, quando a primeira parte dela volta. `null` com a Terra à vista agora (e não o pôr) ou se ela não volta no período. |
 | `sky.sunFraction` | número de 0 a 1 | Quanto do Sol ficou à vista, em média, no período. |
+| `sky.earthFraction` | número de 0 a 1 | Parte das horas do período com alguma parte da Terra à vista. |
 | `sky.longestDarkHours` | número | O maior trecho seguido, em horas, com o Sol inteiro escondido. |
 | `sky.landingWindows` | lista de `{ startUtc, endUtc, durationHours, startsBeforePeriod, endsAfterPeriod }`: dois `Date`, um número e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. `durationHours`: quanto a janela dura, em horas, sem arredondar: o `endUtc` menos o `startUtc`; na janela cortada pelo período, só a parte dentro dele (entrou no card I6). O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
 | `sky.period` | `{ startUtc, endUtc }`: dois `Date` | O período dos números acima. `startUtc`: a data escolhida, o mesmo instante do `sunNow` e do `earthNow`. `endUtc`: o último instante calculado, a data mais `PERIOD_DAYS` × 24 − 1 horas (hoje 719 h), porque o motor calcula de hora em hora a partir da data; é o mesmo `endUtc` de uma janela com `endsAfterPeriod`. Entrou no card I6, por decisão do Enzo em 12/11. |
@@ -674,6 +678,35 @@ confunde", com os números que o Miguel mediu lá:
 
 **Pronto quando.** Cada um dos 5 pontos está resolvido no README, ou anotado aqui com o motivo de
 ter ficado como está, e o `verify` passa.
+
+### E18 · A Terra e a volta do Sol no resumo da ponte
+
+**Estado:** feito em 14/11, PR #35 · **Depende de:** I6 (feito)
+
+**Para que serve.** O challenge pede as janelas de comunicação direta com a Terra e o tempo até o
+pôr do Sol ou da Terra ("Earthset"). O motor tem a Terra hora a hora (`earthMarginDeg`), mas o
+resumo da ponte dizia só se ela estava à vista agora. E, com o Sol escondido, a tela não tinha como
+dizer quando a luz volta (card I8).
+
+**Como ficou.**
+- Quatro campos no `sky`, na tabela de "O que a ponte entrega para a tela": `earthFraction`,
+  `nextEarthsetUtc`, `nextSunriseUtc` e `nextEarthriseUtc`.
+- `nextSetting(kind, series, fromIndex)` (`src/engine/series.js`) dá o próximo pôr do Sol ou da
+  Terra, e o `nextSunset` é o dele para o Sol. A regra de "à vista" de cada astro fica num lugar só
+  (`BODIES`), lida também pelo `nextChange` e pelas janelas de pouso.
+- A volta (`nextSunriseUtc` e `nextEarthriseUtc`) sai do `nextChange` só com o astro escondido
+  agora: com ele à vista, o `nextChange` devolve o pôr, e não a volta.
+- Mostrar os campos na tela é do Marco e do Miguel; o nascer do Sol no painel é o card I8.
+
+**Conferido** em 14/11/2026:
+- Com o esqueleto devolvendo `null` e `0`, só os testes novos reprovaram, pelo motivo certo: 2 no
+  `series.test.js` e 4 no `summary.test.js`.
+- Cada teste novo pega o erro dele: o pôr da Terra pela regra do Sol, a volta sem olhar se o astro
+  está à vista agora, a Terra contada à vista com a margem negativa e a volta da Terra pela regra
+  do Sol reprovam pelo menos um teste cada.
+
+**Pronto quando.** Os quatro campos estão no `summary.js`, com teste, e na tabela da ponte, o Marco
+e o Miguel foram avisados, e o `verify` passa.
 
 ---
 
@@ -1825,43 +1858,26 @@ novo.
 
 ### I8 · Próximo nascer do Sol no painel
 
-**Estado:** a fazer · **Depende de:** I6 (mexe nos mesmos arquivos: `summary.js`, a tabela da
-ponte e o `SitePanel.jsx`)
+**Estado:** a fazer · **Depende de:** E18 (feito)
 
 **Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
 nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
 quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. Aprovado pelo Enzo em
 12/11, junto com o I6.
 
-**O que o motor já tem.** Conferido no código em 12/11/2026: o `nextChange('sun', series, 0)`
-(`src/engine/series.js`) devolve `{ visibleNow, hours }`, as horas até o Sol mudar de estado, pela
-regra da metade do disco, a mesma do `sunNow.visible`. Hoje ele só é usado nos testes
-(`src/engine/series.test.js`).
-- Com o Sol escondido no primeiro instante (`visibleNow: false`), `hours` é quando ele volta: é o
-  caso deste card.
-- **Cuidado:** com o Sol à vista, o `nextChange` devolve o **pôr**, e não o nascer. Não dá para
-  ler o resultado dele como "próximo nascer" sem olhar o `visibleNow`.
-- Com o Sol escondido até o fim do período, `hours` é `null`.
+**O que a ponte já entrega.** O `sky.nextSunriseUtc` (card E18): com o Sol escondido agora,
+quando metade dele volta; `null` com o Sol à vista agora ou se ele não volta no período.
 
-**O que fazer.**
-1. `src/engine/summary.js`: campo novo no `sky`, `nextSunriseUtc`: um `Date`, ou `null` com o Sol
-   à vista agora ou se ele não volta no período. Sai do `nextChange('sun', series, 0)`, só quando
-   o `visibleNow` é `false`, convertido pelo mesmo `at()` do `nextSunsetUtc`. O motor é do Enzo; a
-   mudança está autorizada por ele, como no I6.
-2. Linha nova na tabela de "O que a ponte entrega para a tela", avisando o Marco no mesmo dia.
-3. `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com a data em
-   UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período inteiro, o
-   `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card I1).
+**O que fazer.** `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com
+a data em UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período
+inteiro, o `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card
+I1).
 
-**Como testar.**
-- `src/engine/summary.test.js`: com o Sol escondido no primeiro instante, o `nextSunriseUtc` é a
-  hora em que metade do disco volta; com o Sol à vista, é `null`, e não o pôr que o `nextChange`
-  devolveria; com o Sol escondido o período inteiro, `null`.
-- `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em UTC (a suíte
-  roda em Tóquio); com o Sol à vista, a linha não aparece.
+**Como testar.** `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em
+UTC (a suíte roda em Tóquio); com o Sol à vista, a linha não aparece.
 
-**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, o Marco foi
-avisado do campo novo, os testes passam e o `verify` passa.
+**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, os testes passam
+e o `verify` passa.
 
 ---
 
