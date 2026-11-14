@@ -1698,7 +1698,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 
 ### I5 · Rodar o script do relevo do zero, seguindo só o README
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 12/11, PR #29 · **Depende de:** nada
 
 **Para que serve.** O relevo que o site usa (`public/data/relief/`) sai de um script, e até agora
 só o Enzo rodou esse script. Se o README dele depender de alguma coisa que só existe no
@@ -1715,6 +1715,34 @@ quando outra pessoa roda tudo do zero, lendo só o README.
 **Pronto quando.** Este card tem uma linha com a data, a versão do Python (a primeira linha da
 saída do passo 2) e a saída do passo 4, que é `OK: os recortes gerados são idênticos aos do
 repositório` ou o que apareceu no lugar. Com ela, o Enzo marca o critério que falta no card E2.
+
+**Resultado.** 12/11/2026 · `Python 3.12.10` · passo 4:
+`OK: os recortes gerados são idênticos aos do repositório`.
+
+Rodado pelo Miguel no computador dele, com Windows 11, na pasta `C:\umbraview`: a `develop`
+atualizada, sem `data-raw/`, sem `.venv/` e sem cache do pip antes de começar. Os passos 1 a 4
+foram feitos na ordem, cada bloco colado no shell que o README pede, e todos saíram sem erro. O
+passo 3 deu as três linhas que o README espera, terminando em `OK: 332 ladrilhos, 334 arquivos,
+43.5 MB em public/data/relief; maior arquivo far.bin, 1.29 MB`.
+
+**O que o README não diz, ou confunde.** Anotado para o Enzo; o README não foi mexido.
+1. **Tempo.** O README não diz quanto levam os passos 1 e 3 (os passos 5 e 7 dizem). Medido
+   aqui: o passo 1 levou uns 10 min (4 min 37 s e 5 min 15 s, média de 660 KB/s); o passo 2,
+   menos de 1 min; o passo 3, cerca de 2 min.
+2. **Espaço do Python.** O README pede "uns 410 MB livres ... fora o ambiente do Python" e não diz
+   quanto ele ocupa. A `.venv/` ficou com 167 MiB (2.796 arquivos), de uns 44 MB baixados do PyPI
+   (numpy 12,6 MB, rasterio 30,7 MB, o resto pequeno). Com os arquivos da NASA, uns 600 MB.
+3. **Passo 1 sem linha de confirmação.** Além da barra de progresso, o README não diz que saída
+   mostra que o download deu certo. Quem confere é o passo 3, pelo SHA-256.
+4. **MB e MiB.** O `curl` mostra o tamanho em MiB (180.3M e 208.8M), e o README fala em MB (189 e
+   219). São os mesmos arquivos (189.158.392 e 218.961.039 bytes), mas quem confere pela tela
+   pode achar que o download veio menor.
+5. **Linhas longas.** Copiado de uma tela estreita (aqui, a do Claude Code), o endereço de cada
+   `curl` do passo 1 caiu sozinho na linha de baixo, e o PowerShell receberia o `curl` sem o
+   endereço; no passo 2, a linha do `pip` quebrou e um pedaço dela apareceu repetido. No GitHub e
+   no VS Code, cada comando fica numa linha. Os blocos dos passos 1, 2 e 4 foram colados de uma
+   cópia com cada comando inteiro numa linha, com o mesmo texto do README; a linha do passo 4 tem
+   uns 190 caracteres.
 
 ### I6 · Dizer no painel qual é o período
 
