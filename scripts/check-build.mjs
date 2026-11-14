@@ -38,7 +38,7 @@ export function checkBuild(dist) {
 
 /* Rodando pelo npm (npm run conferir), e não importado pelo teste. A raiz vem do diretório de
    trabalho: no Windows, caminho montado a partir do import.meta.url ganha uma barra antes da
-   letra do drive (/C:/...) e não existe (medido no projeto UNAERP x EPTV em 21/09/2026). */
+   letra do drive (/C:/...) e não existe (medido em 21/09/2026). */
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const raiz = process.cwd()
   if (!existsSync(join(raiz, 'package.json'))) {
