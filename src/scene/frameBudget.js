@@ -6,10 +6,11 @@
  * girando): lá ele fica desligado.
  *
  * Ele só mede os quadros que ele mesmo pede (wantsFrame), em rajadas: ao abrir a página, até
- * decidir; e, depois de ligado, a cada bloco novo de relevo fino que entra na tela (recheck). Por
- * que não medir os quadros que já acontecem: com o C9, a cena parada não desenha, e o intervalo entre
- * dois quadros soltos (um passo da roda do mouse, um ladrilho que chega) é o ritmo da mão ou da
- * rede, e não o custo de desenhar. Contados, eles desligavam o relevo fino numa máquina que aguenta.
+ * decidir (ou até um teto, numa máquina lenta demais para juntar os intervalos); e, depois de
+ * ligado, a cada bloco novo de relevo fino que entra na tela (recheck). Por que não medir os
+ * quadros que já acontecem: com o C9, a cena parada não desenha, e o intervalo entre dois quadros
+ * soltos (um passo da roda do mouse, um ladrilho que chega) é o ritmo da mão ou da rede, e não o
+ * custo de desenhar. Contados, eles desligavam o relevo fino numa máquina que aguenta.
  * Pelo mesmo motivo não serve o PerformanceMonitor do Drei, que o card sugeria: ele conta quadros
  * por segundo em janelas de tempo, e a cena parada pareceria "0 por segundo".
  *
@@ -30,7 +31,9 @@ export const FRAME_LIMIT_MS = 17.5
 export const FRAME_SAMPLES = 60
 
 /* O intervalo acima do qual dois quadros não contam como seguidos, mesmo dentro de uma rajada: com o
-   navegador escondido ou ocupado, o quadro pedido pode demorar, e isso não é o custo de desenhar. */
+   navegador ocupado (a conta de um ponto, um ladrilho que chega), o quadro pedido pode demorar, e
+   isso não é o custo de desenhar. Se todos passam disso, é a máquina que é lenta: a abertura
+   desliga depois do teto (revisão do Enzo, em 13/11). */
 export const MAX_GAP_MS = 100
 
 /* Quanto tempo, a partir do primeiro quadro, não conta. No começo a cena ainda monta o relevo e
@@ -49,8 +52,10 @@ export const RECHECK_SKIP = 6
 
 /* levels: quantos degraus de relevo fino a cena tem (no NearRelief, 2: o centro e o anel; 1: só o
    centro). Devolve { state, level, averageMs, measurements, wantsFrame, push, recheck, skipNext }.
-   - state: 'measuring' até a primeira decisão, depois 'on' ou 'off'. Desligado é para sempre nesta
-     página: ligar de novo faria o relevo fino piscar, ligando e desligando, numa máquina no limite.
+   - state: 'measuring' até a primeira decisão, depois 'on' ou 'off'. A abertura decide 'off' também
+     quando, depois do primeiro segundo, passa do dobro dos quadros que precisa sem juntar os
+     intervalos. Desligado é para sempre nesta página: ligar de novo faria o relevo fino piscar,
+     ligando e desligando, numa máquina no limite.
    - level: o degrau de agora, de levels (tudo) a 0 (desligado, ou ainda medindo). Ele só desce,
      pelo mesmo motivo do desligado.
    - averageMs: a última média calculada, para o aviso no console.
@@ -82,6 +87,14 @@ export function createFrameBudget({
   let burstLeft = 0
   let skip = 0
   const intervals = []
+  /* Os intervalos da abertura depois do primeiro segundo, também os que não contam, e a soma
+     deles. Sem o teto, numa máquina em que todo quadro passa de MAX_GAP_MS (o Chrome sem
+     aceleração de vídeo, uma máquina virtual, a área de trabalho remota), nenhum intervalo entrava
+     na média: a abertura pedia quadros para sempre, e a cena parada (card C9) voltava a desenhar
+     sem parar. Numa aba escondida de verdade o navegador nem chama o requestAnimationFrame, então
+     quadro solto numa aba visível é máquina lenta. */
+  let openingCount = 0
+  let openingMs = 0
 
   function startBurst() {
     // o teto da rajada: o dobro do que ela precisa. Numa página que só tem pausas, ela pararia
@@ -140,13 +153,27 @@ export function createFrameBudget({
 
       if (state !== 'off' && previousMs !== null && chained) {
         const interval = nowMs - previousMs
+        const warm = previousMs - firstMs >= warmupMs
+        if (state === 'measuring' && warm) {
+          openingCount++
+          openingMs += interval
+        }
         if (skip > 0) skip--
-        else if (previousMs - firstMs >= warmupMs && interval > 0 && interval <= maxGapMs) {
+        else if (warm && interval > 0 && interval <= maxGapMs) {
           intervals.push(interval)
           if (intervals.length > samples) intervals.shift()
           if (intervals.length === samples) {
             decision = decide(intervals.reduce((sum, value) => sum + value, 0) / samples)
           }
+        }
+        // o teto da abertura, o dobro do que ela precisa: a média vai para o console com todos os
+        // intervalos, também os longos, para quem abrir o F12 ver por que desligou
+        if (state === 'measuring' && openingCount >= 2 * samples) {
+          averageMs = openingMs / openingCount
+          measurements++
+          state = 'off'
+          level = 0
+          decision = 'off'
         }
       }
 

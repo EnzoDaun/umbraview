@@ -930,8 +930,16 @@ passa do que o C4 mediu; e o `verify` passa.
   revisão viu que sobravam quadros da troca nos contados) e o quadro depois de montar um ladrilho,
   e decide pela média de 60 intervalos de até 100 ms. A rajada vai até juntar esses 60, e não um
   número fixo de quadros: com um número fixo, um intervalo a mais que não conta deixava 59, e ela
-  acabava sem decidir. O teto é de 122 quadros, para ela não pedir quadros para sempre numa página
-  que só tem pausas. Ele decide em **degraus**: uma rajada que estoura com o anel na tela tira só o
+  acabava sem decidir. O teto é o dobro dos quadros que ela precisa, para ela não pedir quadros
+  para sempre numa página que só tem pausas. A abertura tem o mesmo teto, contado depois do
+  primeiro segundo: se passar dele sem juntar os 60 intervalos, ela desliga o relevo fino e mostra a
+  linha no console, com a média de todos os intervalos. Sem ele, numa máquina em que todo quadro
+  passa de 100 ms (um Chrome sem aceleração de vídeo, uma máquina virtual, uma área de trabalho
+  remota), a abertura pedia quadros para sempre e a cena parada voltava a desenhar sem parar
+  (revisão do Enzo, em 13/11). Numa aba escondida de verdade o navegador nem chama o
+  `requestAnimationFrame`, então quadro solto numa aba visível quer dizer máquina lenta; no
+  navegador escondido do app do Claude, a abertura desliga, e a conferência por lá continua
+  precisando do relógio mais lento. Ele decide em **degraus**: uma rajada que estoura com o anel na tela tira só o
   anel e abre outra rajada sozinha, que mede o centro; se essa estourar também, desliga tudo. O
   degrau nunca sobe. Sem os degraus, uma máquina que aguenta o centro e não o anel perderia o
   relevo fino inteiro. Toda medição que termina vai para o console, com a média (`relevo fino

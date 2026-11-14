@@ -69,12 +69,41 @@ describe('createFrameBudget, a primeira decisão', () => {
     expect(FRAME_LIMIT_MS).toBeGreaterThan(16.7)
   })
 
-  it('com quadros soltos, a mais de 100 ms um do outro, não decide nada', () => {
-    // o navegador escondido, por exemplo: os quadros soltos pareceriam uma máquina lenta
+  it('numa aba visível, quadros sempre a mais de 100 ms um do outro são máquina lenta: depois de um teto, desliga', () => {
+    /* Revisão do Enzo, em 13/11: no Chromium sem aceleração de vídeo, uns 5 quadros por segundo,
+       nenhum intervalo entrava na média, e a abertura pedia quadros para sempre, desfazendo a cena
+       parada do C9. Numa aba escondida de verdade o navegador nem chama o requestAnimationFrame
+       (MDN), então quadro solto numa aba visível quer dizer máquina lenta. */
     const budget = createFrameBudget({ warmupMs: 0 })
-    const { decisions } = pushFrames(budget, { count: 200, intervalMs: MAX_GAP_MS + 1 })
-    expect(decisions).toEqual([])
+    const ceiling = 2 * FRAME_SAMPLES
+    // o primeiro quadro não tem intervalo: o teto conta intervalos, e o último fecha a conta
+    const almost = pushFrames(budget, { count: ceiling, intervalMs: MAX_GAP_MS + 1 })
+    expect(almost.decisions).toEqual([])
     expect(budget.state).toBe('measuring')
+    expect(budget.wantsFrame).toBe(true)
+    const last = pushFrames(budget, { count: 1, intervalMs: 0, startMs: almost.lastMs + MAX_GAP_MS + 1 })
+    expect(last.decisions).toEqual(['off'])
+    expect(budget.state).toBe('off')
+    expect(budget.wantsFrame).toBe(false)
+    // a média vai para o console: mostra a quem abrir o F12 por que desligou
+    expect(budget.measurements).toBe(1)
+    expect(budget.averageMs).toBeCloseTo(MAX_GAP_MS + 1, 6)
+  })
+
+  it('a máquina lenta da revisão (5.000 quadros de 120 ms) termina desligada e sem pedir quadros', () => {
+    const budget = createFrameBudget()
+    const { decisions } = pushFrames(budget, { count: 5000, intervalMs: 120 })
+    expect(decisions).toEqual(['off'])
+    expect(budget.state).toBe('off')
+    expect(budget.wantsFrame).toBe(false)
+    expect(budget.measurements).toBe(1)
+  })
+
+  it('o primeiro segundo não conta para o teto: numa tela de 240 Hz ele já teria 240 quadros', () => {
+    const budget = createFrameBudget()
+    const warmup = pushFrames(budget, { count: WARMUP_MS / 4 + 1, intervalMs: 4 })
+    const { decisions } = pushFrames(budget, { count: FRAME_SAMPLES + 1, intervalMs: 4, startMs: warmup.lastMs + 4 })
+    expect([...warmup.decisions, ...decisions]).toEqual(['on'])
   })
 
   it('o intervalo entre duas rodadas de quadros seguidos não conta, mas as rodadas somam', () => {
