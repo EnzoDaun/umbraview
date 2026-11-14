@@ -9,6 +9,13 @@ O uso segue a permissão do NASA Space Apps Challenge 2026, que admite ferrament
 dos participantes as chama de "Super Intelligence", SI) e pede que cada equipe descreva na
 submissão como elas foram usadas.
 
+O `.gitignore` e o histórico do git citam o Codex, da OpenAI. A configuração dele (as instruções
+para trabalhar no repositório, em `AGENTS.md`, e um gancho que o impede de fazer commit, push e
+merge, em `.codex/`) entrou por engano no PR #12 e saiu no PR #16, no mesmo dia (09/11/2026). O
+Codex não gerou código, teste nem texto do projeto: nenhum commit do histórico tem coautoria ou
+assinatura dele (conferido em 13/11/2026), e as sessões do Codex no computador do Marco não
+chamaram o modelo (conferido pelo Marco em 11/11/2026).
+
 ## Texto para a submissão
 
 > Artificial intelligence (Claude, by Anthropic, through claude.ai) was used in this project to
