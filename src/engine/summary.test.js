@@ -21,10 +21,21 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthNow', 'landingWindows', 'longestDarkHours', 'nextSunsetUtc', 'sunFraction', 'sunNow'],
+      ['earthNow', 'landingWindows', 'longestDarkHours', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
     )
     expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
     expect(Object.keys(sky.earthNow).sort()).toEqual(['elevationDeg', 'visible'])
+  })
+
+  it('o período vai do primeiro ao último instante calculado, onde termina a janela que continua', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    // dez instantes de hora em hora: o último é a hora 9, e não a 10
+    expect(sky.period).toEqual({
+      startUtc: new Date('2026-11-14T03:00:00Z'),
+      endUtc: new Date('2026-11-14T12:00:00Z'),
+    })
+    const continues = sky.landingWindows.find((j) => j.endsAfterPeriod)
+    expect(continues.endUtc).toEqual(sky.period.endUtc)
   })
 
   it('o agora é o primeiro instante da série', () => {
@@ -51,10 +62,24 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(sky.landingWindows.map((j) => ({ ...j, startUtc: minuto(j.startUtc), endUtc: minuto(j.endUtc) }))).toEqual([
       // já aberta no primeiro instante; fecha no pôr do Sol
-      { startUtc: '2026-11-14T03:00:00.000Z', endUtc: '2026-11-14T05:30:00.000Z', startsBeforePeriod: true, endsAfterPeriod: false },
+      { startUtc: '2026-11-14T03:00:00.000Z', endUtc: '2026-11-14T05:30:00.000Z', durationHours: expect.any(Number), startsBeforePeriod: true, endsAfterPeriod: false },
       // o Sol passa da metade do disco entre as horas 6 (0) e 7 (0,6); continua depois do último instante
-      { startUtc: '2026-11-14T09:50:00.000Z', endUtc: '2026-11-14T12:00:00.000Z', startsBeforePeriod: false, endsAfterPeriod: true },
+      { startUtc: '2026-11-14T09:50:00.000Z', endUtc: '2026-11-14T12:00:00.000Z', durationHours: expect.any(Number), startsBeforePeriod: false, endsAfterPeriod: true },
     ])
+  })
+
+  it('a duração de cada janela é exatamente o fim menos o começo, e na cortada só a parte dentro do período', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    // a mesma série do teste do mínimo: uma janela de 3 h e pouco, inteira dentro das dez horas
+    const inteira = summarizeSky({ ...SERIE, sunFraction: Float32Array.from([0, 0, 0.6, 1, 1, 0.6, 0, 0, 0, 0]) }, { minWindowHours: 3 })
+    const janelas = [...sky.landingWindows, ...inteira.landingWindows]
+    expect(janelas).toHaveLength(3)
+    // conta a partir dos próprios Date: o Date corta a fração de milissegundo, e a conta pelas horas
+    // da série discordaria do startUtc e do endUtc que a tela mostra
+    for (const j of janelas) expect(j.durationHours).toBe((j.endUtc - j.startUtc) / 3600e3)
+    // cortada no começo: das 03:00, o começo do período, até o pôr das 05:30
+    expect(sky.landingWindows[0].durationHours).toBe(2.5)
+    expect(inteira.landingWindows[0].durationHours).toBeCloseTo(3.33, 2)
   })
 
   it('nenhuma janela de pouso passa do pôr do Sol', () => {

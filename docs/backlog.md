@@ -67,7 +67,8 @@ Miguel no mesmo dia.
 | `sky.nextSunsetUtc` | `Date` ou `null` | Quando metade do Sol some atrás das montanhas. `null` se ele não se põe no período. |
 | `sky.sunFraction` | número de 0 a 1 | Quanto do Sol ficou à vista, em média, no período. |
 | `sky.longestDarkHours` | número | O maior trecho seguido, em horas, com o Sol inteiro escondido. |
-| `sky.landingWindows` | lista de `{ startUtc, endUtc, startsBeforePeriod, endsAfterPeriod }`: dois `Date` e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
+| `sky.landingWindows` | lista de `{ startUtc, endUtc, durationHours, startsBeforePeriod, endsAfterPeriod }`: dois `Date`, um número e dois `true` ou `false` | Trechos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo tempo. `durationHours`: quanto a janela dura, em horas, sem arredondar: o `endUtc` menos o `startUtc`; na janela cortada pelo período, só a parte dentro dele (entrou no card I6). O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: uma janela que fecha pelo Sol fecha no `nextSunsetUtc`. `startsBeforePeriod`: a janela já estava aberta no começo do período, e o `startUtc` é o começo do período, e não o nascer do Sol. `endsAfterPeriod`: a janela continua depois do fim do período, e o `endUtc` é o último instante calculado. A janela inteira dentro do período só entra se durar pelo menos `MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`); a cortada numa das pontas entra mesmo mais curta. Lista vazia se não houver nenhuma. |
+| `sky.period` | `{ startUtc, endUtc }`: dois `Date` | O período dos números acima. `startUtc`: a data escolhida, o mesmo instante do `sunNow` e do `earthNow`. `endUtc`: o último instante calculado, a data mais `PERIOD_DAYS` × 24 − 1 horas (hoje 719 h), porque o motor calcula de hora em hora a partir da data; é o mesmo `endUtc` de uma janela com `endsAfterPeriod`. Entrou no card I6, por decisão do Enzo em 12/11. |
 
 O motor entrega o `sky` pronto, nesse formato: `summarizeSky`, em `src/engine/summary.js`. O
 período começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, com o
@@ -1610,9 +1611,9 @@ dentro do próprio arquivo de teste, nunca em `src/data/`.
 **Cuidado.** `elevationDeg` negativo com `visible: true` não é erro (veja "O que a ponte entrega
 para a tela"). Mostre os dois como chegam.
 
-**A janela mínima ainda está em aberto.** O painel só lista janelas que duram pelo menos
-`MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`), um valor provisório. Combine o valor com o
-Enzo e o Marco antes de fazer a lista de janelas. Para essa conversa, medido em 30/10/2026 com
+**A janela mínima: 24 h.** O painel só lista janelas que duram pelo menos
+`MIN_LANDING_WINDOW_HOURS` (`src/engine/config.js`). O valor era provisório, 144 h, e ficou em
+24 h por decisão do Enzo em 12/11 (card I6), com esta medição, feita em 30/10/2026 com
 `node scripts/prepare-data/window-lengths.mjs`: a porcentagem dos pontos de comparação com a NASA
 que têm pelo menos uma janela deste tamanho, contando a partir de 14/11/2026.
 
@@ -1765,37 +1766,102 @@ passo 3 deu as três linhas que o README espera, terminando em `OK: 332 ladrilho
    cópia com cada comando inteiro numa linha, com o mesmo texto do README; a linha do passo 4 tem
    uns 190 caracteres.
 
-### I6 · Dizer no painel qual é o período
+### I6 · Dizer no painel qual é o período e quanto dura cada janela
 
-**Estado:** a fazer · **Depende de:** I1 (feito)
+**Estado:** feito em 12/11, PR #28 · **Depende de:** I1 (feito)
 
 **Para que serve.** "Sunlight in the period" e "Longest darkness" não dizem qual é o período:
 quem lê 85.5% não sabe se é de uma semana ou de um ano. O mesmo vale para os dois textos do
 painel que terminam em "in this period" (o do pôr do Sol e o da lista de janelas). O período
-começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, hoje 30). Veio do PR
-#11 (card I1).
+começa na data escolhida e dura `PERIOD_DAYS` dias (`src/engine/config.js`, hoje 30). Na lista de
+janelas falta também quanto cada uma dura: quem lê quer saber quantos dias dá para operar, sem
+fazer a conta de cabeça. Veio do PR #11 (card I1).
+
+**Decisões do Enzo em 12/11.** O motor é dele, e ele autorizou as mudanças no motor neste card.
+- O período vem do motor: o `sky` ganha `period: { startUtc, endUtc }`. O `endUtc` é o último
+  instante calculado, a data mais 719 h, porque o motor faz 720 contas de hora em hora a partir da
+  data (`src/engine/siteSky.js`). Se o painel somasse 30 dias, o fim ficaria 1 h depois da última
+  conta, uma janela "(continues)" pareceria acabar antes do período, e a regra do `PERIOD_DAYS`
+  ficaria em dois lugares.
+- A duração de cada janela também vem do motor, porque a tela não faz conta: cada item de
+  `landingWindows` ganha `durationHours`, calculado a partir dos próprios `startUtc` e `endUtc`,
+  para os três nunca discordarem. Na janela cortada pelo período, é a duração da parte dentro
+  dele.
+- A janela mínima (`MIN_LANDING_WINDOW_HOURS`) cai de 144 h para 24 h. O motivo está no
+  comentário dela, em `src/engine/config.js`.
+- Os dois campos novos entram na tabela de "O que a ponte entrega para a tela", com aviso ao
+  Marco no mesmo dia.
 
 **O que fazer.**
-1. Antes de começar, combinar com o Enzo de onde vem o fim do período. Hoje só o motor sabe a
-   duração, e o painel nem recebe a data. Dois caminhos: o `sky` passa a trazer o período pronto
-   (campo novo na tabela de "O que a ponte entrega para a tela", com aviso ao Marco no mesmo
-   dia), ou o painel recebe a data e soma o `PERIOD_DAYS`. Um detalhe pesa a favor do primeiro:
-   o motor calcula de hora em hora a partir da data (`src/engine/siteSky.js`), então o último
-   instante calculado fica uma hora antes de "data + 30 dias", e é ele o fim de uma janela com
-   "(continues)".
-2. Mostrar no painel o começo e o fim do período, em UTC, com o `formatUtc`
-   (`src/panel/format.js`). Os textos em `src/data/panel.js`.
+1. `src/engine/summary.js`: o `period` e o `durationHours`, e as linhas da tabela da ponte.
+2. `src/engine/config.js`: a janela mínima de 24 h.
+3. No painel, uma linha "Period" entre "Earth now" e "Next sunset", com o começo e o fim em UTC
+   pelo `formatUtc` (`src/panel/format.js`): as duas linhas de cima são o primeiro instante do
+   período, e as de baixo valem para o período inteiro.
+4. Na lista de janelas, a duração de cada uma na frente, separada por " · ", pelo `formatDuration`
+   (`src/panel/format.js`): em dias e horas ("6 d 4 h"), o dia inteiro sem o zero ("2 d"), abaixo
+   de um dia só horas ("18 h"), e abaixo de 1 h em minutos ("20 min"), para não aparecer "0 h". Na
+   janela cortada pelo período, com "≥" grudado no número ("≥ 18 h"), para ele não parecer exato
+   quando não é. O "d", o "h" e o "min" ficam no `format.js`, junto do número, como o ° e o UTC.
 
-**Como testar** (`src/panel/SitePanel.test.jsx`). O `ready` mostra o começo e o fim do período em
-UTC. A suíte roda em Tóquio: se o fuso escapar, a hora sai errada e o teste pega.
+**Como testar.**
+- `src/engine/summary.test.js`: o período vai do primeiro ao último instante calculado (com o fim
+  em 720 h, o teste falha), e a duração de uma janela inteira e de uma cortada é exatamente o fim
+  menos o começo.
+- `src/engine/config.test.js`: a janela mínima é de 24 h.
+- `src/panel/format.test.js`: a duração em dias e horas, o dia inteiro sem o zero, só horas abaixo
+  de um dia e minutos abaixo de 1 h; uma janela de 24 h com o milissegundo cortado não vira 23 h.
+- `src/panel/SitePanel.test.jsx`: o `ready` mostra o começo e o fim do período em UTC, e a
+  duração de cada janela, com "≥" só na cortada. A suíte roda em Tóquio: se o fuso escapar, a
+  hora sai errada e o teste pega.
 
-**Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período, os
-testes passam e o `verify` passa.
+**Pronto quando.** Quem lê o painel sabe de quando a quando valem os números do período e quanto
+dura cada janela, o Marco foi avisado dos dois campos novos, os testes passam e o `verify` passa.
 
 ### I7 · As 9 regiões do Artemis III na lista
 
 **Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
 novo.
+
+### I8 · Próximo nascer do Sol no painel
+
+**Estado:** a fazer · **Depende de:** I6 (mexe nos mesmos arquivos: `summary.js`, a tabela da
+ponte e o `SitePanel.jsx`)
+
+**Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
+nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
+quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. Aprovado pelo Enzo em
+12/11, junto com o I6.
+
+**O que o motor já tem.** Conferido no código em 12/11/2026: o `nextChange('sun', series, 0)`
+(`src/engine/series.js`) devolve `{ visibleNow, hours }`, as horas até o Sol mudar de estado, pela
+regra da metade do disco, a mesma do `sunNow.visible`. Hoje ele só é usado nos testes
+(`src/engine/series.test.js`).
+- Com o Sol escondido no primeiro instante (`visibleNow: false`), `hours` é quando ele volta: é o
+  caso deste card.
+- **Cuidado:** com o Sol à vista, o `nextChange` devolve o **pôr**, e não o nascer. Não dá para
+  ler o resultado dele como "próximo nascer" sem olhar o `visibleNow`.
+- Com o Sol escondido até o fim do período, `hours` é `null`.
+
+**O que fazer.**
+1. `src/engine/summary.js`: campo novo no `sky`, `nextSunriseUtc`: um `Date`, ou `null` com o Sol
+   à vista agora ou se ele não volta no período. Sai do `nextChange('sun', series, 0)`, só quando
+   o `visibleNow` é `false`, convertido pelo mesmo `at()` do `nextSunsetUtc`. O motor é do Enzo; a
+   mudança está autorizada por ele, como no I6.
+2. Linha nova na tabela de "O que a ponte entrega para a tela", avisando o Marco no mesmo dia.
+3. `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com a data em
+   UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período inteiro, o
+   `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card I1).
+
+**Como testar.**
+- `src/engine/summary.test.js`: com o Sol escondido no primeiro instante, o `nextSunriseUtc` é a
+  hora em que metade do disco volta; com o Sol à vista, é `null`, e não o pôr que o `nextChange`
+  devolveria; com o Sol escondido o período inteiro, `null`.
+- `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em UTC (a suíte
+  roda em Tóquio); com o Sol à vista, a linha não aparece.
+
+**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, o Marco foi
+avisado do campo novo, os testes passam e o `verify` passa.
 
 ---
 

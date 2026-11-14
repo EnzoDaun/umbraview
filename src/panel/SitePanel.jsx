@@ -1,5 +1,5 @@
 import { panel } from '../data/panel.js'
-import { formatDegrees, formatPercent, formatUtc } from './format.js'
+import { formatDegrees, formatDuration, formatPercent, formatUtc } from './format.js'
 import './SitePanel.css'
 
 /* Os números do ponto escolhido, em texto (card I1). Recebe o { status, sky } do useSiteSky, no
@@ -36,6 +36,13 @@ function PanelBody({ status, sky }) {
         {' · '}
         <span className="site-panel__number">{formatDegrees(sky.earthNow.elevationDeg)}</span>
       </Row>
+      {/* entre o agora e o resto: as duas linhas de cima são o primeiro instante do período, e
+          as de baixo valem para o período inteiro */}
+      <Row label={panel.period}>
+        <span className="site-panel__number site-panel__date">{formatUtc(sky.period.startUtc)}</span>
+        {' – '}
+        <span className="site-panel__number site-panel__date">{formatUtc(sky.period.endUtc)}</span>
+      </Row>
       <Row label={panel.nextSunset}>
         {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
             Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}
@@ -61,6 +68,13 @@ function PanelBody({ status, sky }) {
           <ul className="site-panel__windows">
             {sky.landingWindows.map((landingWindow) => (
               <li key={landingWindow.startUtc.getTime()}>
+                {/* na frente, para correr o olho pela lista atrás da janela mais longa; o "≥" na
+                    cortada pelo período, porque a janela dura mais do que a parte dentro dele */}
+                <span className="site-panel__number site-panel__duration">
+                  {(landingWindow.startsBeforePeriod || landingWindow.endsAfterPeriod) && '≥ '}
+                  {formatDuration(landingWindow.durationHours)}
+                </span>
+                {' · '}
                 <span className="site-panel__number site-panel__date">
                   {formatUtc(landingWindow.startUtc)}
                 </span>

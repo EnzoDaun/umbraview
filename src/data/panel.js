@@ -13,6 +13,8 @@ export const panel = {
   earthNow: 'Earth now',
   visible: 'In view',
   hidden: 'Hidden by terrain',
+  // De quando a quando valem os números "in this period" (card I6).
+  period: 'Period',
   nextSunset: 'Next sunset',
   noSunset: "The Sun doesn't set in this period.",
   sunAlwaysHidden: 'The Sun stays behind the terrain for the whole period.',

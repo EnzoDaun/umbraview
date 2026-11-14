@@ -28,8 +28,10 @@
   padding-inline-start: var(--space-4);
 }
 
-/* A data não quebra no meio: se a linha não couber, quem desce é o marcador ou o traço. */
-.site-panel__date {
+/* A data e a duração não quebram no meio, nem o "≥" se separa do número: se a linha não couber,
+   quem desce é o marcador ou o traço. */
+.site-panel__date,
+.site-panel__duration {
   white-space: nowrap;
 }
 
