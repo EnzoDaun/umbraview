@@ -1,4 +1,4 @@
-# UmbraView.
+# UmbraView
 
 Site que mostra, para um ponto da Lua, quando o Sol e a Terra ficam acima do horizonte de
 verdade, com o relevo medido pela NASA, e ajuda a escolher onde e quando pousar.
