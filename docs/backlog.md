@@ -847,8 +847,8 @@ do I2.
 ### C6 · O relevo fino de perto
 
 **Estado:** feito em 13/11, PR #30; conferido pelo Marco no CIT-DES06 (Intel UHD 630, mais fraca
-que a Iris Xe do notebook dele), com a janela maximizada; falta o notebook do Miguel · **Depende
-de:** C2 (feito), C4 (feito) e C9 (feito), porque o medidor pede os próprios quadros na cena que só
+que a Iris Xe do notebook dele), com a janela maximizada, e pelo Miguel no notebook dele (Iris Xe),
+onde o relevo fino fica desligado · **Depende de:** C2 (feito), C4 (feito) e C9 (feito), porque o medidor pede os próprios quadros na cena que só
 desenha quando algo muda
 
 **Para que serve.** De perto, a cena do C2 fica borrada: ela desenha o relevo grosso (`far.bin`),
@@ -1189,6 +1189,25 @@ Marco, o console mostrou `relevo fino ligado` (16,67 ms), depois `só no centro 
   ms`, ou seja, 60 quadros por segundo sem nenhum atrasado. A olho, de longe e de perto, a linha dos
   84°S inteira e as crateras certas.
 
+**No notebook do Miguel**, em 13/11/2026, no commit `e22031c`, com `npm run preview`, o Chrome
+157.0.8103.51, a janela maximizada, o notebook na tomada, o F12 fechado e 15 s sem mexer (a Lua
+girando), em 2 rodadas com a página recarregada. Medido pelo Miguel; os números são os que ele
+copiou do console:
+- **As duas rodadas:** uma linha só, sem "ligado" antes:
+  `NearRelief: relevo fino desligado, média de 18.15 ms entre quadros (o limite é 17.5 ms)`. A
+  abertura decidiu pelos 60 intervalos, e não pelo teto.
+- **O "Pronto quando" desse notebook:** o relevo fino fica desligado, e a abertura mede a cena sem
+  ele. Os 18,15 ms ficam no que o C4 mediu ali, girando: 54,9 fps no Chrome (18,2 ms) e 55,2 fps no
+  Edge (18,1 ms).
+- **Console:** sem erro, só o aviso de sempre do `THREE.Clock`. Ele não vem do nosso código: o
+  React Three Fiber cria um `THREE.Clock` por dentro, e o three avisa.
+- **Antes**, numa rodada sem o commit e o navegador anotados, deu 19,17 ms; e no `npm run dev`, com
+  o DevTools aberto, 18,19 ms. Desligado nas duas.
+- **No PC do Miguel** (GeForce RTX 3060, AORUS 8G), do mesmo jeito, no Chrome 157.0.8103.52:
+  `NearRelief: relevo fino ligado, média de 5.56 ms entre quadros (o limite é 17.5 ms)`, numa
+  rodada (a segunda não foi anotada). A frequência da tela não foi anotada: 5,56 ms é o ritmo de
+  uma tela de 180 Hz, e então seria o ritmo da tela, e não o custo do quadro (não conferido).
+
 **Aberto.**
 - Nas duas conferências de 13/11, a rajada só com o centro deu mais que a com o anel (22,82 contra
   20,98 ms, e 20,73 contra 17,71 ms), e pela medida devia dar quase o mesmo. Os quadros dela não
@@ -1196,12 +1215,6 @@ Marco, o console mostrou `relevo fino ligado` (16,67 ms), depois `só no centro 
   desenha a tela do computador e o DevTools aberto (não conferido).
 - Sem o antisserrilhado, a borda da Lua vista de longe fica em degraus. Se incomodar, o card C12
   sugere suavizar as bordas de outro jeito.
-- O notebook do Miguel não foi conferido. O "Pronto quando" pede que, nele, o relevo fino fique
-  desligado: a linha `NearRelief: relevo fino desligado` no console (F12) mostra isso. Pode
-  acontecer de ele ligar na abertura: o C4 viu o notebook do Miguel chegar a 59 quadros por segundo
-  arrastando (16,9 ms), abaixo dos 17,5 ms. Aí o centro do primeiro bloco aparece por uns 2 s e
-  sai: a rajada depois dele desce um degrau, e a que o medidor abre sozinho em seguida desliga
-  (não conferido).
 - O custo no notebook do Marco (BOOK, Iris Xe) não foi medido; o CIT-DES06 tem uma placa mais
   fraca, então ele deve ficar abaixo dos números acima (não conferido).
 - O custo do anel na placa de vídeo foi medido só no CIT-DES06 (sexta rodada). Se ele não couber
