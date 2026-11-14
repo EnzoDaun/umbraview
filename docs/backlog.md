@@ -150,7 +150,7 @@ E nos sorteios por faixa de Sol:
 
 ### E2 · Dados do relevo para o site
 
-**Estado:** feito em 03/11, PR #3; falta a conferência do card I5 · **Depende de:** nada
+**Estado:** feito em 03/11, PR #3 · **Depende de:** nada
 
 **O que entrega.**
 - `public/data/relief/`: o relevo do polo sul, do polo até 84°S, recortado dos arquivos LOLA da
@@ -194,7 +194,8 @@ mudança fica só em `reliefFiles.js`.
 - Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
   (CREDITS.md) nos pontos de referência, e um script refaz a comparação. Feito:
   `scripts/prepare-data/compare-nasa.mjs`, com o resultado no card E1.
-- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Falta: card I5.
+- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Feito: card I5, em
+  12/11 (PR #29).
 - O tamanho de `public/data/` e a área escolhida estão anotados neste card. Feito: "O que
   entrega" e "Por que ladrilhos e por que até 84°S".
 - Nenhum arquivo passa de 50 MB. Feito: o maior é o `far.bin`, de 1,3 MB.
@@ -652,6 +653,26 @@ tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
 
 **Pronto quando.** As regiões com o centro dentro da área aparecem no grupo "Artemis III
 candidate regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
+
+### E17 · O README do script do relevo, com o que o I5 achou
+
+**Estado:** a fazer; saiu do card I5, em 12/11 · **Depende de:** nada
+
+**Para que serve.** O README do script (`scripts/prepare-data/README.md`) é o que alguém segue
+para gerar o relevo do zero. No card I5, o Miguel seguiu os passos 1 a 4 e chegou aos mesmos
+recortes do repositório, mas anotou 5 pontos em que o README não diz algo ou confunde. Quem rodar
+de novo pode tropeçar nos mesmos.
+
+**O que fazer.** Resolver no README os 5 pontos do card I5, em "O que o README não diz, ou
+confunde", com os números que o Miguel mediu lá:
+1. quanto tempo levam os passos 1 e 3;
+2. quanto ocupa o ambiente do Python, e o espaço total;
+3. que saída mostra que o download do passo 1 deu certo;
+4. o tamanho em MB no README e em MiB no `curl`;
+5. as linhas longas, que quebram ao copiar de uma tela estreita.
+
+**Pronto quando.** Cada um dos 5 pontos está resolvido no README, ou anotado aqui com o motivo de
+ter ficado como está, e o `verify` passa.
 
 ---
 
