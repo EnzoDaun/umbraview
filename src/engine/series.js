@@ -81,6 +81,14 @@ const earthValue = (series, i) => series.earthMarginDeg[i]
 const isSunVisible = (series, i) => sunValue(series, i) >= 0
 const isEarthVisible = (series, i) => earthValue(series, i) > 0
 
+/* O valor que cruza zero quando cada astro muda de estado, e a regra de "à vista", num lugar só:
+   nextChange, nextSetting e as janelas de pouso leem daqui, para o Sol e a Terra não terem duas
+   regras que se desencontram. */
+const BODIES = {
+  sun: { value: sunValue, visible: isSunVisible },
+  earth: { value: earthValue, visible: isEarthVisible },
+}
+
 /* Hora (fracionária) entre i − 1 e i em que o valor cruza zero, em linha reta. */
 function crossing(value, series, i) {
   const a = value(series, i - 1)
@@ -94,8 +102,7 @@ const round = (hours) => Math.round(hours * 1e6) / 1e6
 /* kind: 'sun' ou 'earth'. Quantas horas faltam, a partir do instante fromIndex, para o astro mudar
    de estado (aparecer ou sumir). hours é null se ele não muda até o fim da série. */
 export function nextChange(kind, series, fromIndex) {
-  const value = kind === 'sun' ? sunValue : earthValue
-  const visible = kind === 'sun' ? isSunVisible : isEarthVisible
+  const { value, visible } = BODIES[kind]
   const now = visible(series, fromIndex)
   for (let i = fromIndex + 1; i < series.sunFraction.length; i++) {
     if (visible(series, i) !== now) {
@@ -105,22 +112,26 @@ export function nextChange(kind, series, fromIndex) {
   return { visibleNow: now, hours: null }
 }
 
-/* Quantas horas faltam para o próximo pôr do Sol: a primeira vez, a partir de fromIndex, em que
-   metade do disco some. Com o Sol escondido agora, é o pôr depois do próximo nascer. null se o Sol
-   não se põe até o fim da série. */
-export function nextSunset(series, fromIndex) {
+/* kind: 'sun' ou 'earth'. Quantas horas faltam para o próximo pôr do astro: a primeira vez, a
+   partir de fromIndex, em que ele passa de à vista a escondido (o Sol, quando metade do disco some;
+   a Terra, quando a última parte dela some). Com o astro escondido agora, é o pôr depois da próxima
+   volta, e não a volta: para a volta, nextChange. null se ele não se põe até o fim da série. */
+export function nextSetting(kind, series, fromIndex) {
+  const { value, visible } = BODIES[kind]
   for (let i = fromIndex + 1; i < series.sunFraction.length; i++) {
-    if (isSunVisible(series, i - 1) && !isSunVisible(series, i)) {
-      return round((crossing(sunValue, series, i) - fromIndex) * series.stepHours)
+    if (visible(series, i - 1) && !visible(series, i)) {
+      return round((crossing(value, series, i) - fromIndex) * series.stepHours)
     }
   }
   return null
 }
 
-const CONDITIONS = [
-  { value: sunValue, visible: isSunVisible },
-  { value: earthValue, visible: isEarthVisible },
-]
+/* O pôr do Sol, que o resumo e as janelas de pouso usam desde o card E1. */
+export function nextSunset(series, fromIndex) {
+  return nextSetting('sun', series, fromIndex)
+}
+
+const CONDITIONS = [BODIES.sun, BODIES.earth]
 
 /* Trechos seguidos em que pelo menos metade do Sol e alguma parte da Terra estão à vista ao mesmo
    tempo. O começo e o fim caem entre duas horas, pela mesma conta do pôr do Sol: a janela abre
