@@ -539,7 +539,7 @@ software), com o build no `npm run preview`:
 **Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
 luz certa na cena, também só com o teclado, e o `verify` passa.
 
-### E15 · O teste dos ganchos que estoura o tempo no Windows de vez em quando
+### E15 · Testes que estouram o tempo no Windows de vez em quando
 
 **Estado:** feito em 14/11, PR #32 · **Depende de:** nada
 
@@ -556,9 +556,10 @@ rodar de novo até passar (card C7). Veio do PR #25 (card E9).
   jsdom, e logo depois do `lint` ou não. Não é o card E9 nem a ordem do `verify`.
 - A causa da lentidão de 10/11 não foi achada.
 
-**O que fazer.** Dar aos testes de `scripts/hooks.test.js` que abrem processos um limite de tempo
-próprio (o terceiro argumento do `it`), com o motivo no comentário, e medir no notebook do Miguel,
-onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de todo teste que falhar.
+**O que fazer.** Dar a todo teste da suíte um limite de tempo maior que os 5 s do Vitest, com o
+motivo no comentário (o "Como ficou" diz por que a suíte toda, e não só os testes que abrem
+processos), e medir no notebook do Miguel, onde o site foi o mais lento no card C4. Se a falha
+voltar, registrar o nome de todo teste que falhar.
 
 **Como ficou.**
 - Todo teste da suíte tem 30 s de limite, e não os 5 s do Vitest: o `testTimeout` do
@@ -570,20 +571,23 @@ onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de 
   teste viraria caça ao teste lento.
 - O custo: um teste assíncrono que trave leva 30 s para reprovar, e não 5 s.
 
-**Medido** em 12 e 13/11/2026, no Windows. "O teste" é o "aponta o core.hooksPath para .githooks
-num repositório git"; "o arquivo" é o `scripts/hooks.test.js` inteiro.
+**Medido** em 12, 13 e 14/11/2026, no Windows. "O teste" é o "aponta o core.hooksPath para
+.githooks num repositório git"; "o arquivo" é o `scripts/hooks.test.js` inteiro. "Limite" é o
+limite de cada teste naquela rodada: os 5 s do Vitest, 30 s só nos testes dos ganchos que abrem
+processos, ou 30 s na suíte toda (como ficou).
 
-| Quando | Onde | Como | O teste | O arquivo |
-|---|---|---|---|---|
-| 12/11, 14h38 | computador do Enzo | `verify` logo depois do `npm ci` | 17.381 ms (reprovou) | 32 s |
-| 12/11, 15h09 a 15h11 | computador do Enzo | `verify` | 520 a 649 ms | 8,0 a 13,4 s |
-| 12/11, 15h30 | computador do Enzo | `verify` logo depois do `npm ci` | 1.293 ms | 19,9 s |
-| 13/11 | computador do Enzo | 4 `verify` | 548 a 775 ms | 11 a 12 s |
-| 13/11, 15h48 | desktop do Miguel | `verify` | 415 ms | 7,3 s |
-| 13/11, 21h04 | computador do Enzo | `verify` logo depois do `npm ci` | 994 ms | 22,0 s |
-| 13/11, 21h08 | computador do Enzo | `verify`, sem `npm ci` | 487 ms | 10,8 s |
-| 13/11, 21h23 | notebook do Miguel | `verify` logo depois do `npm ci` | 783 ms | 19,2 s |
-| 13/11, 21h24 | notebook do Miguel | 3 rodadas só do arquivo | 380 a 477 ms | 9,9 a 10,1 s |
+| Quando | Onde | Como | Limite | O teste | O arquivo |
+|---|---|---|---|---|---|
+| 12/11, 14h38 | computador do Enzo | `verify` logo depois do `npm ci` | 5 s | 17.381 ms (reprovou) | 32 s |
+| 12/11, 15h09 a 15h11 | computador do Enzo | `verify` | 5 s | 520 a 649 ms | 8,0 a 13,4 s |
+| 12/11, 15h30 | computador do Enzo | `verify` logo depois do `npm ci` | ganchos, 30 s | 1.293 ms | 19,9 s |
+| 13/11 | computador do Enzo | 4 `verify` | 5 s | 548 a 775 ms | 11 a 12 s |
+| 13/11, 15h48 | desktop do Miguel | `verify` | ganchos, 30 s | 415 ms | 7,3 s |
+| 13/11, 21h04 | computador do Enzo | `verify` logo depois do `npm ci` | 5 s | 994 ms | 22,0 s |
+| 13/11, 21h08 | computador do Enzo | `verify`, sem `npm ci` | 5 s | 487 ms | 10,8 s |
+| 13/11, 21h23 | notebook do Miguel | `verify` logo depois do `npm ci` | ganchos, 30 s | 783 ms | 19,2 s |
+| 13/11, 21h24 | notebook do Miguel | 3 rodadas só do arquivo | ganchos, 30 s | 380 a 477 ms | 9,9 a 10,1 s |
+| 14/11, 00h10 a 00h11 | computador do Enzo | 3 `verify`, sem `npm ci` | suíte, 30 s | 636 a 694 ms | 12,1 a 14,2 s |
 
 - Às 21h04, reprovaram pelos 5 s dois outros testes:
   - o "aceita mensagem normal" do commit-msg, com 5.400 ms (417 ms às 21h08);
@@ -594,8 +598,9 @@ num repositório git"; "o arquivo" é o `scripts/hooks.test.js` inteiro.
   lento, e reprovou em duas. A causa não foi provada.
 - No notebook do Miguel, o teste mais lento levou 1,5 s, e a suíte levou 47 s.
 
-**Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
-`verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
+**Pronto quando.** Todo teste da suíte tem um limite de tempo maior que os 5 s do Vitest, com o
+motivo escrito; o `verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão
+anotados aqui.
 
 ### E16 · As regiões candidatas do Artemis III na lista
 
