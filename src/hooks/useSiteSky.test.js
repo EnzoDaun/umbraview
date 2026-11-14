@@ -18,7 +18,6 @@ const NOV_21 = new Date(Date.UTC(2026, 10, 21))
 const TOP_1 = { lat: -89.475, lon: -137.44, name: 'ponto 1 da comparação com a NASA' }
 /* A primeira conta lê o relevo do disco e leva bem menos de 1 s; a folga é para o CI. */
 const WAIT = { timeout: 10000 }
-const SLOW_TEST_MS = 15000
 
 async function readRelief(path) {
   const bytes = await readFromDisk(join(DIR, path))
@@ -74,7 +73,6 @@ describe('useSiteSky: o céu do ponto escolhido, para a tela', () => {
       const direct = await createSiteSky(diskReader().readFile)(TOP_1, NOV_14.getTime())
       expect(result.current.sky).toEqual(direct)
     },
-    SLOW_TEST_MS,
   )
 
   /* A tela recebe só o status; o motivo vai para o console, para quem depura saber se foi ponto
@@ -90,7 +88,6 @@ describe('useSiteSky: o céu do ponto escolhido, para a tela', () => {
         expect.objectContaining({ message: 'o ponto está fora da área com relevo' }),
       )
     },
-    SLOW_TEST_MS,
   )
 
   it(
@@ -106,7 +103,6 @@ describe('useSiteSky: o céu do ponto escolhido, para a tela', () => {
       expect(result.current.sky).toEqual(await createSiteSky(diskReader().readFile)(TOP_1, NOV_21.getTime()))
       expect(result.current.sky).not.toEqual(before)
     },
-    SLOW_TEST_MS,
   )
 
   it('trocar de ponto no meio da conta nunca mostra o resultado do ponto anterior', async () => {
@@ -156,7 +152,6 @@ describe('useSiteSky: o céu do ponto escolhido, para a tela', () => {
       expect(asked[0]).toBe(`${folder}manifest.json`)
       expect(asked.filter((url) => !url.startsWith(folder))).toEqual([])
     },
-    SLOW_TEST_MS,
   )
 })
 
