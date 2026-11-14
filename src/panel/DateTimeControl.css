@@ -1,0 +1,38 @@
+/* O controle de data e hora (card I4). Só tokens (tokens.css): nada de #hex nem px solto aqui. */
+.date-time-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.date-time-control__label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* O navegador não passa a fonte da página para o campo nem para o botão. A borda é a de controle: o
+   contraste dela contra o --color-surface, que é o fundo do painel, está conferido no tokens.test.js. */
+.date-time-control__input,
+.date-time-control__now {
+  font: inherit;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* Monoespaçada, como os outros números do painel (SitePanel.css). */
+.date-time-control__input {
+  font-family: var(--font-mono);
+}
+
+.date-time-control__now {
+  background-color: var(--color-surface-raised);
+  cursor: pointer;
+}

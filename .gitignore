@@ -17,9 +17,15 @@ npm-debug.log*
 .claude/settings.local.json
 CLAUDE.local.md
 
-# Dados brutos da NASA. Os arquivos LOLA e os mapas de visibilidade passam de 100 MB, e o
-# GitHub recusa arquivo acima de 100 MiB. Eles ficam fora do git: o que o site usa sai deles
-# por script (card E2 do backlog), em pedaços pequenos.
+# Rascunhos de descrição de PR e configuração local do Codex. Ficam só no computador de quem usa;
+# sem isto, um `git add -A` leva tudo para o repositório (aconteceu no PR #12).
+pr-*.md
+AGENTS.md
+.codex/
+
+# Dados brutos da NASA. Os arquivos LOLA têm 189 e 219 MB, e o GitHub recusa arquivo acima
+# de 100 MiB. Eles e os mapas de visibilidade ficam fora do git: o que o site usa sai deles por
+# scripts/prepare-data/, em pedaços pequenos.
 data-raw/
 *.TIF
 *.tif

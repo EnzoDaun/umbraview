@@ -1,7 +1,6 @@
 # Como trabalhar neste repositório
 
-Leia esta página inteira antes do primeiro commit. Ela é curta de propósito, e segue as mesmas
-regras do projeto UNAERP × EPTV, para ninguém precisar aprender dois jeitos de trabalhar.
+Leia esta página inteira antes do primeiro commit. Ela é curta de propósito.
 
 ---
 
@@ -29,7 +28,7 @@ E o caminho até a `main` é só um:
 develop validada  ──►  Pull Request para main  ──►  Enzo mergeia
 ```
 
-Cinco frases que resumem tudo:
+Seis frases que resumem tudo:
 
 1. **Sua branch volta para a `develop`.** Nunca para a `main`.
 2. **O Enzo revisa os PRs do Marco e do Miguel; o Marco revisa os do Enzo.** Não faça merge do
@@ -40,6 +39,10 @@ Cinco frases que resumem tudo:
    evita conflito e mantém a sua base atualizada.
 5. **Não apague branch nenhuma**, nem depois do merge. O GitHub oferece um botão
    *Delete branch* na tela do PR: não use.
+6. **Um card, um PR.** O PR entrega o card inteiro, em commits atômicos, e a descrição explica
+   cada um. Se o card depende de algo que ainda não existe, divida o card em dois, e não o PR:
+   antes de começar, ou assim que perceber a dependência, e sempre antes de abrir o PR. Um card
+   entregue em dois PRs fica marcado como feito sem estar.
 
 Enquanto o repositório for privado no plano gratuito do GitHub, a proteção automática de
 branch não existe: tecnicamente, o `git push origin main` funciona se alguém digitar. As regras
@@ -187,9 +190,9 @@ comando é dele.
 **Segredo.** Token, chave, senha. O `.gitignore` já barra `.env`; o site é estático e não
 precisa de nenhum.
 
-**Dado bruto da NASA.** Os arquivos LOLA e os mapas de iluminação passam de 100 MB, e o GitHub
-recusa arquivo acima de 100 MiB. Eles ficam na pasta `data-raw/`, que o `.gitignore` barra. O
-site usa só os recortes pequenos que o script de preparação gera (card E2).
+**Dado bruto da NASA.** Os arquivos LOLA têm 189 e 219 MB, e o GitHub recusa arquivo acima de
+100 MiB. Eles e os mapas de iluminação ficam na pasta `data-raw/`, que o `.gitignore` barra. O
+site usa só os recortes pequenos que `scripts/prepare-data/` gera (card E2).
 
 **Dado sem fonte.** Coordenada, data, número de comparação: com a fonte escrita, ou com
 `TODO_PREENCHER` até ela chegar (README, "Nenhum dado inventado").

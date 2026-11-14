@@ -1,0 +1,55 @@
+/* A cena ocupa o que sobra da região "Lunar scene", abaixo do título. O Canvas do React Three
+   Fiber toma 100% do elemento em volta dele: sem uma altura aqui, ele cai para 150 px (visto num
+   rascunho em 29/10/2026). O min-height: 0 deixa a cena encolher dentro do flex, em vez de
+   empurrar a região para baixo. */
+.lunar-scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* A imagem da Lua ocupa a cena inteira; o aviso fica por cima dela, e não abaixo, para a Lua não
+   pular de tamanho cada vez que ele aparece e some. */
+.lunar-scene__view {
+  position: absolute;
+  inset: 0;
+}
+
+/* O aviso do clique fora da área (card C3), embaixo da cena, por cima da Lua. */
+.lunar-scene__notice {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  left: var(--space-4);
+  z-index: var(--z-overlay);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-body);
+  text-align: center;
+}
+
+/* Vazio, o aviso continua na página, porque o leitor de tela só anuncia a mudança de um
+   role="status" que já estava lá; só não pode aparecer como uma caixa vazia. */
+.lunar-scene__notice:empty {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* O marcador do ponto escolhido (SiteMarker.jsx): um ponto âmbar com borda escura, que aparece
+   tanto sobre a Lua iluminada quanto sobre a sombra. */
+.site-marker {
+  box-sizing: border-box;
+  width: var(--space-4);
+  height: var(--space-4);
+  border: var(--space-1) solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--color-accent);
+}

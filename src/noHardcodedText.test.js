@@ -4,7 +4,6 @@
  *
  * A conferência é por padrão, e não um parser: pega texto sozinho numa linha do JSX
  * ("Scene") e texto entre duas tags na mesma linha (<span>Sun</span>). Comentário não conta.
- * (Mesma conferência do projeto UNAERP x EPTV.)
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'

@@ -1,0 +1,30 @@
+UMBRA TEAM / UMBRAVIEW - kit de identidade
+
+Cores
+  Preto (fundo)       #050608
+  Branco (luz, texto) #f4f5f7
+  Azul-marinho (umbra)#10266a
+  Cinza (TEAM, fios)  #a0a6b4
+
+Tipografia
+  Fira Sans. UMBRΛ em Medium (500), TEAM em Regular (400), VIEW em Light (300).
+  Nos SVG e PNG o texto já está convertido em curvas; não é preciso instalar a fonte.
+  O "Λ" é a letra grega lambda maiúscula (U+039B).
+
+Arquivos
+  svg/  vetores, fundo transparente
+  png/  512 e 1024 px no lado maior, fundo transparente
+  favicon/  favicon.ico (16, 32, 48), PNG avulsos, favicon.svg, apple-touch-icon-180.png
+
+  umbra-simbolo            símbolo sozinho (com escala de elevação)
+  umbra-team-vertical      lockup principal, símbolo em cima
+  umbra-team-horizontal    lockup com símbolo à esquerda
+  umbraview-horizontal     lockup do produto
+  umbraview-cabecalho      versão compacta para o cabeçalho do site (símbolo simplificado)
+  ...-mono-branco          uma cor, para vídeo e fundos escuros
+  ...-mono-preto           uma cor, para fundos claros
+
+Uso
+  As versões em cores e mono-branco foram feitas para fundo escuro (ideal: #050608).
+  Abaixo de ~64 px de altura do símbolo, use o favicon ou o umbraview-cabecalho: a escala e o horizonte fino somem.
+  Em 16 px o favicon não tem a linha do horizonte, de propósito.
