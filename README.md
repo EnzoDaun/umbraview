@@ -6,8 +6,9 @@ verdade, com o relevo medido pela NASA, e ajuda a escolher onde e quando pousar.
 Projeto da **Umbra Team** para o desafio *Lunar Landing Site Navigator* do NASA Space Apps
 Challenge 2026 (14 e 15/11/2026).
 
-É um site estático: toda conta roda no navegador, sem servidor. Ele é publicado pelo GitHub
-Pages quando o repositório ficar público (card E4 do [backlog](docs/backlog.md)).
+É um site estático: toda conta roda no navegador, sem servidor. Ele está no ar em
+[enzodaun.github.io/umbraview](https://enzodaun.github.io/umbraview/), publicado pelo GitHub
+Pages a cada merge na `main`.
 
 **Antes de abrir o primeiro PR, leia o [CONTRIBUTING.md](CONTRIBUTING.md).** Ele tem a regra
 de branch e a regra do Claude, e as duas não são opcionais.

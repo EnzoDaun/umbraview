@@ -18,8 +18,8 @@ on:
 permissions:
   contents: read
 
-# Push novo na mesma branch cancela a rodada anterior. Repositório privado no plano gratuito
-# tem cota de minutos do Actions; rodada que ninguém vai ler não precisa gastar.
+# Push novo na mesma branch cancela a rodada anterior: o que vale para o PR é o resultado do
+# último push.
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

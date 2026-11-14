@@ -1,8 +1,13 @@
 # Publica o site no GitHub Pages a cada push na main (ou pelo botão "Run workflow").
 #
-# No plano gratuito do GitHub, o Pages só existe em repositório público. Enquanto o
-# repositório for privado, os dois trabalhos são pulados, e não reprovados. Quando ele ficar
-# público, falta um passo manual: Settings > Pages > Source: GitHub Actions (card E4 do backlog).
+# Duas configurações do repositório, fora deste arquivo, precisam continuar assim:
+# - Settings > Pages > Source: GitHub Actions.
+# - Settings > Environments > github-pages: só a main pode publicar. O GitHub cria esse
+#   ambiente liberando só a branch padrão, que aqui é a develop, e aí o deploy é recusado com
+#   'Branch "main" is not allowed to deploy to github-pages' (visto em 14/11/2026).
+#
+# No plano gratuito do GitHub, o Pages só existe em repositório público: se o repositório
+# voltar a ser privado, os dois trabalhos são pulados, e não reprovados.
 name: pages
 
 on:

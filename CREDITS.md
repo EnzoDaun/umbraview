@@ -5,7 +5,8 @@ Esta página é a lista. Entrou dado, imagem, fonte de letra, música ou bibliot
 uma linha aqui, no mesmo PR. O card P2 do [backlog](docs/backlog.md) confere e completa a lista
 antes da submissão.
 
-O código do UmbraView é da Umbra Team, sob a licença MIT ([`LICENSE`](LICENSE)).
+O código do UmbraView e o logo da equipe e do projeto são da Umbra Team, sob a licença MIT
+([`LICENSE`](LICENSE)).
 
 ## Dados
 
@@ -64,5 +65,4 @@ OFL-1.1 (conferida no npm e no `package.json` do pacote em `node_modules`, em 11
 vídeo entra aqui quando for escolhido (card V3).
 
 O logo da Umbra Team e do UmbraView (`brand/`, e o ícone do site em `public/`) foi feito pela
-equipe com o Claude Design, da Anthropic, em 14/11/2026, e aprovado pelo Enzo (card V2). A
-licença do logo ainda é decisão do Enzo.
+equipe com o Claude Design, da Anthropic, em 14/11/2026, e aprovado pelo Enzo (card V2).
