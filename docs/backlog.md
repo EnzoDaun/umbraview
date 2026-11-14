@@ -654,6 +654,26 @@ tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
 **Pronto quando.** As regiões com o centro dentro da área aparecem no grupo "Artemis III
 candidate regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
+### E17 · O README do script do relevo, com o que o I5 achou
+
+**Estado:** a fazer; saiu do card I5, em 12/11 · **Depende de:** nada
+
+**Para que serve.** O README do script (`scripts/prepare-data/README.md`) é o que alguém segue
+para gerar o relevo do zero. No card I5, o Miguel seguiu os passos 1 a 4 e chegou aos mesmos
+recortes do repositório, mas anotou 5 pontos em que o README não diz algo ou confunde. Quem rodar
+de novo pode tropeçar nos mesmos.
+
+**O que fazer.** Resolver no README os 5 pontos do card I5, em "O que o README não diz, ou
+confunde", com os números que o Miguel mediu lá:
+1. quanto tempo levam os passos 1 e 3;
+2. quanto ocupa o ambiente do Python, e o espaço total;
+3. que saída mostra que o download do passo 1 deu certo;
+4. o tamanho em MB no README e em MiB no `curl`;
+5. as linhas longas, que quebram ao copiar de uma tela estreita.
+
+**Pronto quando.** Cada um dos 5 pontos está resolvido no README, ou anotado aqui com o motivo de
+ter ficado como está, e o `verify` passa.
+
 ---
 
 ## C: Marco
