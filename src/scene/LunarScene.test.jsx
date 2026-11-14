@@ -165,6 +165,22 @@ describe('LunarScene', () => {
     expect(canvas.mock.calls.at(-1)[0].shadows).toBeTruthy()
   })
 
+  it('pede o estêncil ao WebGL, que o relevo fino usa para ficar por cima do grosso (card C6)', () => {
+    // o three cria a tela sem estêncil: sem ele, o grosso voltaria a furar o fino na emenda
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    expect(canvas.mock.calls.at(-1)[0].gl).toMatchObject({ stencil: true })
+  })
+
+  it('desliga o antisserrilhado, que pesava demais na placa de vídeo com o relevo fino (card C6)', () => {
+    /* O React Three Fiber liga o MSAA, que pinta cada pixel uma vez para cada triângulo que encosta
+       nele. Na Intel UHD 630, com a janela maximizada, o relevo fino ficava no limite dos 60 quadros
+       por segundo e o medidor desligava (docs/backlog.md, C6, sétima rodada). */
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    expect(canvas.mock.calls.at(-1)[0].gl).toMatchObject({ antialias: false })
+  })
+
   it('a câmera chega perto do polo para o relevo aparecer, sem entrar na montanha mais alta', () => {
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
