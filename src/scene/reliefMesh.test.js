@@ -292,9 +292,9 @@ describe('buildReliefCap, com o far.bin do site', () => {
   it('todo vértice fica perto da superfície: as montanhas do polo têm poucos quilômetros', () => {
     // a altura guardada vai de −15418 a 13952 meios metros, ou seja, de −7,7 km a +7,0 km
     /* Um expect por vértice são 250 mil chamadas, e só elas levavam o teste para perto do limite
-       de 5 s do Vitest, que ele já estourou uma vez sem nada de errado na malha (card C7). O laço
-       guarda o menor e o maior raio; conferir o maior afastamento da esfera de raio 1 é o mesmo
-       que conferir os dois limites. */
+       de 5 s que o Vitest dava (hoje a suíte dá 30 s, card E15), e ele já estourou esse limite uma
+       vez sem nada de errado na malha (card C7). O laço guarda o menor e o maior raio; conferir o
+       maior afastamento da esfera de raio 1 é o mesmo que conferir os dois limites. */
     let minRadius = Infinity
     let maxRadius = -Infinity
     for (const p of vertices(positions)) {

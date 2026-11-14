@@ -50,7 +50,6 @@ const PAGE_OPENED_AT = new Date('2026-11-14T00:00:00Z')
 /* A primeira conta lê o relevo do disco e leva bem menos de 1 s; a folga é para o CI (a mesma do
    useSiteSky.test.js). */
 const WAIT = { timeout: 10000 }
-const SLOW_TEST_MS = 15000
 
 async function readRelief(path) {
   const bytes = await readFromDisk(join(RELIEF_DIR, path))
@@ -127,7 +126,6 @@ describe('App, o ponto escolhido na cena vai para o painel (card E11)', () => {
       const expected = await expectedPanelText(TOP_1, PAGE_OPENED_AT)
       await waitFor(() => expect(within(panelRegion).getByRole('status').textContent).toBe(expected), WAIT)
     },
-    SLOW_TEST_MS,
   )
 })
 
@@ -152,7 +150,6 @@ describe('App, a lista de locais e a data ligadas ao painel e à cena (card E14)
       const expected = await expectedPanelText(ATHENA, PAGE_OPENED_AT)
       await waitFor(() => expect(within(panelRegion).getByRole('status').textContent).toBe(expected), WAIT)
     },
-    SLOW_TEST_MS,
   )
 
   it(
@@ -177,7 +174,6 @@ describe('App, a lista de locais e a data ligadas ao painel e à cena (card E14)
       expect(after).not.toBe(before)
       await waitFor(() => expect(within(panelRegion).getByRole('status').textContent).toBe(after), WAIT)
     },
-    SLOW_TEST_MS,
   )
 
   it('o clique na Lua depois de escolher na lista volta a lista ao aviso', async () => {

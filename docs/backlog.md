@@ -539,9 +539,9 @@ software), com o build no `npm run preview`:
 **Pronto quando.** Escolher um local na lista ou trocar a data mostra o resultado no painel e a
 luz certa na cena, também só com o teclado, e o `verify` passa.
 
-### E15 · O teste dos ganchos que estoura o tempo no Windows de vez em quando
+### E15 · Testes que estouram o tempo no Windows de vez em quando
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 14/11, PR #32 · **Depende de:** nada
 
 **Para que serve.** O teste "aponta o core.hooksPath para .githooks num repositório git"
 (`scripts/hooks.test.js`) abre o `git` e o `node` três vezes, e o Vitest dá 5 s para cada teste.
@@ -556,12 +556,51 @@ rodar de novo até passar (card C7). Veio do PR #25 (card E9).
   jsdom, e logo depois do `lint` ou não. Não é o card E9 nem a ordem do `verify`.
 - A causa da lentidão de 10/11 não foi achada.
 
-**O que fazer.** Dar aos testes de `scripts/hooks.test.js` que abrem processos um limite de tempo
-próprio (o terceiro argumento do `it`), com o motivo no comentário, e medir no notebook do Miguel,
-onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de todo teste que falhar.
+**O que fazer.** Dar a todo teste da suíte um limite de tempo maior que os 5 s do Vitest, com o
+motivo no comentário (o "Como ficou" diz por que a suíte toda, e não só os testes que abrem
+processos), e medir no notebook do Miguel, onde o site foi o mais lento no card C4. Se a falha
+voltar, registrar o nome de todo teste que falhar.
 
-**Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
-`verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
+**Como ficou.**
+- Todo teste da suíte tem 30 s de limite, e não os 5 s do Vitest: o `testTimeout` do
+  `vite.config.js`, com o motivo no comentário.
+- O limite vale para a suíte, e não só para os testes que abrem processos, por causa da medição de
+  13/11/2026, às 21h04 (abaixo). Logo depois de um `npm ci`, reprovou também um teste que só lê o
+  disco: o "o relevo fino lido pelo site bate com o arquivo da NASA", de
+  `src/engine/reliefFiles.test.js`. A lentidão pega a máquina inteira, e dar mais tempo teste a
+  teste viraria caça ao teste lento.
+- O custo: um teste assíncrono que trave leva 30 s para reprovar, e não 5 s.
+
+**Medido** em 12, 13 e 14/11/2026, no Windows. "O teste" é o "aponta o core.hooksPath para
+.githooks num repositório git"; "o arquivo" é o `scripts/hooks.test.js` inteiro. "Limite" é o
+limite de cada teste naquela rodada: os 5 s do Vitest, 30 s só nos testes dos ganchos que abrem
+processos, ou 30 s na suíte toda (como ficou).
+
+| Quando | Onde | Como | Limite | O teste | O arquivo |
+|---|---|---|---|---|---|
+| 12/11, 14h38 | computador do Enzo | `verify` logo depois do `npm ci` | 5 s | 17.381 ms (reprovou) | 32 s |
+| 12/11, 15h09 a 15h11 | computador do Enzo | `verify` | 5 s | 520 a 649 ms | 8,0 a 13,4 s |
+| 12/11, 15h30 | computador do Enzo | `verify` logo depois do `npm ci` | ganchos, 30 s | 1.293 ms | 19,9 s |
+| 13/11 | computador do Enzo | 4 `verify` | 5 s | 548 a 775 ms | 11 a 12 s |
+| 13/11, 15h48 | desktop do Miguel | `verify` | ganchos, 30 s | 415 ms | 7,3 s |
+| 13/11, 21h04 | computador do Enzo | `verify` logo depois do `npm ci` | 5 s | 994 ms | 22,0 s |
+| 13/11, 21h08 | computador do Enzo | `verify`, sem `npm ci` | 5 s | 487 ms | 10,8 s |
+| 13/11, 21h23 | notebook do Miguel | `verify` logo depois do `npm ci` | ganchos, 30 s | 783 ms | 19,2 s |
+| 13/11, 21h24 | notebook do Miguel | 3 rodadas só do arquivo | ganchos, 30 s | 380 a 477 ms | 9,9 a 10,1 s |
+| 14/11, 00h10 a 00h11 | computador do Enzo | 3 `verify`, sem `npm ci` | suíte, 30 s | 636 a 694 ms | 12,1 a 14,2 s |
+
+- Às 21h04, reprovaram pelos 5 s dois outros testes:
+  - o "aceita mensagem normal" do commit-msg, com 5.400 ms (417 ms às 21h08);
+  - o do relevo fino, com 5.011 ms (503 ms às 21h08).
+
+  A suíte inteira levou 39,5 s, contra 17,6 s às 21h08.
+- Nas três vezes em que o `verify` rodou logo depois de um `npm ci` no computador do Enzo, ficou
+  lento, e reprovou em duas. A causa não foi provada.
+- No notebook do Miguel, o teste mais lento levou 1,5 s, e a suíte levou 47 s.
+
+**Pronto quando.** Todo teste da suíte tem um limite de tempo maior que os 5 s do Vitest, com o
+motivo escrito; o `verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão
+anotados aqui.
 
 ### E16 · As regiões candidatas do Artemis III na lista
 
@@ -1308,11 +1347,11 @@ copiou do console:
 
 **Estado:** feito em 09/11, PR #14 · **Depende de:** nada
 
-**Para que serve.** O Vitest dá 5 s para cada teste. No Windows do Enzo, em 06/11/2026, o teste
-"todo vértice fica perto da superfície" (`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e
-reprovou o `verify` uma vez por tempo, sem nada de errado na malha. Teste que passa ou não
-conforme o computador está ocupado ensina a rodar de novo até passar, e um erro de verdade passa
-junto. Veio do PR #10 (card E10).
+**Para que serve.** O Vitest dava 5 s para cada teste (hoje a suíte dá 30 s, card E15). No Windows
+do Enzo, em 06/11/2026, o teste "todo vértice fica perto da superfície"
+(`src/scene/reliefMesh.test.js`) levou de 2,4 a 7,5 s, e reprovou o `verify` uma vez por tempo,
+sem nada de errado na malha. Teste que passa ou não conforme o computador está ocupado ensina a
+rodar de novo até passar, e um erro de verdade passa junto. Veio do PR #10 (card E10).
 
 **Causa** (medido no Linux em 06/11/2026). A malha do `far.bin` tem 125.314 vértices, e o teste
 chama o `expect` duas vezes para cada um. A conta leva de 6 a 13 ms; os 250 mil `expect`, de 830
