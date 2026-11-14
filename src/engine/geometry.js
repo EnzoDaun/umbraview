@@ -51,3 +51,29 @@ export function localFrame(p) {
     up: p,
   }
 }
+
+/* O centro e a área de um contorno perto do polo sul (as regiões do Artemis III, card E16). O
+   contorno chega como no GeoJSON: uma lista de [longitude, latitude], com o último canto repetindo
+   o primeiro. A conta é feita na projeção polar acima, onde o contorno é um polígono plano: fazer a
+   média das latitudes e longitudes erra perto do polo, e em cima da longitude 180° a média das
+   longitudes cai do lado oposto. A área é a do plano da projeção, a mesma em que o USGS desenhou e
+   mediu as regiões. Devolve { lat, lon, areaM2 }. */
+export function measurePolarPolygon(ring) {
+  const [first] = ring
+  const last = ring[ring.length - 1]
+  const corners = first[0] === last[0] && first[1] === last[1] ? ring.slice(0, -1) : ring
+  const points = corners.map(([lon, lat]) => unitToPolarXY(latLonToUnit(lat, lon)))
+  let twiceArea = 0
+  let sumX = 0
+  let sumY = 0
+  for (let i = 0; i < points.length; i++) {
+    const [x0, y0] = points[i]
+    const [x1, y1] = points[(i + 1) % points.length]
+    const cross = x0 * y1 - x1 * y0
+    twiceArea += cross
+    sumX += (x0 + x1) * cross
+    sumY += (y0 + y1) * cross
+  }
+  const { lat, lon } = unitToLatLon(polarXYToUnit(sumX / (3 * twiceArea), sumY / (3 * twiceArea)))
+  return { lat, lon, areaM2: Math.abs(twiceArea) / 2 }
+}
