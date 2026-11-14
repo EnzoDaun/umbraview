@@ -1189,7 +1189,7 @@ daqui a uma semana. As missões trabalham em UTC, e o site também.
 
 ### I5 · Rodar o script do relevo do zero, seguindo só o README
 
-**Estado:** feito em 12/11, PR #30 · **Depende de:** nada
+**Estado:** feito em 12/11, PR #29 · **Depende de:** nada
 
 **Para que serve.** O relevo que o site usa (`public/data/relief/`) sai de um script, e até agora
 só o Enzo rodou esse script. Se o README dele depender de alguma coisa que só existe no
