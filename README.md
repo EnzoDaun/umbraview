@@ -27,8 +27,9 @@ instala tudo no Windows, do zero.
   marcador nele (card C3), e o painel da direita mostra o céu desse ponto na mesma data (cards I1
   e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no período e as janelas de pouso.
 - No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
-  (card I2), e a data e a hora em UTC, que começam na hora em que a página abriu (card I4). Os
-  dois mudam a cena e o painel juntos (card E14).
+  (card I2): o pouso do IM-2 e o centro de 7 das 9 regiões candidatas do Artemis III (card E16).
+  Também no painel, a data e a hora em UTC, que começam na hora em que a página abriu (card
+  I4). Os dois mudam a cena e o painel juntos (card E14).
 - O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
   próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
@@ -212,7 +213,8 @@ umbraview/
 │   │   ├── prepare_relief.py        gera public/data/relief/
 │   │   ├── requirements.txt
 │   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
-│   ├── references/                  referências de fora para os testes do motor
+│   ├── references/                  referências de fora para os testes do motor e da lista de locais
+│   │   ├── artemis-regions.geojson  o contorno das regiões candidatas do Artemis III, do USGS (card E16)
 │   │   ├── polar_reference.py
 │   │   ├── requirements.txt
 │   │   └── spice_reference.py
@@ -303,7 +305,7 @@ umbraview/
 - `src/components/`: ainda não existe. Nasce no primeiro trecho de tela que se repete em dois
   lugares, e não antes.
 - `scripts/`: o que roda fora do navegador: a instalação do gancho, a conferência do build, a
-  preparação dos dados do relevo e as referências dos testes do motor.
+  preparação dos dados do relevo e as referências dos testes do motor e da lista de locais.
 - `.claude/` e `.githooks/`: as travas do Claude e do commit (CONTRIBUTING.md, seção 4).
 - Dado bruto da NASA não entra no repositório (`.gitignore`, pasta `data-raw/`): o site usa só
   os recortes pequenos que `scripts/prepare-data/` gera (card E2).

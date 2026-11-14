@@ -180,9 +180,10 @@ Com 160 m, quem mais perde são os pontos mais iluminados, que são os que inter
 **Por que ladrilhos e por que até 84°S.** O site baixa só os ladrilhos em volta do ponto, então o
 custo de um clique é o mesmo em qualquer área; a área só muda o peso do repositório (medido em
 29/10/2026, também com um script de uma vez só, que não se refaz pelo repositório): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
-MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
-Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
-lunar South Pole" (fonte no CREDITS.md). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
+MB; até 84°S, 44 MB. A escolha de 84°S seguiu o que a NASA disse em 19/08/2022 das 13 regiões
+candidatas do Artemis III: elas ficam "within six degrees of latitude of the lunar South Pole"
+(fonte no CREDITS.md). Das 9 que sobraram depois, o centro de 7 fica dentro de 84°S; Peak near
+Cabeus B e Nobile Rim 2 esperam o card E8 (card E16). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
 primeiro clique. Comprimir os ladrilhos (gravando a diferença entre vizinhos, e depois gzip)
 tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; se fizer falta, a
 mudança fica só em `reliefFiles.js`.
@@ -313,7 +314,8 @@ revisão do PR #6.
 **Estado:** a fazer · **Depende de:** P1 (a lista de locais)
 
 **Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da
-planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e
+planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) e duas regiões
+candidatas do Artemis III (Peak near Cabeus B e Nobile Rim 2, card E16) ficam fora dele, e
 eles ficam fora da lista até este card.
 
 **O que fazer.**
@@ -323,6 +325,13 @@ eles ficam fora da lista até este card.
    (`src/engine/relief.js`).
 3. Escolher uma referência de fora para conferir o resultado: os mapas de Mazarico só cobrem o
    polo.
+4. As duas regiões do Artemis III entram na lista como as outras sete (card E16): o centro do
+   contorno do USGS, com "(center)" no nome. Em `src/data/sites.test.js`, o teste da área com
+   relevo e o que confere quais regiões estão na lista usam o `areaMaxLatDeg`: os dois mudam junto
+   com a regra da área.
+5. Os 4 locais do NASEM da planilha também não têm data de pouso: com `landedAtUtc: null`, eles
+   cairiam no grupo "Artemis III candidate regions" da lista (`src/panel/SiteList.jsx`). Eles
+   precisam de um grupo próprio antes de entrar.
 
 **Pronto quando.** Escolher qualquer local da lista mostra o resultado no painel, o tamanho dos
 recortes está anotado aqui, e a conferência também.
@@ -553,6 +562,57 @@ onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de 
 
 **Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
 `verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
+
+### E16 · As regiões candidatas do Artemis III na lista
+
+**Estado:** feito em 12/11, PR #27 · **Depende de:** I2 (feito) e E14 (feito)
+
+**Para que serve.** A lista de locais (card I2) separa as regiões candidatas do Artemis III num
+grupo próprio, "Artemis III candidate regions", mas saiu só com o IM-2, porque as regiões não
+tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
+
+**O ponto de partida.**
+- Os nomes das 9 regiões vêm da NASA
+  ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)). Esse documento não dá
+  coordenada, e a NASA não dá um ponto de cada região.
+- O USGS publicou o contorno de cada uma (McClernan 2024, CREDITS.md). Na projeção polar dos
+  arquivos LOLA, cada contorno é um retângulo de 16 a 77 km de lado.
+
+**Como ficou.**
+- `measurePolarPolygon` (`src/engine/geometry.js`) dá o centro e a área de um contorno, feitos na
+  projeção polar. A média das latitudes e longitudes erraria perto do polo e em cima da longitude
+  180°.
+- A coordenada de cada região na lista é o centro do contorno do USGS: o meio do retângulo que o
+  USGS desenhou, calculado de uma fonte, com o método no código e testado. O nome leva
+  "(center)", para o painel não parecer um ponto de pouso oficial.
+- O contorno copiado fica em `scripts/references/artemis-regions.geojson`, e dois testes de
+  `src/data/sites.test.js` amarram a lista a ele: a coordenada e o nome de cada região são os do
+  contorno, e a lista traz toda região com o centro dentro da área com relevo, e só elas.
+- Entram 7 das 9. Peak near Cabeus B (centro em −83,6375°) e Nobile Rim 2 (−83,9541°) ficam ao
+  norte de 84°S e esperam o card E8. A Mons Mouton Plateau entra pelo centro (−84,3347°), mas a
+  região vai até 82,85°S.
+- O card E2 e o `scripts/prepare-data/prepare_relief.py` diziam que até 84°S cabiam as regiões do
+  Artemis III: valia para as 13 de 2022. Os dois foram corrigidos.
+
+**Conferido** em 12 e 13/11/2026:
+- A área calculada de cada contorno bate com a `Area_km2` do USGS nas 9 regiões. O Marco refez os
+  7 centros em Python, sem o `measurePolarPolygon`, e eles batem com o `sites.js` até a 4ª casa
+  decimal (13/11).
+- A caixa que a
+  [página do mosaico da LROC](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2) dá
+  para a Peak near Cabeus B (latitude de −84,06 a −83,21, longitude de −72,47 a −64,80) bate com os
+  cantos do contorno do USGS. A página foi achada pelo Miguel em 11/11, e a caixa, conferida pelo
+  Marco em 13/11.
+- No Chromium do Playwright, com o build no `npm run preview`: as 7 regiões aparecem no grupo, em
+  ordem alfabética; escolher Haworth (center) põe o marcador na cena e mostra o céu no painel;
+  digitar "h" com a lista em foco pula para Haworth; o console ficou sem erro.
+- Cada teste novo pega o erro dele: trocar um dígito de uma coordenada, ou trocar os nomes de
+  Haworth e Malapert Massif entre si, reprova só o teste da coordenada e do nome; tirar uma região
+  reprova só o teste de quais regiões estão na lista; pôr a Nobile Rim 2 reprova esse e o da área
+  com relevo.
+
+**Pronto quando.** As regiões com o centro dentro da área aparecem no grupo "Artemis III
+candidate regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
 ---
 
@@ -1124,8 +1184,8 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
    Só entram os locais que o site calcula, os que ficam dentro do relevo, até 84°S (card E2): um
    local ao norte disso daria erro no painel. Por isso a lista sai só com o IM-2: as 9 regiões
-   candidatas do Artemis III ficaram para o card I7, e os outros locais da planilha esperam o
-   card E8.
+   candidatas do Artemis III ficaram para o card E16 (antes I7), e os outros locais da planilha
+   esperam o card E8.
 
 **Como testar.**
 - `src/panel/SiteList.test.jsx`: escolher uma opção com `userEvent.selectOptions` chama o
@@ -1141,7 +1201,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
+**Estado:** feito em 11/11, PR #24 · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.
@@ -1236,34 +1296,8 @@ testes passam e o `verify` passa.
 
 ### I7 · As 9 regiões do Artemis III na lista
 
-**Estado:** a fazer · **Depende de:** as coordenadas das 9 regiões
-
-**Para que serve.** A lista de locais (card I2) já separa as regiões candidatas num grupo
-próprio, "Artemis III candidate regions": um local com `landedAtUtc: null` cai nele. O I2 saiu
-só com o IM-2, porque as coordenadas das regiões não chegaram a tempo. Veio da divisão do I2
-(CONTRIBUTING.md, seção 1, regra 6). Se o Enzo preferir fazer este card, ele passa para a área
-E, com o próximo número.
-
-**O que já se sabe.**
-- Os nomes, de fonte primária ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)):
-  Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton, Nobile Rim 1,
-  Nobile Rim 2, de Gerlache Rim 2 e Slater Plain. Esse documento não dá coordenada.
-- Não existe ponto oficial de cada região. O Enzo pensou em calcular o centro de cada uma pelos
-  limites do USGS. Coordenada estimada não entra (README, "Nenhum dado inventado").
-- **Alerta.** A [página do mosaico da LROC para Peak Near Cabeus B](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2)
-  dá o centro em lat −83.6 e lon 291.2 leste (−68.8 na faixa de −180 a 180 do `sites.js`), e a
-  faixa de latitude de −84.06 a −83.21 (conferido pelo Miguel em 11/11/2026). O centro fica ao
-  norte do `areaMaxLatDeg` (−84.0, `public/data/relief/manifest.json`): essa região ficaria fora
-  da área que o site calcula, e o teste da área (`src/data/sites.test.js`) a barraria. As outras
-  8 não foram conferidas.
-
-**O que fazer.**
-1. Para cada região com coordenada e fonte: uma linha em `src/data/sites.js`, com
-   `landedAtUtc: null`, e a fonte no CREDITS.md, junto com o documento dos nomes.
-2. A região que cair ao norte de 84°S fica fora da lista até o card E8, pela mesma regra do I2.
-
-**Pronto quando.** As regiões com coordenada e fonte aparecem no grupo "Artemis III candidate
-regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
+**Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
+novo.
 
 ---
 
