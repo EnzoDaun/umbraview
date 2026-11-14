@@ -197,6 +197,12 @@ umbraview/
 │   │   └── verify.yml               o verify e a conferência de assinatura em todo PR
 │   └── pull_request_template.md
 │
+├── brand/                           o kit do logo da equipe e do projeto, em SVG e PNG (card V2)
+│   ├── favicon/                     os ícones de aba e de celular, de onde saem os de public/
+│   ├── png/
+│   ├── svg/
+│   └── LEIA-ME.txt                  as cores, a fonte e onde usar cada versão
+│
 ├── docs/
 │   ├── backlog.md
 │   ├── primeiros-passos.md
@@ -205,6 +211,8 @@ umbraview/
 ├── public/
 │   ├── data/
 │   │   └── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
+│   ├── favicon.ico
 │   └── favicon.svg
 │
 ├── scripts/
