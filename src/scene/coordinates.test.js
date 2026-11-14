@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { computeEphemeris } from '../engine/ephemeris.js'
 import { unitToLatLon } from '../engine/geometry.js'
-import { engineToScene, latLonToScene, sceneToLatLon } from './coordinates.js'
+import { engineToScene, latLonToScene, sceneToEngine, sceneToLatLon } from './coordinates.js'
 
 function confereVetor(recebido, esperado) {
   recebido.forEach((valor, i) => expect(valor).toBeCloseTo(esperado[i], 12))
@@ -75,5 +75,18 @@ describe('sceneToLatLon', () => {
     const { lat, lon } = sceneToLatLon(latLonToScene(latDeg, lonDeg))
     expect(lat).toBeCloseTo(latDeg, 9)
     expect(lon).toBeCloseTo(lonDeg, 9)
+  })
+})
+
+describe('sceneToEngine', () => {
+  // o relevo fino (card C6) acha o ladrilho embaixo da câmera pela posição dela na cena, mas a
+  // grade dos ladrilhos está na convenção do motor
+  it.each([
+    [[0.3, -0.5, 0.81]],
+    [[0, -1, 0]],
+    [[1, 0, 0]],
+    [[-0.2, 0.7, -0.4]],
+  ])('desfaz o engineToScene de %j', (point) => {
+    confereVetor(sceneToEngine(engineToScene(point)), point)
   })
 })

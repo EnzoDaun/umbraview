@@ -180,9 +180,10 @@ Com 160 m, quem mais perde são os pontos mais iluminados, que são os que inter
 **Por que ladrilhos e por que até 84°S.** O site baixa só os ladrilhos em volta do ponto, então o
 custo de um clique é o mesmo em qualquer área; a área só muda o peso do repositório (medido em
 29/10/2026, também com um script de uma vez só, que não se refaz pelo repositório): até 88°S, 7 MB; até 86°S, 22 MB; até 85°S, 33
-MB; até 84°S, 44 MB. Até 84°S cabem as regiões candidatas do
-Artemis III: a NASA disse em 19/08/2022 que elas ficam "within six degrees of latitude of the
-lunar South Pole" (fonte no CREDITS.md). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
+MB; até 84°S, 44 MB. A escolha de 84°S seguiu o que a NASA disse em 19/08/2022 das 13 regiões
+candidatas do Artemis III: elas ficam "within six degrees of latitude of the lunar South Pole"
+(fonte no CREDITS.md). Das 9 que sobraram depois, o centro de 7 fica dentro de 84°S; Peak near
+Cabeus B e Nobile Rim 2 esperam o card E8 (card E16). Num arquivo só, o relevo fino até 84°S teria 46 MB para baixar antes do
 primeiro clique. Comprimir os ladrilhos (gravando a diferença entre vizinhos, e depois gzip)
 tiraria uns 24 MB do repositório, mas pede código para descomprimir no site; se fizer falta, a
 mudança fica só em `reliefFiles.js`.
@@ -313,7 +314,8 @@ revisão do PR #6.
 **Estado:** a fazer · **Depende de:** P1 (a lista de locais)
 
 **Para que serve.** O relevo do site vai do polo até 84°S (card E2). Os outros locais da
-planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) ficam fora dele, e
+planilha do P1 (Apollo, Luna, Surveyor, Chang'e, Chandrayaan-3, SLIM, CLPS) e duas regiões
+candidatas do Artemis III (Peak near Cabeus B e Nobile Rim 2, card E16) ficam fora dele, e
 eles ficam fora da lista até este card.
 
 **O que fazer.**
@@ -323,6 +325,13 @@ eles ficam fora da lista até este card.
    (`src/engine/relief.js`).
 3. Escolher uma referência de fora para conferir o resultado: os mapas de Mazarico só cobrem o
    polo.
+4. As duas regiões do Artemis III entram na lista como as outras sete (card E16): o centro do
+   contorno do USGS, com "(center)" no nome. Em `src/data/sites.test.js`, o teste da área com
+   relevo e o que confere quais regiões estão na lista usam o `areaMaxLatDeg`: os dois mudam junto
+   com a regra da área.
+5. Os 4 locais do NASEM da planilha também não têm data de pouso: com `landedAtUtc: null`, eles
+   cairiam no grupo "Artemis III candidate regions" da lista (`src/panel/SiteList.jsx`). Eles
+   precisam de um grupo próprio antes de entrar.
 
 **Pronto quando.** Escolher qualquer local da lista mostra o resultado no painel, o tamanho dos
 recortes está anotado aqui, e a conferência também.
@@ -553,6 +562,57 @@ onde o site foi o mais lento no card C4. Se a falha voltar, registrar o nome de 
 
 **Pronto quando.** Os testes que abrem processos têm limite próprio, com o motivo escrito; o
 `verify` passa no Windows de quem fizer e no do Miguel; e os tempos medidos estão anotados aqui.
+
+### E16 · As regiões candidatas do Artemis III na lista
+
+**Estado:** feito em 12/11, PR #27 · **Depende de:** I2 (feito) e E14 (feito)
+
+**Para que serve.** A lista de locais (card I2) separa as regiões candidatas do Artemis III num
+grupo próprio, "Artemis III candidate regions", mas saiu só com o IM-2, porque as regiões não
+tinham coordenada. Veio do card I7, que passou para a área E porque o Enzo fez.
+
+**O ponto de partida.**
+- Os nomes das 9 regiões vêm da NASA
+  ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)). Esse documento não dá
+  coordenada, e a NASA não dá um ponto de cada região.
+- O USGS publicou o contorno de cada uma (McClernan 2024, CREDITS.md). Na projeção polar dos
+  arquivos LOLA, cada contorno é um retângulo de 16 a 77 km de lado.
+
+**Como ficou.**
+- `measurePolarPolygon` (`src/engine/geometry.js`) dá o centro e a área de um contorno, feitos na
+  projeção polar. A média das latitudes e longitudes erraria perto do polo e em cima da longitude
+  180°.
+- A coordenada de cada região na lista é o centro do contorno do USGS: o meio do retângulo que o
+  USGS desenhou, calculado de uma fonte, com o método no código e testado. O nome leva
+  "(center)", para o painel não parecer um ponto de pouso oficial.
+- O contorno copiado fica em `scripts/references/artemis-regions.geojson`, e dois testes de
+  `src/data/sites.test.js` amarram a lista a ele: a coordenada e o nome de cada região são os do
+  contorno, e a lista traz toda região com o centro dentro da área com relevo, e só elas.
+- Entram 7 das 9. Peak near Cabeus B (centro em −83,6375°) e Nobile Rim 2 (−83,9541°) ficam ao
+  norte de 84°S e esperam o card E8. A Mons Mouton Plateau entra pelo centro (−84,3347°), mas a
+  região vai até 82,85°S.
+- O card E2 e o `scripts/prepare-data/prepare_relief.py` diziam que até 84°S cabiam as regiões do
+  Artemis III: valia para as 13 de 2022. Os dois foram corrigidos.
+
+**Conferido** em 12 e 13/11/2026:
+- A área calculada de cada contorno bate com a `Area_km2` do USGS nas 9 regiões. O Marco refez os
+  7 centros em Python, sem o `measurePolarPolygon`, e eles batem com o `sites.js` até a 4ª casa
+  decimal (13/11).
+- A caixa que a
+  [página do mosaico da LROC](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2) dá
+  para a Peak near Cabeus B (latitude de −84,06 a −83,21, longitude de −72,47 a −64,80) bate com os
+  cantos do contorno do USGS. A página foi achada pelo Miguel em 11/11, e a caixa, conferida pelo
+  Marco em 13/11.
+- No Chromium do Playwright, com o build no `npm run preview`: as 7 regiões aparecem no grupo, em
+  ordem alfabética; escolher Haworth (center) põe o marcador na cena e mostra o céu no painel;
+  digitar "h" com a lista em foco pula para Haworth; o console ficou sem erro.
+- Cada teste novo pega o erro dele: trocar um dígito de uma coordenada, ou trocar os nomes de
+  Haworth e Malapert Massif entre si, reprova só o teste da coordenada e do nome; tirar uma região
+  reprova só o teste de quais regiões estão na lista; pôr a Nobile Rim 2 reprova esse e o da área
+  com relevo.
+
+**Pronto quando.** As regiões com o centro dentro da área aparecem no grupo "Artemis III
+candidate regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
 
 ---
 
@@ -846,7 +906,10 @@ do I2.
 
 ### C6 · O relevo fino de perto
 
-**Estado:** a fazer · **Depende de:** C2 (feito) e C4 (feito)
+**Estado:** feito em 13/11, PR #30; conferido pelo Marco no CIT-DES06 (Intel UHD 630, mais fraca
+que a Iris Xe do notebook dele), com a janela maximizada, e pelo Miguel no notebook dele (Iris Xe),
+onde o relevo fino fica desligado · **Depende de:** C2 (feito), C4 (feito) e C9 (feito), porque o medidor pede os próprios quadros na cena que só
+desenha quando algo muda
 
 **Para que serve.** De perto, a cena do C2 fica borrada: ela desenha o relevo grosso (`far.bin`),
 com um vértice a cada 1,9 km, e uma cratera de 1 ou 2 km vira poucos triângulos. Testado em
@@ -867,6 +930,379 @@ ficarem abaixo de 16,7 ms; se passar disso depois de ligado, desliga de novo.
 Enzo), uma cratera de 1 km aparece com borda e fundo, e os quadros continuam abaixo de 16,7 ms;
 num notebook que não aguenta (o do Miguel), o relevo fino fica desligado e o custo por quadro não
 passa do que o C4 mediu; e o `verify` passa.
+
+**O que mudou do "O que fazer"**, com o motivo de cada um:
+- **400 m, e não 80 m nem 160 m** (`src/scene/nearTiles.js`). Um vértice a cada 5 pixels. Até
+  13/11 eram 160 m, um vértice a cada 2 pixels: com 80 m, os triângulos ficariam menores que um
+  pixel, que a placa de vídeo desenha muito mal. Na conferência do Marco, com a janela maximizada,
+  os triângulos de 160 m ficavam com uns 2 pixels, e o antisserrilhado que o React Three Fiber liga
+  pinta de novo um pixel para cada triângulo que encosta nele: o medidor desligou o relevo fino
+  (sexta rodada, abaixo). A borda e o fundo de uma cratera de 1 km vêm do mapa de normais de 80 m,
+  e não dos vértices: no mesmo lugar, a imagem com 400 m mudou mais que 8 tons em 154 de 847.754
+  pixels. A cratera de 1 km fica com uns 3 vértices de lado a lado.
+- **Duas camadas** (`src/scene/nearTiles.js`), em volta do canto de ladrilho mais perto do centro
+  da tela, e só com a câmera abaixo de 80 km de altitude (mais alto, o relevo fino some no pixel):
+  - o **centro**, 2 × 2 ladrilhos (40 × 40 km) a cada 400 m, com o centro da tela a pelo menos
+    10 km da borda. O plano era 3 × 3 a 160 m, e a medida abaixo mostrou que ele encostava nos
+    16,7 ms; depois, o 2 × 2 a 160 m não coube na janela maximizada do CIT-DES06 (13/11);
+  - o **anel**, 6 × 6 ladrilhos (120 × 120 km) a cada 800 m, que passa também por baixo do centro.
+    Pedido pelo Marco em 12/11, depois de ver só um quadrado de relevo fino no meio da tela: com o
+    anel, a tela inteira fica coberta na distância mínima (até a proporção de 1,8, largura sobre
+    altura). Por baixo do centro, ele tapa qualquer fresta entre as duas camadas, sem precisar de
+    "saia" na borda (uma revisão do desenho, em 12/11, mostrou que a saia fazia sombra falsa). Cada
+    ladrilho do centro leva sempre a peça dele do anel por baixo, mesmo que o anel na tela ainda
+    seja o de antes e não chegue até ali (num arrasto de 4 ladrilhos). Lá o anel não faz sombra:
+    é mais liso que o centro, e no fundo de uma cratera fica acima dele.
+  O centro troca sozinho, assim que chega, como antes; o anel só é pedido com o centro da posição
+  de agora na tela, e troca quando os 36 chegaram. Esperar os 36 para mostrar o centro levaria 9
+  vezes mais bytes (4,6 MB contra 0,5 MB) na primeira aproximação, e num arrasto pediria os 36 de
+  cada bloco do caminho.
+- **Mapa de normais** (`buildNormalMap`, em `src/scene/reliefMesh.js`): cada ladrilho ganha uma
+  textura com a direção "para fora" da superfície em cada pixel de 80 m, e a luz das duas camadas
+  vem dela. Pedido pelo Marco em 12/11, depois de ver o anel de 800 m quase tão borrado quanto o
+  grosso, e com linhas retas na emenda entre ladrilhos (cada malha calculava a própria luz, e a
+  emenda ficava com luz diferente dos dois lados). Com o mapa, o anel fica com o detalhe do centro
+  sem nenhum triângulo a mais, e a emenda usa o pixel que cada ladrilho repete do vizinho. A
+  textura é de meio-float: com 8 bits, a normal erraria uns 0,2°, e com o Sol a 1,5° do horizonte o
+  chão plano ficaria com manchas de até 15% de brilho. Cada textura de 250 × 250 pesa 500 kB na
+  placa de vídeo, e o mesmo na memória do JavaScript, que guarda os dados dela. Com a cena parada
+  são 36 (uns 18 MB: os 4 do centro estão dentro do anel). Na troca do anel, as do anel de antes
+  ficam até as do novo estarem prontas: de 72 a 80 no pior caso (uns 36 a 40 MB), contado numa
+  simulação da revisão do código, em 12/11. O mapa de um ladrilho é uma montagem própria, num
+  quadro só dele, e a textura sobe para a placa de vídeo já nesse quadro (uns 3 ms e mais uns 6 ms,
+  no navegador do CIT-DES06, em 13/11). A sombra continua a do C2 e o contorno das montanhas, o da
+  malha.
+- **Estêncil** (`src/scene/reliefLayers.js`): o centro aparece por cima do anel e do grosso, e o
+  anel por cima do grosso, mesmo onde eles estão um pouco mais altos. Sem ele, na emenda, o grosso
+  mais alto furava o fino em degraus ("dentes", vistos pelo Marco em 12/11). Só a profundidade não
+  resolve, e mexer na altura da borda faria a malha de cada ladrilho depender do bloco em que ele
+  está. O `<Canvas>` pede o estêncil ao WebGL, que o three cria sem ele.
+- **Um medidor próprio** (`src/scene/frameBudget.js`), e não o `PerformanceMonitor` do Drei. Ele
+  conta quadros por segundo em janelas de tempo, e com o C9 a cena parada não desenha: ele
+  concluiria "não aguenta" até num notebook rápido. O medidor só mede os quadros que ele mesmo
+  pede, em rajadas: ao abrir a página, até decidir; e, depois de ligado, a cada bloco novo de
+  relevo fino na tela, que é quando o custo do quadro muda. O resto (um passo da roda do mouse, um
+  ladrilho que chega) não conta: o intervalo entre esses quadros soltos é o ritmo da mão ou da
+  rede, e não o custo de desenhar, e contado ele desligava o relevo fino numa máquina que aguenta.
+  Na rajada, ele ignora o primeiro segundo da página (a cena ainda montando o relevo), os 6
+  primeiros intervalos de um bloco novo (uns 100 ms: a troca na tela e o que ela deixa para os
+  quadros seguintes, como o buffer do buraco subindo para a placa de vídeo; eram 2 até 13/11, e a
+  revisão viu que sobravam quadros da troca nos contados) e o quadro depois de montar um ladrilho,
+  e decide pela média de 60 intervalos de até 100 ms. A rajada vai até juntar esses 60, e não um
+  número fixo de quadros: com um número fixo, um intervalo a mais que não conta deixava 59, e ela
+  acabava sem decidir. O teto é o dobro dos quadros que ela precisa, para ela não pedir quadros
+  para sempre numa página que só tem pausas. A abertura tem o mesmo teto, contado depois do
+  primeiro segundo: se passar dele sem juntar os 60 intervalos, ela desliga o relevo fino e mostra a
+  linha no console, com a média de todos os intervalos. Sem ele, numa máquina em que todo quadro
+  passa de 100 ms (um Chrome sem aceleração de vídeo, uma máquina virtual, uma área de trabalho
+  remota), a abertura pedia quadros para sempre e a cena parada voltava a desenhar sem parar
+  (revisão do Enzo, em 13/11). Numa aba escondida de verdade o navegador nem chama o
+  `requestAnimationFrame`, então quadro solto numa aba visível quer dizer máquina lenta; no
+  navegador escondido do app do Claude, a abertura desliga, e a conferência por lá continua
+  precisando do relógio mais lento. Ele decide em **degraus**: uma rajada que estoura com o anel na tela tira só o
+  anel e abre outra rajada sozinha, que mede o centro; se essa estourar também, desliga tudo. O
+  degrau nunca sobe. Sem os degraus, uma máquina que aguenta o centro e não o anel perderia o
+  relevo fino inteiro. Toda medição que termina vai para o console, com a média (`relevo fino
+  ligado`, `continua ligado`, `só no centro`, `continua só no centro` ou `desligado`): até 13/11,
+  só as que mudavam alguma coisa, e com a máquina aguentando ninguém via a folga.
+- **O limite é 17,5 ms, e não 16,7 ms** (OK do Marco em 13/11; ele tinha decidido 16,7 ms em 09/11).
+  A média de 60 intervalos numa tela de 60 Hz que acompanha a cena dá 16,67 ms, colada nos 16,7:
+  um único quadro que perde a vez da tela (33,3 ms) leva a média a 16,94 ms e desligaria o relevo
+  fino para sempre. Com 17,5 ms, a média aceita até 3 quadros perdidos em 60 (uns 57 por segundo).
+  O notebook do Miguel, com a Lua girando, fica em 18,1 ms (C4), acima do limite. Desligado, não
+  liga mais naquela página, para o relevo fino não piscar numa máquina no limite.
+- **Um buraco no relevo grosso** embaixo dos ladrilhos das duas camadas: numa cratera, o grosso (a
+  média de 1,9 km) fica acima do fundo e faria sombra no fino. Saem só os quadrados com os quatro
+  cantos cobertos, para a emenda não abrir fresta; os que ficam só em parte embaixo continuam, e o
+  estêncil não deixa eles aparecerem por cima do fino. O buraco segue a malha do fino, que fica
+  meio pixel (40 m) para a direita e para baixo da borda do ladrilho na grade. Trocar o buraco
+  refaz só os triângulos do grosso, no mesmo buffer da placa de vídeo, a partir do ladrilho de cada
+  vértice, calculado uma vez por relevo (`reliefVertexLabels` e `coverTriangles`): 4 ms por troca,
+  contra os uns 31 ms de percorrer a grade de novo, que engasgavam a página. O clique segue a
+  regra do estêncil (`visibleHit`): o acerto do centro, senão o do anel, senão o do grosso, mesmo
+  que outro esteja mais perto. O acerto mais perto podia ser o grosso ou o anel escondidos embaixo
+  do fino, a até uns 600 m de onde a pessoa clicou.
+- **As malhas montadas aos poucos**: um mapa de normais por quadro; a malha de um ladrilho do centro
+  no quadro seguinte ao do mapa dele (uns 2 ms, a 400 m); e até 8 do anel, com o mapa pronto
+  (0,4 ms cada). O bloco novo de uma camada entra na tela de uma vez, junto com o buraco, no mesmo
+  commit do React (o estado do buraco fica dentro do Canvas): a página não trava, e o grosso nunca
+  fica com buraco sem o fino por cima. O bloco novo só entra quando todos os ladrilhos dele
+  chegaram (ou falharam) e estão montados (`nearTilesStep` e `nearFrameStep`); até lá, o bloco de
+  antes continua na tela. Trocando antes, os ladrilhos que saíam do bloco sumiam antes de os novos
+  chegarem, e o relevo fino piscava a cada troca. O ladrilho que falhou fica de fora, e o grosso
+  cobre o lugar dele. A memória da página guarda 100 ladrilhos (12,7 MB), para ir e voltar num
+  arrasto sem baixar de novo.
+- **A sombra é a do C2** (424 m por pixel). A borda e o fundo das crateras aparecem pela luz do
+  mapa de normais.
+- **Sem antisserrilhado** (`src/scene/LunarScene.jsx`), decidido pelo Marco em 13/11. O MSAA que o
+  React Three Fiber liga pinta cada pixel uma vez para cada triângulo que encosta nele: com ele, na
+  Intel UHD 630 e a janela maximizada, o relevo fino ficava no limite dos 60 quadros por segundo e
+  o medidor desligava. Sem ele, o quadro leva metade do tempo na placa de vídeo, com ou sem o
+  relevo fino, e de perto a imagem quase não muda (sétima rodada). De longe, a borda da Lua fica
+  em degraus, e a linha dos 84°S do C8 passou a ser uma faixa de 1,5 pixel (`src/scene/AreaRing.jsx`):
+  a linha comum sumia aos pedaços.
+
+**Conferido** em 11/11/2026, no `npm run dev`, num Chromium (o navegador do app do Claude), no
+computador CIT-DES06, com uma Intel UHD 630 (mais fraca que a Iris Xe do notebook do Marco no C4).
+O navegador estava escondido: ele desenha poucos quadros por segundo, num ritmo que muda sozinho.
+Por isso o custo foi medido pelo cronômetro da própria placa de vídeo
+(`EXT_disjoint_timer_query_webgl2`), e o medidor foi conferido com os quadros entregues pelo teste,
+pelo `advance` do React Three Fiber, no intervalo que o teste escolheu. Isso confere as ligações do
+medidor na cena, e não a velocidade da máquina; quem diz a velocidade é a tabela do custo.
+
+Primeira rodada, antes das correções da revisão do PR:
+- **Crateras:** em cima de (−89°, 180°), o lugar mais iluminado de 8 pontos testados nessa data, o
+  centro da tela ficou com 2,65 vezes mais detalhe (a variação de brilho entre pixels vizinhos) e
+  mostra dezenas de crateras com borda clara do lado do Sol e fundo escuro, várias menores que 1
+  km. Sem o relevo fino, o mesmo lugar é só mancha. Nenhum pixel vazio na tela inteira.
+- **Bloco:** 3 × 3 custou 12,8 ms por quadro (p95 de 16,3 ms), no limite dos 16,7 ms; daí o 2 × 2.
+- **Clique:** em cima do relevo fino, escolhe o ponto, o marcador aparece e o painel mostra o céu.
+
+Segunda rodada, depois das correções, com a cena parada (o pedido de menos movimento trocado só
+naquela aba, para a cena ficar no `demand` do C9):
+- **Custo**, na mesma página, com a tela de 538 × 584 pixels e a câmera na distância mínima, em
+  cima de (−89,6°, 40°); cada rodada são 100 quadros, depois de 20 descartados:
+
+  | Na tela | Mediana | p95 | Rodadas |
+  |---|---|---|---|
+  | sem o relevo fino | 4,7 ms | 6,1 a 6,3 ms | 3 |
+  | com o bloco de 2 × 2 | 9,4 e 10,9 ms | 11,4 e 11,9 ms | 2 |
+
+- **Ao abrir, sem ninguém mexer:** o medidor pediu os próprios quadros e decidiu sozinho. No ritmo
+  de verdade do navegador escondido (uns 29 quadros por segundo), desligou com 34,5 ms de média;
+  com o relógio da página três vezes mais lento, ligou com 11,1 ms. Depois de decidir, a cena
+  parada desenhou 0 quadros em 2 s.
+- **Quadros que ele não pediu:** 200 quadros, cada um 25 ms depois do outro, pedidos por fora (o
+  que a roda do mouse faz): o relevo fino continuou ligado. Antes da correção, a média de 25 ms
+  desligava.
+- **Bloco novo:** levando a câmera para (−88,2°, 75°) a 60 Hz, o bloco entrou e o medidor pediu os
+  quadros da rajada (62) e continuou ligado. Levando para (−87,5°, 190°) com 25 ms por quadro, a
+  rajada desligou no 62º quadro: os 4 ladrilhos saíram e o relevo grosso voltou inteiro (249.034
+  triângulos). Desligado, a câmera de volta perto do polo não trouxe o relevo fino.
+- **Buraco no grosso:** com o bloco de 2 × 2 na tela, o grosso desenhou 248.234 dos 249.034
+  triângulos; o buraco segue a malha do fino dos quatro lados (teste em `nearTiles.test.js`).
+- **Console:** só as linhas do medidor e o aviso de sempre do `THREE.Clock`.
+- **Não refeito nesta rodada:** a imagem das crateras e o clique (o navegador escondido parou de
+  desenhar). O Marco confere a olho no `npm run dev`.
+
+Terceira rodada, depois do conserto do pisca na troca de bloco e das correções de uma segunda
+revisão (a rajada que junta os 60 intervalos, a falha que só vale na tentativa dela), com o código
+final, do mesmo jeito (os quadros e o relógio do teste, a 60 Hz), numa página recarregada e com o
+giro parado por um passo da roda:
+- **Ao abrir:** ligou com 16,67 ms, em 122 quadros (o primeiro segundo e mais 61).
+- **Troca para um bloco sem ladrilho em comum**, de (−89,6°, 40°) para (−88,2°, 75°): os 4
+  ladrilhos de antes ficaram na tela por 7 quadros, até os 4 novos estarem montados, e a troca foi
+  num quadro só, com o buraco junto, seguida da rajada de 62 quadros. Antes do conserto, a mesma
+  troca tinha 6 quadros sem relevo fino nenhum.
+- **Bloco vizinho**, 20 km para o lado (2 ladrilhos em comum): os 2 novos montados em 5 quadros, e
+  a troca dos 4 num quadro só.
+- **Um ladrilho que falha** (o `fetch` trocado só naquela aba para responder HTTP 503 ao
+  `r07c05`): uma linha de erro no console, e a tela passou dos 4 ladrilhos de antes direto para os
+  3 que chegaram; o grosso cobriu o lugar do que falhou.
+- **A câmera subindo dos 80 km num passo só**, sem nada mais pedindo quadro: no quadro seguinte o
+  relevo fino saiu e o grosso voltou inteiro.
+- **Descendo de novo no mesmo bloco**, agora com o `r07c05` respondendo: a cena esperou a leitura
+  nova dele e trocou direto para os 4 ladrilhos, sem passar pelos 3.
+- **Com 25 ms por quadro**, num bloco novo: a rajada desligou no 62º quadro e o grosso voltou
+  inteiro.
+- **Console:** o aviso de sempre do `THREE.Clock`, as linhas do medidor e a linha do ladrilho que
+  falhou de propósito.
+- **Não reproduzido:** a segunda revisão apontou que, no `npm run dev`, o Fast Refresh podia rodar
+  a limpeza do `NearRelief` sem desmontar e deixar o grosso por cima do fino. Editei o arquivo com
+  o bloco na tela, e os efeitos não rodaram de novo: nada mudou. A limpeza agora também tira o que
+  está na tela, para o caso de acontecer.
+
+Quarta rodada, em 12/11/2026, depois do anel e do estêncil, do mesmo jeito (os quadros e o relógio
+do teste, a 60 Hz), numa página recarregada, com a tela de 538 × 584 pixels:
+- **Primeira aproximação**, em (−89,6°, 40°), com o código final: o centro entrou 8 quadros depois
+  do movimento, com o buraco (o grosso com 248.234 triângulos) e as 4 peças do anel por baixo; o
+  anel inteiro, 26 quadros depois, com os 36 ladrilhos (o grosso com 241.592). A página baixou 36
+  ladrilhos: os 4 do centro estão entre os do anel e não foram baixados duas vezes.
+- **Dentes**: cada camada pintada com uma cor chapada, contando os pixels do grosso entre pixels do
+  centro na mesma linha da tela, na distância mínima:
+
+  | Lugar | Sem estêncil no grosso (como era) | Com estêncil | Grosso na tela inteira, com o anel |
+  |---|---|---|---|
+  | (−89,0°, 180°) | 1.802 px | 196 px | 0 px |
+  | (−85,5°, 60°) | 836 px | 0 px | 0 px |
+  | (−84,3°, 120°) | 1.160 px | 0 px | 4.491 px (4 ladrilhos do anel não existem ali) |
+
+  Os 196 px com estêncil são de fora do centro: com ele, o grosso não pinta onde o centro desenhou,
+  e o relevo deixa a borda do centro ondulada na tela. Sem o estêncil no anel, a malha de 800 m
+  cobriria de 62 a 72 mil pixels do centro; com ele, nenhum. Nenhum pixel vazio em nenhum caso.
+- **Clique** de verdade, pelos eventos do navegador, no centro da tela: o painel mostrou o céu do
+  ponto, e o marcador ficou a 1 m do ponto embaixo da câmera. A escolha entre as camadas está nos
+  testes (`visibleHit`, comparada com o estêncil em todas as combinações): no navegador, o pixel
+  achado com o anel na frente do centro deu 18 m entre os dois acertos, menos que a imprecisão do
+  clique simulado.
+- **Arrasto de 4 ladrilhos** (80 km) num quadro só, com o código final: o centro novo entrou com as
+  peças do anel dele por baixo (o anel de antes não chegava até ali), e nenhum pixel vazio em
+  nenhum quadro da troca.
+- **Buraco**: 10 ms uma vez por relevo e 4,2 ms por troca (9,2 ms no pior de 9).
+- **Arrasto** de 100 km em 5 quadros: o relevo fino nunca saiu da tela (sempre 4 ladrilhos no centro
+  e 36 no anel, e o grosso nunca voltou inteiro); parada a câmera, o centro trocou primeiro e o anel
+  8 quadros depois.
+- **Degraus do medidor**: num bloco novo com 25 ms por quadro, saiu só o anel (`relevo fino só no
+  centro`); com os quadros de volta a 16,7 ms, ficou o centro, e noutro bloco o anel não foi pedido
+  (nenhum ladrilho baixado); com 25 ms de novo, desligou tudo e o grosso voltou inteiro.
+- **Não medido**: o custo do anel na placa de vídeo (o navegador escondido não deixa). Pela conta,
+  são 45 mil triângulos a mais que os 125 mil do centro (com o centro a 160 m).
+
+Quinta rodada, em 12/11/2026, depois do mapa de normais, do mesmo jeito, com cada peça pintada de
+uma cor para saber de que ladrilho é cada pixel. A cena estava escura nessa hora (brilho médio de uns
+6 em 255), então os números são pequenos; a comparação é no mesmo quadro, com o mapa ligado e
+desligado só naquele instante:
+
+| Lugar | Detalhe do anel, sem → com o mapa | Emenda no anel (diferença de brilho na emenda ÷ a de dentro), sem → com |
+|---|---|---|
+| (−89,0°, 180°) | 0,25 → 0,67 | 4,41 → 0,46 |
+| (−85,5°, 60°) | 0,30 → 0,67 | 2,79 → 1,15 |
+| (−88,2°, 75°) | 0,24 → 0,86 | 2,22 → 1,30 |
+| (−87,5°, 300°), quase sem luz | 0,03 → 0,07 | 1,40 → 0,85 |
+
+- O detalhe do centro também subiu (0,36 → 0,53 em (−89,0°, 180°)), e o anel ficou no nível dele.
+- **Montagem**, medida no navegador com 6 ladrilhos: o mapa de normais em 2,4 ms de mediana (5,3 ms no
+  pior), a textura em meio-float em 1,4 ms (5,1 ms), a malha completa do centro (a 160 m) em 6,8 ms
+  (11,8 ms) e a do anel em 0,4 ms. A primeira aproximação: o centro em 12 quadros (4 mapas, 4
+  malhas e as peças do anel por baixo) e o anel inteiro uns 40 quadros depois, um mapa por quadro.
+- **O primeiro erro**: a primeira versão guardava a normal crua na textura, e o three lê o mapa como
+  cor × 2 − 1; a luz saía torta. Achado pela medida (o detalhe tinha pulado 11 vezes) e preso num
+  teste.
+- **Quadros longos no teste**: o navegador escondido desenha devagar, e o teste entregava quadros
+  mais depressa do que a placa de vídeo terminava. De vez em quando o navegador parava o JavaScript
+  até ela alcançar: quadros de 50 a 490 ms, também sem textura nenhuma subindo (ler 1 pixel depois
+  de 42 quadros esperou de 217 a 423 ms, com textura de meio-float, de 8 bits ou menor). Numa aba
+  de verdade, o ritmo da tela não deixa os quadros se acumularem assim; não deu para medir o custo
+  real na placa de vídeo aqui.
+
+Sexta rodada, em 13/11/2026, depois da conferência do Marco no Chrome dele, no CIT-DES06 (a janela
+maximizada numa tela de 1920 × 1080, `devicePixelRatio` 1, a mesma UHD 630). Com o centro a 160 m,
+o console mostrou `relevo fino só no centro (o anel saiu), média de 20.98 ms` e, na rajada seguinte,
+`relevo fino desligado, média de 22.82 ms`. Numa tela de 60 Hz, 20,98 ms de média são uns 15 quadros
+em 60 que perderam a vez da tela.
+- **A causa:** a malha do centro de 160 m. Com a janela maximizada, a cena tem 1114 × 761 pixels, um
+  pixel cobre uns 70 m na distância mínima, e cada triângulo de 160 m ficava com uns 2 pixels. O
+  antisserrilhado que o React Three Fiber liga (MSAA de 4 amostras) pinta de novo um pixel para cada
+  triângulo que encosta nele. Medido pelo cronômetro da placa, como nas rodadas de antes, com o
+  navegador do app do Claude no tamanho da janela maximizada, em cima de (−87°, 150°), em 5 rodadas
+  intercaladas de 15 quadros:
+
+  | Na tela | Mediana | 90% dos quadros abaixo de |
+  |---|---|---|
+  | sem o relevo fino | 5,9 ms | 7,8 ms |
+  | só o centro, a 160 m | 10,1 ms | 16,0 ms |
+  | só o centro, a 400 m | 6,9 ms | 8,0 ms |
+  | o centro a 160 m e o anel | 13,5 ms | 21,7 ms |
+  | o centro a 400 m e o anel | 9,0 ms | 10,5 ms |
+  | o centro a 800 m e o anel | 8,4 ms | 9,9 ms |
+
+  Desenhando a mesma cena sem o antisserrilhado, o centro a 160 m com o anel caía de 14,6 para
+  6,7 ms. A sombra custa uns 0,5 ms, e um material mais simples (Lambert) pouparia uns 1,3 ms.
+- **A imagem**, no mesmo lugar, com o centro a 160 m e a 400 m: diferença média de 0,04 tom (de 0 a
+  255), e 154 de 847.754 pixels mudaram mais que 8 tons; com 800 m, 0,09 tom e 404 pixels. A luz vem
+  do mapa de normais, e a câmera olha sempre para o centro da Lua.
+- **Com o código final** (o centro a 400 m), noutra hora, do mesmo jeito: sem o relevo fino, 6,4 ms
+  (90% abaixo de 7,8 ms); o centro e o anel, 11,0 ms (13,9 ms); na mesma página, com as malhas do
+  centro trocadas por 160 m, 13,8 ms (18,3 ms). Os números mudam de uma hora para outra (a placa
+  desenha também a tela do computador), por isso cada comparação foi feita na mesma página,
+  intercalada.
+- **Montagem**, no navegador, 12 vezes: a malha do centro a 400 m em 2,0 ms de mediana (3,1 ms no
+  pior), contra 8,8 ms (10,9 ms) a 160 m; o mapa de normais em 3,1 ms (12,7 ms), e a textura dele,
+  criada e mandada para a placa, em 5,6 ms (12 ms).
+- **O que três revisores conferiram**, em 13/11, no Node: com 400 m, o ponto do clique anda até
+  13 m em 95% dos casos na borda da tela (2,6 m de mediana e 103 m no pior; no meio da tela, nada),
+  e um pixel cobre 70 m; numa simulação, a sombra muda menos do que muda em meia hora de Sol; as
+  emendas, o buraco no grosso, o estêncil e o clique não dependem do passo.
+- **O console**, com os quadros e o relógio do teste: `relevo fino ligado` e `continua ligado` a
+  60 Hz; num bloco novo com 25 ms por quadro, `só no centro (o anel saiu)`, e com os quadros de
+  volta a 60 Hz, `continua só no centro, média de 16.67 ms`.
+
+Sétima rodada, em 13/11/2026, depois da segunda conferência do Marco, com o centro a 400 m, do mesmo
+jeito (o navegador do app do Claude no tamanho da janela maximizada, 1114 × 761). No Chrome do
+Marco, o console mostrou `relevo fino ligado` (16,67 ms), depois `só no centro (o anel saiu)` com
+17,71 ms e `desligado` com 20,73 ms.
+- **A montagem não entra na medida.** Quadro a quadro, numa aproximação: as 32 texturas do anel
+  sobem uma por quadro, de 6 a 30 ms de JavaScript cada, todas em quadros que o medidor pula, e o
+  anel só entra na tela depois da última. Nos quadros que contam, menos de 1 ms de JavaScript e uns
+  10 a 13 ms na placa: o que passava do limite era desenhar, e não carregar.
+- **O degrau "só no centro" quase não alivia nessa tela.** Depois dele, só o primeiro quadro tem
+  trabalho (uns 11 ms, a troca na tela); os seguintes, 0,1 ms de JavaScript e uns 11 ms na placa,
+  quase o mesmo que com o anel: onde o anel sai, entra o relevo grosso, que custa parecido por
+  pixel. Os 17,71 e 20,73 ms são uns 4 e 14 quadros atrasados em 60, a máquina no limite.
+- **Sem antisserrilhado** (`antialias: false` no `<Canvas>`), na mesma página, 5 rodadas de 15
+  quadros:
+
+  | Na tela | Com antisserrilhado | Sem |
+  |---|---|---|
+  | sem o relevo fino | 7,5 ms (90% abaixo de 7,8 ms) | 3,9 ms (5,1 ms) |
+  | o centro e o anel | 11,7 ms (12,2 ms) | 6,1 ms (8,1 ms) |
+
+- **A imagem**, antes e depois, no mesmo lugar: de perto, 887 de 847.754 pixels mudaram mais que 8
+  tons, quase todos na borda entre as camadas. De longe (a câmera na distância inicial), a borda da
+  Lua fica em degraus, e a linha dos 84°S ficava tracejada: cada um dos 720 pedaços dela tem uns
+  0,2 pixel ali, e sem o antisserrilhado a placa não pinta pedaço de linha menor que um pixel.
+  Afastar o plano mais perto da câmera (0,01 e 0,1, em vez de 0,001) não resolveu. Desenhada como
+  uma faixa de triângulos (o `Line` do Drei, `src/scene/AreaRing.jsx`), a linha ficou inteira com
+  1,5 pixel de largura, com a mesma cor; com 1 pixel ainda sobravam buracos pequenos.
+- **No Chrome do Marco**, sem o antisserrilhado, com a janela maximizada e o F12 fechado durante a
+  medida: `relevo fino ligado, média de 16.67 ms` e `relevo fino continua ligado, média de 16.67
+  ms`, ou seja, 60 quadros por segundo sem nenhum atrasado. A olho, de longe e de perto, a linha dos
+  84°S inteira e as crateras certas.
+
+**No notebook do Miguel**, em 13/11/2026, no commit `e22031c`, com `npm run preview`, o Chrome
+157.0.8103.51, a janela maximizada, o notebook na tomada, o F12 fechado e 15 s sem mexer (a Lua
+girando), em 2 rodadas com a página recarregada. Medido pelo Miguel; os números são os que ele
+copiou do console:
+- **As duas rodadas:** uma linha só, sem "ligado" antes:
+  `NearRelief: relevo fino desligado, média de 18.15 ms entre quadros (o limite é 17.5 ms)`. A
+  abertura decidiu pelos 60 intervalos, e não pelo teto.
+- **O "Pronto quando" desse notebook:** o relevo fino fica desligado, e a abertura mede a cena sem
+  ele. Os 18,15 ms ficam no que o C4 mediu ali, girando: 54,9 fps no Chrome (18,2 ms) e 55,2 fps no
+  Edge (18,1 ms).
+- **Console:** sem erro, só o aviso de sempre do `THREE.Clock`. Ele não vem do nosso código: o
+  React Three Fiber cria um `THREE.Clock` por dentro, e o three avisa.
+- **Antes**, numa rodada sem o commit e o navegador anotados, deu 19,17 ms; e no `npm run dev`, com
+  o DevTools aberto, 18,19 ms. Desligado nas duas.
+- **No PC do Miguel** (GeForce RTX 3060, AORUS 8G), do mesmo jeito, no Chrome 157.0.8103.52:
+  `NearRelief: relevo fino ligado, média de 5.56 ms entre quadros (o limite é 17.5 ms)`, numa
+  rodada (a segunda não foi anotada). A frequência da tela não foi anotada: 5,56 ms é o ritmo de
+  uma tela de 180 Hz, e então seria o ritmo da tela, e não o custo do quadro (não conferido).
+
+**Aberto.**
+- Nas duas conferências de 13/11, a rajada só com o centro deu mais que a com o anel (22,82 contra
+  20,98 ms, e 20,73 contra 17,71 ms), e pela medida devia dar quase o mesmo. Os quadros dela não
+  têm trabalho a mais (sétima rodada); o mais provável é variação da placa de vídeo, que também
+  desenha a tela do computador e o DevTools aberto (não conferido).
+- Sem o antisserrilhado, a borda da Lua vista de longe fica em degraus. Se incomodar, o card C12
+  sugere suavizar as bordas de outro jeito.
+- O custo no notebook do Marco (BOOK, Iris Xe) não foi medido; o CIT-DES06 tem uma placa mais
+  fraca, então ele deve ficar abaixo dos números acima (não conferido).
+- O custo do anel na placa de vídeo foi medido só no CIT-DES06 (sexta rodada). Se ele não couber
+  noutra máquina, o medidor tira só o anel (`relevo fino só no centro`, no console).
+- Mais alto que uns 43 km de altitude, numa janela larga (proporção de 1,5), as beiradas da tela
+  ficam no relevo grosso: o anel cobre 50 km para cada lado do centro da tela, no mínimo.
+- Um ladrilho que demora muito para chegar, sem falhar (a rede parada), segura a troca: o bloco de
+  antes fica na tela até ele chegar ou falhar. Pela internet, o navegador desiste da leitura
+  parada depois de um tempo, e aí ela vira falha (não conferido quanto tempo).
+- Na emenda entre os 4 ladrilhos do centro, num lugar quase sem luz ((−87,5°, 300°)), a diferença
+  de brilho na emenda continuou 2,7 vezes a de dentro, com e sem o mapa. Com tão pouca luz, poucos
+  pixels decidem a conta; não conferi a olho.
+- O custo das texturas na placa de vídeo não foi medido (uns 18 MB com a cena parada e até uns
+  40 MB na troca do anel, mais o mesmo na memória do JavaScript), nem o efeito delas num notebook
+  com pouca memória de vídeo.
+- Entre uns 43 e 80 km, numa janela larga, a borda de fora do anel fica um pouco mais clara que o
+  grosso ao lado, com o Sol baixo: a normal de 80 m é mais áspera, e a luz rasante clareia a
+  encosta virada para o Sol mais do que escurece a de costas. Numa conta da revisão do código,
+  com sombra, luz ambiente e as cores da tela, a diferença típica ficou em uns 8% (2 a 4 tons, de 0
+  a 255) e chegou a 43% num lugar de costas para o Sol; antes do mapa, uns 4%. Não conferi a olho.
+  Se aparecer, uma saída é misturar a normal do mapa com a da malha nos últimos quilômetros do
+  bloco.
+- O mapa de normais não tem mipmap. Até uns 60 km, cada pixel da tela cobre no máximo 2 pixels do
+  mapa, e o mipmap não mudaria quase nada (simulado na revisão do código); perto dos 80 km, com
+  2,6 a 2,8 por pixel, a luz pode tremer um pouco quando a câmera mexe. Não conferi a olho.
+- Sombra mais fina perto da câmera: exigiria levar a caixa da sombra do C2 para perto do bloco.
+  Fica como sugestão de card, para combinar com o Enzo.
+- O relevo fino em 80 m, se um dia sobrar folga.
 
 ### C7 · Teste do relevo perto do limite de tempo
 
@@ -1025,6 +1461,40 @@ a posição da câmera (os quadros avançados pelo `advance` do React Three Fibe
 **Aberto.** Um jeito de pausar pelo teclado antes de a pessoa escolher qualquer ponto (a WCAG
 2.2.2 junto com a 2.1.1, "tudo operável pelo teclado"). Decidimos depois do I2.
 
+### C11 · A sombra com o Sol rasante
+
+**Estado:** a fazer; sugestão da revisão do C6, em 13/11 · **Depende de:** nada
+
+**Para que serve.** Na revisão do C6, uma simulação no Node da sombra do three (o mapa de 2048
+pixels do C2, com o `normalBias` de 0,0002 raio da Lua, uns 347 m) comparou a sombra desenhada com
+um raio traçado até o Sol nos dados de 80 m. Com o Sol rasante, as duas discordaram em 28% dos
+pontos virados para o Sol, em média, e em até 73% num ladrilho, com qualquer passo da malha. A
+maior parte é sombra que falta: num ladrilho, com um `normalBias` 4 vezes menor, a parte na sombra
+subiu de 13% para 46%. Não conferido no navegador.
+
+**O que fazer.** Medir no navegador, num lugar com sombra longa, quanto da sombra some com o
+`normalBias` de hoje (`src/scene/LunarScene.jsx`) e com um menor, e ver se voltam as listras que
+ele evita (o "shadow acne" do C2).
+
+**Pronto quando.** Os números do navegador estão neste card, e a equipe decidiu se o `normalBias`
+muda.
+
+### C12 · Suavizar as bordas sem o MSAA
+
+**Estado:** a fazer; sugestão do C6, em 13/11 · **Depende de:** C6
+
+**Para que serve.** No C6, o antisserrilhado (MSAA) saiu do `<Canvas>`: ele dobrava o tempo de
+cada quadro na placa de vídeo, e na Intel UHD 630 com a janela maximizada o relevo fino desligava.
+Sem ele, de perto a imagem quase não muda, mas de longe a borda da Lua fica em degraus.
+
+**O que fazer.** Ver se uma passada de FXAA (o código dela vem no three, em `three/examples`, sem
+dependência nova) suaviza a borda da Lua sem devolver o custo: ela pinta a tela inteira uma vez a
+mais, uns 1 ms (não medido). Ela muda o jeito de a cena desenhar (o quadro passa por uma imagem
+intermediária), então o estêncil do relevo fino e a sombra precisam ser conferidos junto.
+
+**Pronto quando.** A borda da Lua de longe fica lisa na conferência a olho, o custo medido no
+CIT-DES06 com a janela maximizada fica abaixo de 1,5 ms a mais, e o `verify` passa.
+
 ---
 
 ## I: Miguel
@@ -1124,8 +1594,8 @@ lista, em vez de procurar o ponto na Lua. Também é o jeito de escolher pelo te
    `{ id, name, mission, agency, lat, lon, landedAtUtc, sourceUrl }`. Linha sem fonte não entra.
    Só entram os locais que o site calcula, os que ficam dentro do relevo, até 84°S (card E2): um
    local ao norte disso daria erro no painel. Por isso a lista sai só com o IM-2: as 9 regiões
-   candidatas do Artemis III ficaram para o card I7, e os outros locais da planilha esperam o
-   card E8.
+   candidatas do Artemis III ficaram para o card E16 (antes I7), e os outros locais da planilha
+   esperam o card E8.
 
 **Como testar.**
 - `src/panel/SiteList.test.jsx`: escolher uma opção com `userEvent.selectOptions` chama o
@@ -1141,7 +1611,7 @@ Enter), e o `verify` passa.
 
 ### I3 · Fonte do site
 
-**Estado:** a fazer · **Depende de:** nada; combinar a escolha com quem fizer o V2
+**Estado:** feito em 11/11, PR #24 · **Depende de:** nada; combinar a escolha com quem fizer o V2
 
 **Para que serve.** Hoje o site usa a fonte padrão do sistema, que muda de um computador para
 outro. Uma fonte própria deixa o site igual em qualquer máquina, inclusive na dos juízes.
@@ -1264,34 +1734,8 @@ testes passam e o `verify` passa.
 
 ### I7 · As 9 regiões do Artemis III na lista
 
-**Estado:** a fazer · **Depende de:** as coordenadas das 9 regiões
-
-**Para que serve.** A lista de locais (card I2) já separa as regiões candidatas num grupo
-próprio, "Artemis III candidate regions": um local com `landedAtUtc: null` cai nele. O I2 saiu
-só com o IM-2, porque as coordenadas das regiões não chegaram a tempo. Veio da divisão do I2
-(CONTRIBUTING.md, seção 1, regra 6). Se o Enzo preferir fazer este card, ele passa para a área
-E, com o próximo número.
-
-**O que já se sabe.**
-- Os nomes, de fonte primária ([NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660)):
-  Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton, Nobile Rim 1,
-  Nobile Rim 2, de Gerlache Rim 2 e Slater Plain. Esse documento não dá coordenada.
-- Não existe ponto oficial de cada região. O Enzo pensou em calcular o centro de cada uma pelos
-  limites do USGS. Coordenada estimada não entra (README, "Nenhum dado inventado").
-- **Alerta.** A [página do mosaico da LROC para Peak Near Cabeus B](https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_ROI_CABEUSPKLO2)
-  dá o centro em lat −83.6 e lon 291.2 leste (−68.8 na faixa de −180 a 180 do `sites.js`), e a
-  faixa de latitude de −84.06 a −83.21 (conferido pelo Miguel em 11/11/2026). O centro fica ao
-  norte do `areaMaxLatDeg` (−84.0, `public/data/relief/manifest.json`): essa região ficaria fora
-  da área que o site calcula, e o teste da área (`src/data/sites.test.js`) a barraria. As outras
-  8 não foram conferidas.
-
-**O que fazer.**
-1. Para cada região com coordenada e fonte: uma linha em `src/data/sites.js`, com
-   `landedAtUtc: null`, e a fonte no CREDITS.md, junto com o documento dos nomes.
-2. A região que cair ao norte de 84°S fica fora da lista até o card E8, pela mesma regra do I2.
-
-**Pronto quando.** As regiões com coordenada e fonte aparecem no grupo "Artemis III candidate
-regions", os testes de `src/data/sites.test.js` passam e o `verify` passa.
+**Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
+novo.
 
 ---
 

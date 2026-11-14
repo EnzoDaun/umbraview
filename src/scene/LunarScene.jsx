@@ -1,7 +1,8 @@
 /* A Lua em 3D: a esfera e a câmera que gira com o mouse (card C1), e o relevo do polo sul com a
  * luz do Sol da data escolhida e a sombra das montanhas (card C2), e o clique que escolhe um ponto,
  * com o marcador dele (card C3). O giro sozinho para na primeira vez que a pessoa mexe (card C5)
- * ou quando um ponto é escolhido (card C10), e a cena só desenha quando algo muda (card C9).
+ * ou quando um ponto é escolhido (card C10), e a cena só desenha quando algo muda (card C9). De
+ * perto, o relevo fino aparece em volta do centro da tela, onde a máquina aguenta (card C6).
  *
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
@@ -16,8 +17,10 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
 import { AreaRing } from './AreaRing.jsx'
+import { NearRelief } from './NearRelief.jsx'
 import { readMoonClick } from './picking.js'
 import { ReliefCap } from './ReliefCap.jsx'
+import { visibleHit } from './reliefLayers.js'
 import { smoothSphereThetaLength } from './reliefMesh.js'
 import { SiteMarker } from './SiteMarker.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
@@ -92,6 +95,21 @@ function token(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
+/* O relevo grosso e o fino juntos (card C6). cover são os ladrilhos do fino desenhados agora, e o
+   grosso abre o buraco embaixo deles. O estado mora aqui, dentro do Canvas, e não no LunarScene: o
+   Canvas é outra raiz do React, e com o estado lá fora o buraco e os ladrilhos entrariam na tela em
+   commits separados, com um quadro de fresta ou de grosso por cima do fino entre os dois. Também
+   evita o React refazer o LunarScene inteiro a cada bloco novo. */
+function Relief({ relief, color }) {
+  const [cover, setCover] = useState([])
+  return (
+    <>
+      <ReliefCap relief={relief} color={color} cover={cover} />
+      <NearRelief manifest={relief.manifest} color={color} onCoverChange={setCover} />
+    </>
+  )
+}
+
 /* dateUtc: a data da luz (um Date). site: o ponto escolhido, { lat, lon } em graus, ou null; o
    marcador aparece nele. onSelect: chamada com { lat, lon } quando a pessoa clica num ponto da área
    com relevo. Os três vêm do App.jsx. */
@@ -124,11 +142,13 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   const sphereThetaLength = relief ? smoothSphereThetaLength(relief.manifest.far.reachM) : Math.PI
 
   function handleMoonClick(event) {
-    /* O raio do clique atravessa a malha do relevo e a esfera lisa por baixo dela, e o React Three
-       Fiber chama o grupo uma vez para cada objeto atingido. O primeiro é o que a pessoa vê; os
-       outros escolheriam o mesmo ponto de novo. */
+    /* O raio do clique atravessa as malhas do relevo e a esfera lisa por baixo delas, e o React
+       Three Fiber chama o grupo uma vez para cada objeto atingido; os outros escolheriam o ponto de
+       novo. O acerto que vale é o que a pessoa vê (visibleHit): com o relevo fino (card C6), nem
+       sempre é o mais perto, porque o estêncil esconde o grosso e o anel embaixo do fino. */
     event.stopPropagation()
-    const result = readMoonClick({ point: event.point.toArray(), delta: event.delta }, manifest)
+    const hit = visibleHit(event.intersections ?? []) ?? event
+    const result = readMoonClick({ point: hit.point.toArray(), delta: event.delta }, manifest)
     if (!result) return
     if (result.outside) showNotice(scene.outsideArea(Math.abs(manifest.areaMaxLatDeg)))
     else onSelect(result.site)
@@ -148,6 +168,14 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
       <div className="lunar-scene__view" role="img" aria-label={scene.label}>
         <Canvas
           frameloop={autoRotate ? FRAME_LOOP_ROTATING : FRAME_LOOP_STILL}
+          /* O three cria a tela sem estêncil, e o relevo fino usa ele para ficar por cima do grosso
+             (reliefLayers.js). O antisserrilhado (MSAA) que o React Three Fiber liga pinta cada pixel
+             uma vez para cada triângulo que encosta nele: na Intel UHD 630, com a janela maximizada,
+             o relevo fino ficava no limite dos 60 quadros por segundo e o medidor desligava
+             (docs/backlog.md, C6, sétima rodada). Sem ele, a borda da Lua vista de longe e a linha dos
+             84°S ficam serrilhadas; de perto, a câmera olha reto para baixo e quase não há borda.
+             O resto das opções do React Three Fiber continua igual. */
+          gl={{ stencil: true, antialias: false }}
           shadows={SHADOW_TYPE}
           camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}
         >
@@ -177,7 +205,9 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
                   piscariam disputando o mesmo pixel. */}
               <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
             </mesh>
-            {relief && <ReliefCap relief={relief} color={moonColor} />}
+            {/* Dentro do grupo do clique também o relevo fino: o grosso tem um buraco embaixo dele,
+                e a esfera lisa é aberta no polo; fora do grupo, o clique ali não acharia nada. */}
+            {relief && <Relief relief={relief} color={moonColor} />}
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
