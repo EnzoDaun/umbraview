@@ -22,6 +22,13 @@ export const AREA_RING_SEGMENTS = 720
    alto que isto, ele flutuaria visivelmente quando a câmera chega perto (35 km). */
 export const AREA_RING_LIFT_M = 300
 
+/* A largura da linha, em pixels da tela. Sem o antisserrilhado (LunarScene.jsx), uma linha comum
+   do three sumia aos pedaços de longe: na distância inicial da câmera, cada um dos 720 pedaços fica
+   com uns 0,2 pixel, e a placa de vídeo não pinta pedaço de linha menor que um pixel. Desenhada
+   como uma faixa de triângulos (AreaRing.jsx), ela fica inteira; com 1 pixel ainda sobravam buracos
+   pequenos, com 1,5 não (conferido no navegador em 13/11/2026). */
+export const AREA_RING_WIDTH_PX = 1.5
+
 /* relief: o { manifest, heights } do useFarRelief, ou null enquanto ele não chegou. Devolve as
    posições do anel na cena, de 3 em 3 números, num Float32Array (o formato que o three recebe), ou
    null sem relevo: sem o manifesto, o limite da área não é conhecido. */
@@ -36,4 +43,12 @@ export function buildAreaRing(relief) {
     positions.set([x * radius, y * radius, z * radius], i * 3)
   }
   return positions
+}
+
+/* As posições do buildAreaRing com o primeiro ponto repetido no fim, numa lista comum, ou null sem
+   anel. A faixa do Drei (AreaRing.jsx) não fecha a volta sozinha, como o lineLoop do three fazia,
+   e lê os pontos com map e flat, que um Float32Array não tem. */
+export function closeRing(positions) {
+  if (!positions) return null
+  return [...positions, positions[0], positions[1], positions[2]]
 }

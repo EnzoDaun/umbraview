@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { MOON_RADIUS_M } from '../engine/geometry.js'
-import { AREA_RING_LIFT_M, AREA_RING_SEGMENTS, buildAreaRing } from './areaRing.js'
+import { AREA_RING_LIFT_M, AREA_RING_SEGMENTS, buildAreaRing, closeRing } from './areaRing.js'
 import { sceneToLatLon } from './coordinates.js'
 import { reliefHeightAtM } from './picking.js'
 
@@ -27,7 +27,7 @@ describe('buildAreaRing', () => {
   const positions = buildAreaRing(relief)
   const points = pointsOf(positions)
 
-  it('tem um ponto por segmento, e o lineLoop do three fecha a volta sozinho', () => {
+  it('tem um ponto por segmento; quem fecha a volta é o closeRing', () => {
     expect(positions).toBeInstanceOf(Float32Array)
     expect(points).toHaveLength(AREA_RING_SEGMENTS)
   })
@@ -74,5 +74,19 @@ describe('buildAreaRing', () => {
 
   it('sem o relevo, não há anel: a área ainda não é conhecida', () => {
     expect(buildAreaRing(null)).toBeNull()
+  })
+})
+
+describe('closeRing', () => {
+  it('repete o primeiro ponto no fim, numa lista comum: a faixa do Drei não fecha a volta sozinha', () => {
+    // o lineLoop do three fechava; a faixa (o Line do Drei, AreaRing.jsx) não fecha, e lê os pontos
+    // com map e flat, que um Float32Array não tem
+    const closed = closeRing(new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+    expect(Array.isArray(closed)).toBe(true)
+    expect(closed).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3])
+  })
+
+  it('sem anel, nada', () => {
+    expect(closeRing(null)).toBeNull()
   })
 })

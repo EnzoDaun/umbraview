@@ -23,9 +23,12 @@ instala tudo no Windows, do zero.
   e o painel do ponto escolhido (direita).
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
-  da data e a sombra das montanhas (card C2). Um clique perto do polo escolhe um ponto e põe um
-  marcador nele (card C3), e o painel da direita mostra o céu desse ponto na mesma data (cards I1
-  e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no período e as janelas de pouso.
+  da data e a sombra das montanhas (card C2). De perto, onde a máquina aguenta, o relevo fino (dos
+  dados de 80 m) cobre a tela, com um vértice a cada 400 m no meio dela e a cada 800 m em volta, e
+  a luz dos 80 m em toda parte: as crateras pequenas aparecem (card C6). Um clique perto do polo
+  escolhe um ponto e põe um marcador nele (card C3), e o painel da direita mostra o céu desse
+  ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
+  período e as janelas de pouso.
 - No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
   (card I2): o pouso do IM-2 e o centro de 7 das 9 regiões candidatas do Artemis III (card E16).
   Também no painel, a data e a hora em UTC, que começam na hora em que a página abriu (card
@@ -246,6 +249,7 @@ umbraview/
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
 │   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
+│   │   ├── useNearTiles.js          os ladrilhos do relevo fino em volta da câmera (card C6)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
@@ -257,15 +261,19 @@ umbraview/
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
-│   ├── scene/                       a Lua em 3D (cards C1 a C3 e C8)
+│   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
+│   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
 │   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
+│   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
+│   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
+│   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
 │   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
