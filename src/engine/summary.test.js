@@ -21,7 +21,8 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthNow', 'landingWindows', 'longestDarkHours', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
+      ['earthFraction', 'earthNow', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
+        'nextSunriseUtc', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
     )
     expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
     expect(Object.keys(sky.earthNow).sort()).toEqual(['elevationDeg', 'visible'])
@@ -102,5 +103,52 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
     const sky = summarizeSky(sempreSol, { minWindowHours: 2 })
     expect(sky.nextSunsetUtc).toBeNull()
     expect(sky.longestDarkHours).toBe(0)
+  })
+})
+
+/* Para os campos da Terra e da volta do Sol (card E18), as mesmas dez horas com outro céu.
+   Na TERRA_SOME, a Terra está à vista nas horas 0 a 3, some entre a 3 (0,5) e a 4 (−0,5), uma hora
+   depois do pôr do Sol da SERIE, fica escondida até a 6 e volta na 7. Na TERRA_VOLTA, ela começa escondida e volta entre a 1 (−0,5) e a
+   2 (0,5). Na NOITE, o Sol começa escondido e passa da metade do disco entre a 2 (0,25) e a 3
+   (0,75). */
+const comCeu = (mudancas) => ({ ...SERIE, ...mudancas })
+const TERRA_SOME = comCeu({ earthMarginDeg: Float32Array.from([1, 1, 1, 0.5, -0.5, -1, -0.2, 0.6, 1, 1]) })
+const TERRA_VOLTA = comCeu({ earthMarginDeg: Float32Array.from([-1, -0.5, 0.5, 1, 1, 1, 1, 1, 1, 1]) })
+const NOITE = comCeu({ sunFraction: Float32Array.from([0, 0, 0.25, 0.75, 1, 1, 1, 1, 1, 1]) })
+const SEMPRE_ESCURO = comCeu({ sunFraction: new Float32Array(10) })
+const TERRA_SEMPRE_ESCONDIDA = comCeu({ earthMarginDeg: new Float32Array(10).fill(-1) })
+
+describe('a Terra e a volta do Sol no resumo (card E18)', () => {
+  it('earthFraction: a parte das horas do período com alguma parte da Terra à vista', () => {
+    expect(summarizeSky(TERRA_SOME, { minWindowHours: 2 }).earthFraction).toBeCloseTo(0.7, 12)
+    expect(summarizeSky(SERIE, { minWindowHours: 2 }).earthFraction).toBe(1)
+    expect(summarizeSky(TERRA_SEMPRE_ESCONDIDA, { minWindowHours: 2 }).earthFraction).toBe(0)
+  })
+
+  it('nextEarthsetUtc: quando a última parte da Terra some, entre duas horas', () => {
+    expect(summarizeSky(TERRA_SOME, { minWindowHours: 2 }).nextEarthsetUtc).toEqual(new Date('2026-11-14T06:30:00Z'))
+  })
+
+  it('nextEarthsetUtc é null quando a Terra não se põe no período, à vista ou escondida o tempo todo', () => {
+    expect(summarizeSky(SERIE, { minWindowHours: 2 }).nextEarthsetUtc).toBeNull()
+    expect(summarizeSky(TERRA_SEMPRE_ESCONDIDA, { minWindowHours: 2 }).nextEarthsetUtc).toBeNull()
+  })
+
+  it('nextSunriseUtc: com o Sol escondido agora, quando metade do disco volta', () => {
+    expect(summarizeSky(NOITE, { minWindowHours: 2 }).nextSunriseUtc).toEqual(new Date('2026-11-14T05:30:00Z'))
+  })
+
+  it('nextSunriseUtc é null com o Sol à vista agora (e não o pôr), e com o Sol escondido o período todo', () => {
+    expect(summarizeSky(SERIE, { minWindowHours: 2 }).nextSunriseUtc).toBeNull()
+    expect(summarizeSky(SEMPRE_ESCURO, { minWindowHours: 2 }).nextSunriseUtc).toBeNull()
+  })
+
+  it('nextEarthriseUtc: com a Terra escondida agora, quando a primeira parte dela volta', () => {
+    expect(summarizeSky(TERRA_VOLTA, { minWindowHours: 2 }).nextEarthriseUtc).toEqual(new Date('2026-11-14T04:30:00Z'))
+  })
+
+  it('nextEarthriseUtc é null com a Terra à vista agora (e não o pôr), e com a Terra escondida o período todo', () => {
+    expect(summarizeSky(TERRA_SOME, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
+    expect(summarizeSky(TERRA_SEMPRE_ESCONDIDA, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
   })
 })
