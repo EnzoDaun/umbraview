@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { computeEphemeris } from './ephemeris.js'
 import reference from './fixtures/spiceReference.json'
 import { latLonToUnit, localFrame } from './geometry.js'
-import { computeSeries, diskFraction, findLandingWindows, nextChange, nextSunset } from './series.js'
+import { computeSeries, diskFraction, findLandingWindows, nextChange, nextSetting, nextSunset } from './series.js'
 
 /* Horizonte de mentira, da mesma altura em todas as direções: com ele, a resposta de cada
    instante sai de uma conta à mão. */
@@ -101,6 +101,22 @@ describe('quando o Sol e a Terra mudam', () => {
     expect(nextSunset(serie([0, 0.1, 0.9, 1, 0.75, 0.25], [1, 1, 1, 1, 1, 1]), 0)).toBe(4.5)
     expect(nextSunset(serie([1, 1, 1], [1, 1, 1]), 0)).toBeNull()
     expect(nextSunset(serie([0, 0, 0], [1, 1, 1]), 0)).toBeNull()
+  })
+
+  it('próximo pôr da Terra: quando a margem passa de positiva a zero; com a Terra escondida agora, é o pôr depois da volta', () => {
+    expect(nextSetting('earth', serie([1, 1, 1], [1, 0.5, -0.5], 2), 0)).toBe(3)
+    expect(nextSetting('earth', serie([1, 1, 1, 1, 1], [-1, 1, 1, 0.5, -1.5]), 0)).toBe(3.25)
+    expect(nextSetting('earth', serie([1, 1, 1], [1, 1, 1]), 0)).toBeNull()
+    expect(nextSetting('earth', serie([1, 1, 1], [-1, -1, -1]), 0)).toBeNull()
+  })
+
+  it('o próximo pôr do Sol sai igual pela conta geral e pela do Sol', () => {
+    const series = [
+      serie([1, 1, 0.8, 0.2, 0], [1, 1, 1, 1, 1]),
+      serie([0, 0.1, 0.9, 1, 0.75, 0.25], [1, 1, 1, 1, 1, 1]),
+      serie([1, 1, 1], [1, 1, 1]),
+    ]
+    for (const s of series) expect(nextSetting('sun', s, 0)).toBe(nextSunset(s, 0))
   })
 
   it('janela de pouso: entra quando o último dos dois aparece e sai quando o primeiro some, entre duas horas', () => {
