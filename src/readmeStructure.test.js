@@ -2,8 +2,7 @@
  *
  * O README é por onde quem chega começa. Arquivo que existe e não está lá não é encontrado;
  * arquivo que está lá e não existe mais manda procurar o que sumiu. Os testes (*.test.*)
- * ficam fora da exigência, para o bloco continuar legível. (Mesma regra do projeto
- * UNAERP x EPTV, para as duas equipes trabalharem do mesmo jeito.)
+ * ficam fora da exigência, para o bloco continuar legível.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'

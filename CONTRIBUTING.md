@@ -1,7 +1,6 @@
 # Como trabalhar neste repositório
 
-Leia esta página inteira antes do primeiro commit. Ela é curta de propósito, e segue as mesmas
-regras do projeto UNAERP × EPTV, para ninguém precisar aprender dois jeitos de trabalhar.
+Leia esta página inteira antes do primeiro commit. Ela é curta de propósito.
 
 ---
 
