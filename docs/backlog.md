@@ -246,24 +246,20 @@ combinado em "O que a ponte entrega para a tela". Ligar a ponte no `App.jsx` é 
   arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
   `new URL('data/relief/', document.baseURI).href`.
 
-### E4 · GitHub quando o repositório ficar público
+### E4 · GitHub com o repositório público
 
-**Estado:** a fazer · **Depende de:** o repositório ficar público
+**Estado:** em andamento: o site e a proteção da `main` e da `develop` foram ligados em 14/11,
+PR #38 · **Depende de:** nada
 
-**Para que serve.** No plano gratuito do GitHub, o site publicado (Pages) e a proteção das
-branches só existem em repositório público.
+**Para que serve.** Fechar o que falta no GitHub: a trava do Claude conferida no Windows e a
+marca do que foi submetido.
 
-**O que fazer.**
-1. Settings > Pages > Source: **GitHub Actions**. Conferir o endereço do site numa janela
-   anônima.
-2. Settings > Rules: proteger a `main` e a `develop` com PR obrigatório, 1 aprovação, as duas
-   verificações do CI (`lint, testes, build e conferência` e `sem assinatura do Claude`)
-   obrigatórias, sem force push e sem apagar a branch.
-3. Numa sessão do Claude Code no Windows, pedir a ele um `git commit` e ver a recusa
+**O que falta.**
+1. Numa sessão do Claude Code no Windows, pedir a ele um `git commit` e ver a recusa
    `Bloqueado pela politica do repositorio`. O gancho só foi testado no Linux até agora.
-4. Na hora da entrega (15/11, 23h59): uma tag na `main` marcando o que foi submetido.
+2. Na hora da entrega (15/11, 23h59): uma tag na `main` marcando o que foi submetido.
 
-**Pronto quando.** O site abre no endereço do Pages, e um push direto na `main` é recusado.
+**Pronto quando.** O gancho recusa o commit no Windows, e a tag da entrega está na `main`.
 
 ### E5 · Corrigir os documentos do projeto no claude.ai
 
@@ -2006,20 +2002,18 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 14/11, PR #36 · **Depende de:** nada
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
-**O que fazer.**
-- Logo da Umbra Team e do UmbraView.
-- Nas cores do site: fundo `#0b0d12`, dourado `#e9b450` (o Sol) e azul `#79aee8` (a Terra).
-- Arquivos em SVG e em PNG (512 e 1024 px, fundo transparente), mais uma versão simples que dê
-  para ler bem pequena, como ícone da aba do navegador.
-- **Sem o logo redondo da NASA, o logotipo ou o selo dela**: só com autorização da NASA. Escrever
-  "NASA Space Apps Challenge 2026" em texto pode.
-
-**Pronto quando.** Os arquivos estão na pasta compartilhada e a equipe aprovou. O Enzo troca o
-ícone do site.
+**Como ficou.**
+- O kit do logo da Umbra Team e do UmbraView está em `brand/`: SVG, PNG de 512 e 1024 px com
+  fundo transparente, versões de uma cor só e o favicon. As cores, a fonte e onde usar cada
+  versão estão no `brand/LEIA-ME.txt`.
+- O ícone do site (`public/favicon.ico`, `favicon.svg` e `apple-touch-icon.png`) é cópia do de
+  `brand/favicon/`.
+- **Sem o logo redondo da NASA, o logotipo ou o selo dela**, também no vídeo e na página da
+  submissão: só com autorização da NASA. Escrever "NASA Space Apps Challenge 2026" em texto pode.
 
 ### V3 · Kit de produção
 
@@ -2029,8 +2023,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
    licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
-   qualquer janela, para acertar a configuração. O site ainda não está publicado (card E4): a
-   gravação dele sai do `npm run preview`, que mostra a versão final do site.
+   qualquer janela, para acertar a configuração. Grave o site publicado, no endereço que está
+   no [README](../README.md).
 3. Legenda em inglês: um arquivo `.srt` de modelo e o estilo definido (fonte, tamanho, posição).
 
 **Pronto quando.** Tudo na pasta compartilhada, com a licença da música anotada.
