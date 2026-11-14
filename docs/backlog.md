@@ -150,7 +150,7 @@ E nos sorteios por faixa de Sol:
 
 ### E2 · Dados do relevo para o site
 
-**Estado:** feito em 03/11, PR #3; falta a conferência do card I5 · **Depende de:** nada
+**Estado:** feito em 03/11, PR #3 · **Depende de:** nada
 
 **O que entrega.**
 - `public/data/relief/`: o relevo do polo sul, do polo até 84°S, recortado dos arquivos LOLA da
@@ -194,7 +194,8 @@ mudança fica só em `reliefFiles.js`.
 - Com os recortes, a porcentagem de Sol e de Terra fica perto do mapa de Mazarico et al.
   (CREDITS.md) nos pontos de referência, e um script refaz a comparação. Feito:
   `scripts/prepare-data/compare-nasa.mjs`, com o resultado no card E1.
-- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Falta: card I5.
+- Outra pessoa da equipe roda o script do zero seguindo só o README dele. Feito: card I5, em
+  12/11 (PR #29).
 - O tamanho de `public/data/` e a área escolhida estão anotados neste card. Feito: "O que
   entrega" e "Por que ladrilhos e por que até 84°S".
 - Nenhum arquivo passa de 50 MB. Feito: o maior é o `far.bin`, de 1,3 MB.
