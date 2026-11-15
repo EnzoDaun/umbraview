@@ -42,8 +42,9 @@ export function computeEphemeris(startMs, count, stepHours) {
 
 /* Do referencial equatorial para o fixo da Lua: M = Rz(W) · Rx(90° − dec) · Rz(90° + ra), com a
    ascensão reta (ra, em horas) e a declinação (dec) do polo norte da Lua e o ângulo de rotação
-   (spin = W) do modelo da IAU. */
-function moonFixedRotation({ ra, dec, spin }) {
+   (spin = W) do modelo da IAU. Exportada (C1) para as estrelas da cena (C5) girarem pela mesma conta
+   do Sol e da Terra: com uma rotação própria na cena, o céu sairia do lugar em relação ao Sol. */
+export function moonFixedRotation({ ra, dec, spin }) {
   const a1 = Math.PI / 2 + ra * 15 * DEG
   const a2 = Math.PI / 2 - dec * DEG
   const w = spin * DEG
@@ -57,4 +58,15 @@ function moonFixedRotation({ ra, dec, spin }) {
     const z2 = -s2 * y1 + c2 * z
     return [c3 * x1 + s3 * y2, -s3 * x1 + c3 * y2, z2]
   }
+}
+
+/* A mesma rotação, na data dateMs (milissegundos UTC), em nove números (linha a linha): o que a
+   cena precisa para girar o céu de estrelas, que vem no referencial equatorial J2000. A cena só
+   multiplica; a conta fica aqui. */
+export function moonFixedMatrix(dateMs) {
+  const rotate = moonFixedRotation(RotationAxis(Body.Moon, MakeTime(new Date(dateMs))))
+  const columns = [rotate(1, 0, 0), rotate(0, 1, 0), rotate(0, 0, 1)]
+  const m = new Array(9)
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) m[3 * r + c] = columns[c][r]
+  return m
 }

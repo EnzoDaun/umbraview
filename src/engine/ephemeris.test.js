@@ -1,7 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 
-import { computeEphemeris } from './ephemeris.js'
+import { Body, GeoMoon, MakeTime, RotationAxis } from 'astronomy-engine'
+
+import { computeEphemeris, moonFixedMatrix, moonFixedRotation } from './ephemeris.js'
 import reference from './fixtures/spiceReference.json'
 import { MOON_RADIUS_M, latLonToUnit, localFrame } from './geometry.js'
 
@@ -72,5 +74,37 @@ describe('posição do Sol e da Terra vistos da Lua', () => {
     }
     // e o Sol anda: em 34 horas a direção dele no céu da Lua muda
     expect(Math.abs(serie.sunDirection[3 * i] - serie.sunDirection[0])).toBeGreaterThan(1e-3)
+  })
+})
+
+/* C1: a rotação para o referencial fixo da Lua sai do arquivo, para as estrelas (C5) girarem com a
+   mesma conta do Sol e da Terra. Exportar não pode mudar os números do computeEphemeris. */
+describe('rotação para o referencial fixo da Lua, exportada (C1)', () => {
+  const instante = Date.UTC(2026, 10, 14, 6)
+
+  it('aplicada à mão na Lua do astronomy-engine, dá a mesma Terra do computeEphemeris', () => {
+    const time = MakeTime(new Date(instante))
+    const moon = GeoMoon(time)
+    const terra = moonFixedRotation(RotationAxis(Body.Moon, time))(-moon.x, -moon.y, -moon.z)
+    const eph = computeEphemeris(instante, 1, 1)
+    for (let k = 0; k < 3; k++) expect(terra[k] * 149597870.7).toBeCloseTo(eph.earthPositionKm[k], 6)
+  })
+
+  it('moonFixedMatrix dá a mesma rotação, em nove números, linha a linha', () => {
+    const m = moonFixedMatrix(instante)
+    const giro = moonFixedRotation(RotationAxis(Body.Moon, MakeTime(new Date(instante))))
+    const v = [0.3, -0.5, 0.81]
+    const esperado = giro(...v)
+    for (let r = 0; r < 3; r++) {
+      expect(m[3 * r] * v[0] + m[3 * r + 1] * v[1] + m[3 * r + 2] * v[2]).toBeCloseTo(esperado[r], 12)
+    }
+  })
+
+  it('o polo norte da Lua, no referencial equatorial, vira o eixo z do referencial fixo', () => {
+    const { ra, dec } = RotationAxis(Body.Moon, MakeTime(new Date(instante)))
+    const a = (ra * 15 * Math.PI) / 180
+    const d = (dec * Math.PI) / 180
+    const polo = moonFixedRotation({ ra, dec, spin: 0 })(Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d))
+    expect(polo[2]).toBeCloseTo(1, 12)
   })
 })
