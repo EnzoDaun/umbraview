@@ -2,13 +2,42 @@
  * tela", no docs/backlog.md. Se aquele formato mudar, muda aqui e no teste deste arquivo, no mesmo
  * PR, para o painel (card I1) e a cena (card C2) não lerem um campo que não existe mais.
  */
-import { findLandingWindows, nextChange, nextSetting, nextSunset } from './series.js'
+import { horizonElevationAt } from './horizon.js'
+import { findLandingWindows, isVisibleAt, nextChange, nextSetting, nextSunset } from './series.js'
 
 const HOUR_MS = 3600e3
+const DEG = 180 / Math.PI
+// Um número do contorno do relevo por grau de azimute, qualquer que seja o número de direções do
+// horizonte: é o que o gráfico da tela desenha.
+const GROUND_VIEW_DIRECTIONS = 360
+
+/* A vista do chão: o contorno do relevo em volta do ponto e onde o Sol e a Terra estão a cada hora,
+   para a tela mostrar por que o ponto tem ou não tem luz e Terra. horizon: o resultado de
+   computeHorizon, ou undefined (aí o contorno sai vazio). O "à vista" vem da mesma regra do resto
+   do resumo (isVisibleAt), para o gráfico e os números nunca discordarem. */
+function buildGroundView(series, horizon) {
+  const horizonDeg = horizon
+    ? Array.from({ length: GROUND_VIEW_DIRECTIONS }, (_, a) =>
+        horizonElevationAt(horizon, (a * 2 * Math.PI) / GROUND_VIEW_DIRECTIONS) * DEG,
+      )
+    : []
+  const path = (kind, azimuth, elevation) =>
+    Array.from({ length: series.count }, (_, i) => ({
+      azimuthDeg: azimuth[i],
+      elevationDeg: elevation[i],
+      visible: isVisibleAt(kind, series, i),
+    }))
+  return {
+    horizonDeg,
+    sun: path('sun', series.sunAzimuthDeg, series.sunElevationDeg),
+    earth: path('earth', series.earthAzimuthDeg, series.earthElevationDeg),
+  }
+}
 
 /* series: o resultado de computeSeries; o "agora" é o primeiro instante dela.
-   minWindowHours: a duração mínima de uma janela de pouso (MIN_LANDING_WINDOW_HOURS, config.js). */
-export function summarizeSky(series, { minWindowHours }) {
+   minWindowHours: a duração mínima de uma janela de pouso (MIN_LANDING_WINDOW_HOURS, config.js).
+   horizon: o horizonte do ponto (computeHorizon), para a vista do chão. */
+export function summarizeSky(series, { minWindowHours, horizon }) {
   const { startMs, stepHours, sunFraction } = series
   const at = (hours) => new Date(startMs + hours * HOUR_MS)
 
@@ -62,5 +91,6 @@ export function summarizeSky(series, { minWindowHours }) {
     // o fim é o último instante calculado, e não o começo mais PERIOD_DAYS: é onde termina uma
     // janela com endsAfterPeriod, e assim a duração do período fica só no siteSky.js
     period: { startUtc: at(0), endUtc: at((series.count - 1) * stepHours) },
+    groundView: buildGroundView(series, horizon),
   }
 }

@@ -69,9 +69,12 @@ describe('céu de um ponto com o relevo do site (siteSky.js)', () => {
     const point = latLonToUnit(TOP_1.lat, TOP_1.lon)
     const horizon = computeHorizon(await loadReliefLayers(manifest, point, readFile), point, HORIZON)
     const ephemeris = computeEphemeris(NOV_14, PERIOD_DAYS * 24, 1)
-    const expected = summarizeSky(computeSeries(horizon, ephemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS })
+    const expected = summarizeSky(computeSeries(horizon, ephemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS, horizon })
 
-    expect(await createSiteSky(readFile)(TOP_1, NOV_14)).toEqual(expected)
+    const sky = await createSiteSky(readFile)(TOP_1, NOV_14)
+    expect(sky).toEqual(expected)
+    // a vista do chão vem com o contorno do relevo do próprio ponto, e não vazia
+    expect(sky.groundView.horizonDeg).toHaveLength(360)
   })
 
   it('as janelas de pouso ficam dentro do período, a partir da data pedida', async () => {

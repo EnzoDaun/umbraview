@@ -1,31 +1,87 @@
-/* O painel do ponto (card I1). Só tokens (tokens.css): nada de #hex nem px solto aqui. */
+/* O painel do ponto (card I1). Só tokens (tokens.css): nada de #hex nem px solto aqui.
+ *
+ * Um instrumento de leitura, e não uma pilha de cartões: duas colunas, a do Sol e a da Terra, lado
+ * a lado, separadas do resto só por linhas finas. Cada linha é um rótulo pequeno e o valor embaixo.
+ */
 .site-panel__message {
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   max-width: 60ch;
 }
 
-/* O navegador põe margem no <dl> e recuo no <dd>, e o global.css não zera os dois. */
+/* O navegador põe margem no <dl> e recuo no <dd>, e o global.css não zera os dois. O dense deixa
+   cada coluna empilhar as suas linhas sem esperar pela outra: o Sol tem uma linha a mais. */
 .site-panel__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: row dense;
+  column-gap: var(--space-5);
   margin: 0;
+}
+
+.site-panel__row {
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.site-panel__row--sun {
+  grid-column: 1;
+}
+
+.site-panel__row--earth {
+  grid-column: 2;
+}
+
+.site-panel__row--wide {
+  grid-column: 1 / -1;
 }
 
 .site-panel__label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+/* O ponto de cor diz de quem é a coluna sem depender de ler o rótulo. */
+.site-panel__row--now .site-panel__label::before {
+  content: '';
+  display: inline-block;
+  width: var(--space-2);
+  height: var(--space-2);
+  margin-inline-end: var(--space-2);
+  border-radius: 50%;
+}
+
+.site-panel__row--now.site-panel__row--sun .site-panel__label::before {
+  background: var(--color-sun);
+}
+
+.site-panel__row--now.site-panel__row--earth .site-panel__label::before {
+  background: var(--color-earth);
 }
 
 .site-panel__value {
-  margin: 0;
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
 }
 
-/* O recuo que o navegador dá à lista não cabe no painel estreito (--panel-width). */
+.site-panel__row--now .site-panel__value {
+  font-size: var(--font-size-md);
+}
+
+/* A lista das janelas não tem marcador: cada janela já começa pela duração, em destaque. */
 .site-panel__windows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
   margin: 0;
-  padding-inline-start: var(--space-4);
+  padding: 0;
+  list-style: none;
 }
 
 /* A data e a duração não quebram no meio, nem o "≥" se separa do número: se a linha não couber,
@@ -35,8 +91,40 @@
   white-space: nowrap;
 }
 
-/* Monoespaçada, como o tokens.css pede para os números do painel: todo algarismo tem a mesma
-   largura, e o número não muda de tamanho quando o valor muda. */
+.site-panel__duration {
+  color: var(--color-success);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Algarismos de largura fixa: o número não muda de tamanho quando o valor muda, e as datas de duas
+   linhas ficam alinhadas. É a mesma letra do resto, e não uma monoespaçada do sistema, que muda de
+   um computador para o outro. */
 .site-panel__number {
-  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.site-panel__meter {
+  display: block;
+  height: var(--space-1);
+  margin-block-start: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.site-panel__meter::before {
+  content: '';
+  display: block;
+  height: 100%;
+  transform: scaleX(var(--fraction));
+  transform-origin: left;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.site-panel__row--sun .site-panel__meter::before {
+  background: var(--color-sun);
+}
+
+.site-panel__row--earth .site-panel__meter::before {
+  background: var(--color-earth);
 }

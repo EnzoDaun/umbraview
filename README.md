@@ -43,8 +43,15 @@ instala tudo no Windows, do zero.
 
 ## O que já existe
 
-- A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
-  e o painel do ponto escolhido (direita).
+- A tela com as regiões do produto: cabeçalho; à esquerda, a cena da Lua e, embaixo dela, o céu
+  do ponto em desenho; à direita, o painel do ponto escolhido, com os controles e os números.
+- A Lua inteira na cena, com a cor e o relevo de verdade (NASA, *CGI Moon Kit*), enquadrada em
+  qualquer formato de tela, sobre o céu de estrelas do catálogo HYG, na posição em que elas estão
+  na data escolhida (`src/scene/MoonGlobe.jsx` e `StarField.jsx`).
+- O céu do ponto em desenho (`src/panel/SiteSky.jsx`): a vista do chão, com o contorno do relevo
+  em 360° e o caminho do Sol e da Terra no período, cheio onde aparecem e tracejado onde o relevo
+  esconde; e a linha do tempo do período, com o Sol, a Terra e as janelas de pouso, e um cursor que
+  marca a hora no gráfico e pode virar a data do cálculo. Os números vêm do `sky.groundView`.
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
   da data e a sombra das montanhas (card C2). De perto, onde a máquina aguenta, o relevo fino (dos
@@ -267,6 +274,7 @@ umbraview/
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
 │   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
+│   │   ├── siteSky.js               textos da vista do chão e da linha do tempo
 │   │   └── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
@@ -293,11 +301,18 @@ umbraview/
 │   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
 │   │   ├── DateTimeControl.css
 │   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
+│   │   ├── GroundView.css
+│   │   ├── GroundView.jsx           a vista do chão: o relevo em 360° e o caminho do Sol e da Terra por cima
 │   │   ├── SiteList.css
 │   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
-│   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   ├── SiteSky.css
+│   │   ├── SiteSky.jsx              o céu do ponto em desenho: a vista do chão e a linha do tempo, ligadas pela hora
+│   │   ├── Timeline.css
+│   │   ├── Timeline.jsx             a linha do tempo do período: Sol, Terra e janelas de pouso, com o cursor da hora
+│   │   ├── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   └── skyChart.js              as contas de desenho da vista do chão e da linha do tempo
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── CameraRig.jsx            a câmera que mantém a Lua inteira enquadrada até a pessoa mexer

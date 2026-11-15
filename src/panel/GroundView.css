@@ -1,0 +1,138 @@
+/* A vista do chão. Só tokens (tokens.css): nada de #hex nem px solto aqui. */
+.ground-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ground-view__plot {
+  position: relative;
+  height: var(--chart-height);
+  /* o espaço dos graus à esquerda fica fora do desenho, para o azimute 0° começar na borda dele */
+  margin-inline-start: var(--chart-axis-width);
+  border-block: 1px solid var(--color-border);
+}
+
+.ground-view__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ground-view__grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.ground-view__zero {
+  stroke: var(--color-border-control);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.ground-view__terrain {
+  fill: var(--color-terrain);
+  stroke: var(--color-terrain-line);
+  stroke-width: 1;
+}
+
+.ground-view__path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.ground-view__path--sun {
+  stroke: var(--color-sun);
+}
+
+.ground-view__path--earth {
+  stroke: var(--color-earth);
+}
+
+/* Escondido pelo relevo: tracejado e mais apagado. O traço, e não só a cor, é o que distingue:
+   quem não separa bem as cores ainda lê. */
+.ground-view__path--hidden {
+  stroke-dasharray: 1 5;
+  opacity: 0.55;
+}
+
+.ground-view__marker {
+  position: absolute;
+  width: var(--marker-size);
+  height: var(--marker-size);
+  margin: calc(var(--marker-size) / -2) 0 0 calc(var(--marker-size) / -2);
+  border-radius: 50%;
+  border: 2px solid var(--color-bg);
+  /* a posição muda com a hora da linha do tempo: desliza, em vez de pular */
+  transition:
+    left var(--duration-fast) var(--ease-out),
+    top var(--duration-fast) var(--ease-out);
+}
+
+.ground-view__marker--sun {
+  background: var(--color-sun);
+}
+
+.ground-view__marker--earth {
+  background: var(--color-earth);
+}
+
+/* Escondido: só o anel, vazado. */
+.ground-view__marker--hidden {
+  background: var(--color-bg);
+}
+
+.ground-view__marker--hidden.ground-view__marker--sun {
+  border-color: var(--color-sun);
+}
+
+.ground-view__marker--hidden.ground-view__marker--earth {
+  border-color: var(--color-earth);
+}
+
+.ground-view__tick {
+  position: absolute;
+  inset-inline-end: 100%;
+  padding-inline-end: var(--space-2);
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ground-view__tick--top {
+  top: 0;
+  transform: none;
+}
+
+.ground-view__tick--bottom {
+  bottom: 0;
+  transform: none;
+}
+
+.ground-view__compass {
+  position: relative;
+  height: var(--space-5);
+  margin-inline-start: var(--chart-axis-width);
+}
+
+.ground-view__direction {
+  position: absolute;
+  transform: translateX(-50%);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.ground-view__direction:first-child {
+  transform: none;
+}
+
+.ground-view__direction:last-child {
+  transform: translateX(-100%);
+}

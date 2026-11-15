@@ -1,0 +1,95 @@
+/* O céu do ponto, embaixo da cena. Só tokens (tokens.css): nada de #hex nem px solto aqui. */
+.site-sky {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Sem ponto escolhido, a frase ocupa a altura do gráfico: quando ele chega, a página não pula. */
+.site-sky__message {
+  display: grid;
+  place-items: center;
+  min-height: var(--chart-height);
+  border-block: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.site-sky__readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-inline-start: var(--chart-axis-width);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.site-sky__number {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.site-sky__when {
+  font-weight: var(--font-weight-medium);
+}
+
+.site-sky__body-name {
+  font-weight: var(--font-weight-medium);
+}
+
+.site-sky__body--sun .site-sky__body-name {
+  color: var(--color-sun);
+}
+
+.site-sky__body--earth .site-sky__body-name {
+  color: var(--color-earth);
+}
+
+.site-sky__apply {
+  margin-inline-start: auto;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.site-sky__apply:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.site-sky__apply:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-sky__apply:hover:not(:disabled) {
+    background: var(--color-surface-raised);
+  }
+}
+
+.site-sky__explain {
+  margin-inline-start: var(--chart-axis-width);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.site-sky__explain summary {
+  width: fit-content;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.site-sky__explain p {
+  max-width: 70ch;
+  margin-block-start: var(--space-2);
+}

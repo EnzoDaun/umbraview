@@ -12,8 +12,10 @@ const SERIE = {
   count: 10,
   stepHours: 1,
   sunElevationDeg: Float32Array.from([1.5, 1.2, 0.9, 0.6, 0.3, 0, -0.3, 0.4, 0.8, 1.1]),
+  sunAzimuthDeg: Float32Array.from([10, 22, 34, 46, 58, 70, 82, 94, 106, 118]),
   sunFraction: Float32Array.from([1, 1, 0.8, 0.2, 0, 0, 0, 0.6, 1, 1]),
   earthElevationDeg: Float32Array.from([2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
+  earthAzimuthDeg: Float32Array.from([60, 60.5, 61, 61.5, 62, 62.5, 63, 63.5, 64, 64.5]),
   earthMarginDeg: Float32Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
 }
 
@@ -21,7 +23,7 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthFraction', 'earthNow', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
+      ['earthFraction', 'earthNow', 'groundView', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
         'nextSunriseUtc', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
     )
     expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
@@ -150,5 +152,53 @@ describe('a Terra e a volta do Sol no resumo (card E18)', () => {
   it('nextEarthriseUtc é null com a Terra à vista agora (e não o pôr), e com a Terra escondida o período todo', () => {
     expect(summarizeSky(TERRA_SOME, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
     expect(summarizeSky(TERRA_SEMPRE_ESCONDIDA, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
+  })
+})
+
+describe('a vista do chão: o horizonte do ponto e o caminho do Sol e da Terra por cima dele', () => {
+  const GRAU = Math.PI / 180
+  // um horizonte de 360 direções, com um morro de 5° em volta do azimute 60°
+  const horizonte = {
+    directions: 360,
+    elevationsRad: Float32Array.from({ length: 360 }, (_, a) => (Math.abs(a - 60) <= 3 ? 5 : 1) * GRAU),
+  }
+
+  it('o horizonte sai em graus, um número por grau de azimute, igual ao que o computeHorizon deu', () => {
+    const { groundView } = summarizeSky(SERIE, { minWindowHours: 2, horizon: horizonte })
+    expect(groundView.horizonDeg).toHaveLength(360)
+    expect(groundView.horizonDeg[60]).toBeCloseTo(5, 5)
+    expect(groundView.horizonDeg[0]).toBeCloseTo(1, 5)
+    expect(groundView.horizonDeg[359]).toBeCloseTo(1, 5)
+  })
+
+  it('com um horizonte de mais direções, continua um número por grau', () => {
+    const fino = { directions: 720, elevationsRad: Float32Array.from({ length: 720 }, (_, a) => (a / 2) * 0.01 * GRAU) }
+    const { groundView } = summarizeSky(SERIE, { minWindowHours: 2, horizon: fino })
+    expect(groundView.horizonDeg).toHaveLength(360)
+    expect(groundView.horizonDeg[90]).toBeCloseTo(0.9, 5)
+  })
+
+  it('tem o Sol e a Terra hora a hora, com o azimute e a altura da série', () => {
+    const { groundView } = summarizeSky(SERIE, { minWindowHours: 2, horizon: horizonte })
+    expect(groundView.sun).toHaveLength(SERIE.count)
+    expect(groundView.earth).toHaveLength(SERIE.count)
+    expect(groundView.sun[3]).toEqual({ azimuthDeg: 46, elevationDeg: SERIE.sunElevationDeg[3], visible: false })
+    expect(groundView.earth[9]).toEqual({ azimuthDeg: 64.5, elevationDeg: 2, visible: true })
+  })
+
+  it('o "à vista" de cada hora segue a regra do painel: metade do Sol, qualquer parte da Terra', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2, horizon: horizonte })
+    const { sun, earth } = sky.groundView
+    expect(sun.map((hora) => hora.visible)).toEqual(Array.from(SERIE.sunFraction, (f) => f >= 0.5))
+    expect(earth.map((hora) => hora.visible)).toEqual(Array.from(SERIE.earthMarginDeg, (m) => m > 0))
+    // o resumo e o gráfico não podem discordar: a parte das horas com a Terra à vista é a mesma
+    expect(earth.filter((hora) => hora.visible).length / earth.length).toBe(sky.earthFraction)
+    expect(sun[0].visible).toBe(sky.sunNow.visible)
+  })
+
+  it('sem o horizonte, o gráfico fica sem o contorno, e o resto do resumo não muda', () => {
+    const sky = summarizeSky(SERIE, { minWindowHours: 2 })
+    expect(sky.groundView.horizonDeg).toEqual([])
+    expect(sky.groundView.sun).toHaveLength(SERIE.count)
   })
 })

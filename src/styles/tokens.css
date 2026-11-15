@@ -36,6 +36,11 @@
   --color-moon: #a7a9ad;
   --color-sunlight: #fff6e8;
 
+  /* A vista do chão (GroundView.css): o relevo em volta do ponto é uma massa escura, um pouco acima
+     da superfície, com a linha do contorno clara o bastante para ler (3:1, tokens.test.js). */
+  --color-terrain: #232a36;
+  --color-terrain-line: #8690a3;
+
   /* Estado */
   --color-danger: #ec8a7c;
   --color-success: #5fcf8f;
@@ -64,6 +69,8 @@
   --line-height-tight: 1.2;
   --line-height-body: 1.5;
   --letter-spacing-tight: -0.01em;
+  /* Os rótulos pequenos em maiúsculas pedem as letras um pouco afastadas para ler bem. */
+  --letter-spacing-label: 0.06em;
 
   /* Espaços, em passos de 4 px */
   --space-1: 0.25rem;
@@ -93,6 +100,16 @@
   --z-overlay: 100;
 
   /* Layout */
-  --panel-width: 380px;
+  --panel-width: 400px;
+  /* A altura da cena: acompanha a tela (App.css), entre estes dois limites. */
+  --scene-min-height: 20rem;
+  --scene-max-height: 46rem;
+  /* O gráfico da vista do chão e a linha do tempo (GroundView.css e Timeline.css): a altura do
+     desenho, a coluna dos graus à esquerda, o marcador da hora e o cursor. */
+  --chart-height: 11rem;
+  --chart-axis-width: 2.5rem;
+  --marker-size: 0.75rem;
+  --timeline-height: 2.75rem;
+  --timeline-cursor-width: 2px;
   --container-max-width: 1600px;
 }
