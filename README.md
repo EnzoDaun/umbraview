@@ -249,7 +249,6 @@ umbraview/
 ├── docs/
 │   ├── backlog.md
 │   ├── primeiros-passos.md
-│   ├── submissao.md                 o texto da submissão, em inglês, para a página do projeto (card P4)
 │   └── uso-de-ia.md
 │
 ├── public/
