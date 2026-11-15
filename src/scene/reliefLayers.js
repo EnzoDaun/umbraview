@@ -29,6 +29,8 @@ import {
   RGBAFormat,
 } from 'three'
 
+import { applyEquirectColor } from './moonSurface.js'
+
 // o valor que o fino grava nos pixels dele
 const FINE = 1
 
@@ -59,9 +61,11 @@ const LAYERS_IN_ORDER = [CENTER_LAYER, RING_LAYER, COARSE_LAYER].sort((a, b) => 
 /* O material de uma malha da camada, com a cor da Lua: todas as malhas do relevo passam por aqui,
    para nenhuma ficar sem o estêncil. normalMap: o mapa de normais do ladrilho (createNormalTexture),
    para os ladrilhos do relevo fino. As normais dele estão no espaço do objeto, que é o da cena: a
-   malha do ladrilho não tem posição nem giro próprios. */
-export function createLayerMaterial(layer, color, { normalMap = null } = {}) {
+   malha do ladrilho não tem posição nem giro próprios. colorMap: a imagem de cor do globo (C3,
+   moonSurface.js), para o relevo ter a mesma cor da esfera em volta dele. */
+export function createLayerMaterial(layer, color, { normalMap = null, colorMap = null } = {}) {
   const material = new MeshStandardMaterial({ color, ...layer.material })
+  if (colorMap) applyEquirectColor(material, colorMap)
   if (normalMap) {
     material.normalMap = normalMap
     material.normalMapType = ObjectSpaceNormalMap

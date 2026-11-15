@@ -234,7 +234,9 @@ umbraview/
 │
 ├── public/
 │   ├── data/
-│   │   └── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   ├── moon/                    a cor e o sombreado da Lua inteira, do CGI Moon Kit da NASA (C3)
+│   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   └── stars/                   as estrelas do catálogo HYG até a magnitude 6,5, CC BY-SA 4.0 (C5)
 │   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
 │   ├── favicon.ico
 │   └── favicon.svg
@@ -245,7 +247,9 @@ umbraview/
 │   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare_moon_global.py   gera public/data/moon/ (C3)
 │   │   ├── prepare_relief.py        gera public/data/relief/
+│   │   ├── prepare_stars.py         gera public/data/stars/ (C5)
 │   │   ├── requirements.txt
 │   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
 │   ├── references/                  referências de fora para os testes do motor e da lista de locais
@@ -300,13 +304,17 @@ umbraview/
 │   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
+│   │   ├── StarField.jsx            as estrelas de verdade, giradas para o referencial da Lua na data (C5)
 │   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
+│   │   ├── framing.js               a distância da câmera para a Lua inteira caber na região, em qualquer tela
 │   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
+│   │   ├── moonSurface.js           a cor da Lua inteira (SVS CGI Moon Kit) no lugar certo da esfera e do relevo (C3)
 │   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
+│   │   ├── starField.js             as estrelas do catálogo HYG: direção na cena, tamanho e cor (C5)
 │   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
 │   │   ├── global.css

@@ -21,6 +21,9 @@ vi.mock('@react-three/fiber', () => ({
     return <div data-testid="canvas">{children}</div>
   },
   useFrame: () => {},
+  // o enquadramento (FitCamera) e as estrelas (StarField) leem a câmera e o tamanho da região
+  useThree: (selector) =>
+    selector({ camera: { position: { setLength: () => {} } }, size: { width: 4, height: 3 }, viewport: { dpr: 1 }, invalidate: () => {} }),
 }))
 vi.mock('@react-three/drei', () => ({
   OrbitControls: (props) => { controles(props); return null },

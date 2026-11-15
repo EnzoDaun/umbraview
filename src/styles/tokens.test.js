@@ -60,6 +60,9 @@ describe.each([
   ['color-border-control', 'color-surface', CONTROLE],
   // A Lua é o objeto que a pessoa precisa achar na cena (WCAG 1.4.11, como um controle).
   ['color-moon', 'color-surface', CONTROLE],
+  // As estrelas (C5) precisam aparecer sobre o fundo da cena.
+  ['color-star-hot', 'color-surface', CONTROLE],
+  ['color-star-cool', 'color-surface', CONTROLE],
   ['color-focus', 'color-bg', CONTROLE],
   ['color-focus', 'color-surface', CONTROLE],
 ])('--%s sobre --%s', (frente, fundo, minimo) => {

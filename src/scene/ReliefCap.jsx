@@ -30,8 +30,9 @@ function showTriangles(geometry, indices) {
 }
 
 /* relief: o { manifest, heights } do useFarRelief. color: a cor do token, lida pela cena. cover: os
-   nomes dos ladrilhos do relevo fino desenhados por cima (NearRelief). */
-export function ReliefCap({ relief, color, cover = NO_COVER }) {
+   nomes dos ladrilhos do relevo fino desenhados por cima (NearRelief). colorMap: a imagem de cor
+   do globo (C3), ou null enquanto ela não chega. */
+export function ReliefCap({ relief, color, cover = NO_COVER, colorMap = null }) {
   const invalidate = useThree((state) => state.invalidate)
   const { manifest } = relief
   const grid = useMemo(
@@ -66,7 +67,7 @@ export function ReliefCap({ relief, color, cover = NO_COVER }) {
     [coverKey, fullIndices, vertexTiles, coverMask],
   )
 
-  const material = useMemo(() => createLayerMaterial(COARSE_LAYER, color), [color])
+  const material = useMemo(() => createLayerMaterial(COARSE_LAYER, color, { colorMap }), [color, colorMap])
   useEffect(() => () => material.dispose(), [material])
 
   /* No useLayoutEffect, e não no useEffect: ele roda no mesmo commit em que os ladrilhos do fino

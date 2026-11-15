@@ -14,7 +14,9 @@ export const app = {
   // O guia de submissão de 2026 pede marca visível em toda imagem feita com IA, e o logo está na
   // aba do navegador, onde não cabe marca legível: a marca fica aqui, na mesma página (card E19).
   credits: {
-    data: 'Terrain: NASA LOLA',
+    // Os dados de fora que aparecem na tela, com o crédito que cada fonte pede (CREDITS.md). O HYG é
+    // CC BY-SA 4.0: a atribuição precisa estar visível no site, e não só no repositório.
+    data: "Terrain: NASA LOLA · Moon color: NASA's Scientific Visualization Studio (CGI Moon Kit), from LRO LROC and LOLA data · Stars: HYG v4.4 by David Nash, CC BY-SA 4.0",
     source: 'Source code',
     sourceUrl: 'https://github.com/EnzoDaun/umbraview',
     ai: 'Logo AI-generated and code AI-assisted (Claude, Anthropic)',

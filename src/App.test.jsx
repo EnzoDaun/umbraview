@@ -21,6 +21,9 @@ import { SitePanel } from './panel/SitePanel.jsx'
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }) => <div data-testid="canvas">{children}</div>,
   useFrame: () => {},
+  // o enquadramento (FitCamera) e as estrelas (StarField) leem a câmera e o tamanho da região
+  useThree: (selector) =>
+    selector({ camera: { position: { setLength: () => {} } }, size: { width: 4, height: 3 }, viewport: { dpr: 1 }, invalidate: () => {} }),
 }))
 // o Html é o marcador do ponto escolhido (card C3), que aparece quando o teste escolhe um ponto
 vi.mock('@react-three/drei', () => ({ OrbitControls: () => null, Html: ({ children }) => <div>{children}</div> }))

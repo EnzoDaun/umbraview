@@ -35,6 +35,10 @@
      que bate na Lua, e não aparece pintada na tela sobre fundo nenhum. */
   --color-moon: #a7a9ad;
   --color-sunlight: #fff6e8;
+  /* As estrelas (C5), da azulada à alaranjada pelo índice de cor B−V. São cor de dado da cena, com
+     par de contraste sobre o fundo, como a Lua. */
+  --color-star-hot: #cad8ff;
+  --color-star-cool: #ffd09a;
 
   /* Estado */
   --color-danger: #ec8a7c;

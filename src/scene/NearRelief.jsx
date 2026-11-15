@@ -38,6 +38,7 @@ import {
   sameNames,
 } from './nearTiles.js'
 import { CENTER_LAYER, RING_LAYER, createLayerMaterial, createNormalTexture } from './reliefLayers.js'
+import { applyEquirectColor } from './moonSurface.js'
 import { buildNormalMap, buildReliefCap, reliefUvs } from './reliefMesh.js'
 
 const MESH_OF_LAYER = { center: NEAR_CENTER_MESH, ring: NEAR_RING_MESH }
@@ -82,7 +83,7 @@ const keptMessage = (level) => (level >= NEAR_RING_LEVEL ? 'relevo fino continua
    camadas, para o relevo grosso abrir o buraco embaixo deles (ReliefCap); com [] quando não há
    nenhum. Ela precisa ser sempre a mesma função (o setState de quem usa), porque está nas
    dependências do efeito. */
-export function NearRelief({ manifest, color, onCoverChange }) {
+export function NearRelief({ manifest, color, onCoverChange, colorMap = null }) {
   const invalidate = useThree((state) => state.invalidate)
   const [budget] = useState(() => createFrameBudget({ levels: NEAR_LEVELS }))
   // os ladrilhos que a câmera pede agora, em cada camada (nearTileBlock e nearRingBlock)
@@ -164,7 +165,7 @@ export function NearRelief({ manifest, color, onCoverChange }) {
           built.current.set(pieceKey(name, kind), { texture })
         } else {
           const { texture } = built.current.get(pieceKey(name, 'map'))
-          const material = createLayerMaterial(LAYER_OF[kind], color, { normalMap: texture })
+          const material = createLayerMaterial(LAYER_OF[kind], color, { normalMap: texture, colorMap })
           built.current.set(pieceKey(name, kind), { geometry: buildTileGeometry(grid, kind), material })
         }
       }
@@ -206,6 +207,13 @@ export function NearRelief({ manifest, color, onCoverChange }) {
     for (const piece of built.current.values()) piece.material?.color.set(color)
     invalidate()
   }, [color, invalidate])
+
+  // a imagem de cor do globo (C3) chega depois dos primeiros ladrilhos: os já montados ganham ela
+  useEffect(() => {
+    if (!colorMap) return
+    for (const piece of built.current.values()) if (piece.material) applyEquirectColor(piece.material, colorMap)
+    invalidate()
+  }, [colorMap, invalidate])
 
   // as peças que não estão na tela nem pedidas saem da placa de vídeo; sem isto, cada bloco por
   // onde a câmera passou ficaria lá

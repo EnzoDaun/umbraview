@@ -7,9 +7,9 @@
  * As medidas estão em raios da Lua: a esfera tem raio 1, e as distâncias da câmera e da luz são
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
 import { OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
-import { useMemo, useState } from 'react'
-import { Object3D } from 'three'
+import { Canvas, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useState } from 'react'
+import { Object3D, ObjectSpaceNormalMap, SRGBColorSpace, TextureLoader } from 'three'
 
 import { scene } from '../data/scene.js'
 import { useFarRelief } from '../hooks/useFarRelief.js'
@@ -17,12 +17,15 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
 import { AreaRing } from './AreaRing.jsx'
+import { CAMERA_FOV_DEG, fitDistance } from './framing.js'
+import { MOON_COLOR_URL, MOON_NORMAL_URL } from './moonSurface.js'
 import { NearRelief } from './NearRelief.jsx'
 import { readMoonClick } from './picking.js'
 import { ReliefCap } from './ReliefCap.jsx'
 import { visibleHit } from './reliefLayers.js'
 import { smoothSphereThetaLength } from './reliefMesh.js'
 import { SiteMarker } from './SiteMarker.jsx'
+import { StarField } from './StarField.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
@@ -100,14 +103,52 @@ function token(name) {
    Canvas é outra raiz do React, e com o estado lá fora o buraco e os ladrilhos entrariam na tela em
    commits separados, com um quadro de fresta ou de grosso por cima do fino entre os dois. Também
    evita o React refazer o LunarScene inteiro a cada bloco novo. */
-function Relief({ relief, color }) {
+function Relief({ relief, color, colorMap }) {
   const [cover, setCover] = useState([])
   return (
     <>
-      <ReliefCap relief={relief} color={color} cover={cover} />
-      <NearRelief manifest={relief.manifest} color={color} onCoverChange={setCover} />
+      <ReliefCap relief={relief} color={color} cover={cover} colorMap={colorMap} />
+      <NearRelief manifest={relief.manifest} color={color} onCoverChange={setCover} colorMap={colorMap} />
     </>
   )
+}
+
+/* A cor e o sombreado da Lua inteira (C3, moonSurface.js). Até chegarem, a esfera fica no cinza
+   liso de antes; se falharem, continua nele, e a cena segue útil. */
+function useMoonTextures() {
+  const [textures, setTextures] = useState(null)
+  useEffect(() => {
+    let alive = true
+    const loader = new TextureLoader()
+    const base = import.meta.env.BASE_URL
+    Promise.all([loader.loadAsync(`${base}${MOON_COLOR_URL}`), loader.loadAsync(`${base}${MOON_NORMAL_URL}`)])
+      .then(([color, normal]) => {
+        // a imagem de cor está em sRGB; sem isto, o three leria como linear e a Lua ficaria lavada
+        color.colorSpace = SRGBColorSpace
+        color.anisotropy = 4
+        if (alive) setTextures({ color, normal })
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
+  return textures
+}
+
+/* Enquanto a pessoa não mexeu na câmera, ela fica na distância em que a Lua inteira cabe na região
+   (framing.js), e acompanha a região quando a janela muda de tamanho. Depois do primeiro gesto, a
+   distância é da pessoa. */
+function FitCamera({ active }) {
+  const camera = useThree((state) => state.camera)
+  const size = useThree((state) => state.size)
+  const invalidate = useThree((state) => state.invalidate)
+  useEffect(() => {
+    if (!active || size.height === 0) return
+    camera.position.setLength(fitDistance(size.width / size.height))
+    invalidate()
+  }, [active, camera, size.width, size.height, invalidate])
+  return null
 }
 
 /* dateUtc: a data da luz (um Date). site: o ponto escolhido, { lat, lon } em graus, ou null; o
@@ -119,6 +160,7 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
   const relief = useFarRelief()
   const moonColor = token('--color-moon')
   const sunlightColor = token('--color-sunlight')
+  const textures = useMoonTextures()
   const [notice, showNotice] = useTimedNotice(NOTICE_DURATION_MS)
   const manifest = relief?.manifest ?? null
   /* Se a pessoa já mexeu na Lua. Sem isto, ela giraria sozinha o tempo todo, sem jeito de parar
@@ -177,8 +219,10 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
              O resto das opções do React Three Fiber continua igual. */
           gl={{ stencil: true, antialias: false }}
           shadows={SHADOW_TYPE}
-          camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}
+          camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR, fov: CAMERA_FOV_DEG }}
         >
+          <FitCamera active={!hasMoved && !site} />
+          <StarField dateUtc={dateUtc} hot={token('--color-star-hot')} cool={token('--color-star-cool')} />
           <ambientLight intensity={AMBIENT_INTENSITY} />
           <primitive object={sunTarget} />
           <directionalLight
@@ -203,11 +247,20 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
               {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que
                   ela passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto
                   piscariam disputando o mesmo pixel. */}
-              <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+              <meshStandardMaterial
+                key={textures ? 'textured' : 'plain'}
+                color={moonColor}
+                map={textures?.color ?? null}
+                normalMap={textures?.normal ?? null}
+                normalMapType={ObjectSpaceNormalMap}
+                polygonOffset
+                polygonOffsetFactor={1}
+                polygonOffsetUnits={1}
+              />
             </mesh>
             {/* Dentro do grupo do clique também o relevo fino: o grosso tem um buraco embaixo dele,
                 e a esfera lisa é aberta no polo; fora do grupo, o clique ali não acharia nada. */}
-            {relief && <Relief relief={relief} color={moonColor} />}
+            {relief && <Relief relief={relief} color={moonColor} colorMap={textures?.color ?? null} />}
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
