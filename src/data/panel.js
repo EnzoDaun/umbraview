@@ -19,7 +19,7 @@ export const panel = {
   nextSunrise: 'Next sunrise',
   nextSunset: 'Next sunset',
   noSunset: "The Sun doesn't set in this period.",
-  sunAlwaysHidden: 'The Sun stays behind the terrain for the whole period.',
+  sunAlwaysHidden: "The Sun doesn't rise above the terrain in this period.",
   sunlight: 'Sunlight in the period',
   longestDark: 'Longest darkness',
   hoursUnit: 'h',
