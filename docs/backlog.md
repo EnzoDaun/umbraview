@@ -4,9 +4,9 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 
 ## Como usar este arquivo
 
-**Quem é de dev (Enzo, Marco, Miguel).** Avise no grupo que pegou o card, crie a branch com o
-código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
-card, troque o "Estado" dele para "feito em dd/mm, PR #n".
+**Quem é de dev (Enzo, Marco, Miguel, Rechierli).** Avise no grupo que pegou o card, crie a
+branch com o código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR
+que fecha o card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
 **Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
 manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
@@ -703,6 +703,53 @@ dizer quando a luz volta (card I8).
 
 **Pronto quando.** Os quatro campos estão no `summary.js`, com teste, e na tabela da ponte, o Marco
 e o Miguel foram avisados, e o `verify` passa.
+
+---
+
+### E19 · O que o guia de submissão de 2026 pede no site e no repositório
+
+**Estado:** feito em 15/11, PR #40 · **Depende de:** nada
+
+**Para que serve.** O guia de submissão de 2026 (versão de 13/11, lida em 14/11) pede marca
+visível em toda imagem e vídeo feitos com IA, e inglês na página da submissão e em tudo o que ela
+linkar. O logo (card V2) foi feito com IA e aparece na aba do site, e o README estava todo em
+português.
+
+**Como ficou.**
+- O rodapé do site diz que o logo foi feito com IA e que o código teve ajuda de IA, e linka o
+  código e a origem do relevo. Na aba do navegador não cabe marca legível; o rodapé é a marca na
+  mesma página. Os textos estão em `src/data/app.js`.
+- O README abre com uma seção em inglês: o que é, o endereço do site, como rodar, os dados, o uso
+  de IA e a licença. O resto da documentação continua em português.
+- O `docs/uso-de-ia.md` diz onde estão as marcas, também no texto em inglês para a submissão.
+- A marca no vídeo é do card V4.
+
+**Pronto quando.** O rodapé tem a marca e o link, com teste; o README abre em inglês; e o `verify`
+passa.
+
+---
+
+### E20 · O CI deixa a proteção passar sem o verify quando a descrição do PR é editada
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** A rodada da edição da descrição (evento `edited`) cancela a rodada do push que
+ainda está rodando (o `concurrency` com `cancel-in-progress`, em `.github/workflows/verify.yml`) e
+pula o `verify` (o `if` do job). O job pulado conta como aprovado no check obrigatório da proteção.
+No PR #39, a rodada da abertura foi cancelada aos 36 s, a da edição pulou o `verify`, e o GitHub
+mostrou "All checks have passed" (visto em 15/11/2026).
+
+**O que fazer.** Tirar o `if: github.event.action != 'edited'` do job `verify`: a edição passa a
+rodar o `verify` inteiro, cerca de 1 min a mais por edição. Descartados:
+- separar a conferência da descrição num workflow próprio: dois checks com o mesmo nome se
+  sobrepõem, e o último vence;
+- tirar a edição do grupo de cancelamento: o job pulado continuaria aprovando.
+
+**Até lá.** Antes de mergear, confira no último commit do PR que o job "lint, testes, build e
+conferência" rodou de verdade (mais de 0 s). Se não rodou, use Re-run na rodada cancelada.
+
+**Pronto quando.** Editar a descrição de um PR roda o `verify` inteiro, e o check obrigatório só
+fica verde com ele terminado.
 
 ---
 

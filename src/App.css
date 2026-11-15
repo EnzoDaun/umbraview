@@ -61,6 +61,11 @@
   font-size: var(--font-size-xs);
 }
 
+/* sem cor própria, o link sairia no azul do navegador, que não é um par de cor conferido */
+.app__footer a {
+  color: var(--color-text-secondary);
+}
+
 @media (max-width: 900px) {
   .app {
     padding: var(--space-4);
