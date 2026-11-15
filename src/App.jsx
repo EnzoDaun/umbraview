@@ -24,6 +24,9 @@ export default function App() {
      A cena põe o marcador nele, o painel mostra o céu dele (card E11), e a lista mostra o local
      quando ele veio dela. */
   const [site, setSite] = useState(null)
+  /* Se o mapa das áreas com janela de pouso está ligado na cena. Fica aqui, com a data e o ponto,
+     porque é a mesma data que decide o mapa e os números do painel. */
+  const [showLandingAreas, setShowLandingAreas] = useState(false)
   const { status, sky } = useSiteSky(site, dateUtc)
 
   return (
@@ -37,7 +40,13 @@ export default function App() {
         <div className="app__stage">
           <section className="app__scene" aria-labelledby="scene-title">
             <h2 id="scene-title" className="app__region-title app__region-title--over">{app.scene.title}</h2>
-            <LunarScene dateUtc={dateUtc} site={site} onSelect={setSite} />
+            <LunarScene
+              dateUtc={dateUtc}
+              site={site}
+              onSelect={setSite}
+              showLandingAreas={showLandingAreas}
+              onToggleLandingAreas={() => setShowLandingAreas((shown) => !shown)}
+            />
           </section>
 
           <section className="app__sky" aria-labelledby="sky-title">

@@ -13,12 +13,14 @@ import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
 import { useFarRelief } from '../hooks/useFarRelief.js'
+import { useLandingAreas } from '../hooks/useLandingAreas.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
 import { AreaRing } from './AreaRing.jsx'
 import { CameraRig } from './CameraRig.jsx'
 import { latLonToScene } from './coordinates.js'
+import { LandingAreasLayer } from './LandingAreasLayer.jsx'
 import { MoonGlobe } from './MoonGlobe.jsx'
 import { NearRelief } from './NearRelief.jsx'
 import { readMoonClick } from './picking.js'
@@ -123,16 +125,40 @@ function Relief({ relief, color }) {
   )
 }
 
+const METERS_PER_KM = 1000
+
+/* A linha de texto do mapa das áreas de pouso, para cada estado da conta (useLandingAreas). */
+function landingStatusText({ status, areas }, manifest) {
+  if (status === 'error') return scene.landingError
+  if (status === 'ready' && manifest) {
+    return scene.landingReady({
+      found: areas.flags.reduce((sum, flag) => sum + flag, 0),
+      total: areas.flags.length,
+      stepKm: areas.layout.stepM / METERS_PER_KM,
+      limitDeg: Math.abs(manifest.areaMaxLatDeg),
+    })
+  }
+  return status === 'loading' ? scene.landingLoading : ''
+}
+
 /* dateUtc: a data da luz (um Date). site: o ponto escolhido, { lat, lon } em graus, ou null; o
    marcador aparece nele. onSelect: chamada com { lat, lon } quando a pessoa clica num ponto da área
-   com relevo. Os três vêm do App.jsx. */
-export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
+   com relevo. showLandingAreas: se o mapa das áreas com janela de pouso está ligado;
+   onToggleLandingAreas: chamada quando a pessoa aperta o botão dele. Todos vêm do App.jsx. */
+export function LunarScene({
+  dateUtc,
+  site = null,
+  onSelect = () => {},
+  showLandingAreas = false,
+  onToggleLandingAreas = () => {},
+}) {
   const reducedMotion = usePrefersReducedMotion()
   const subsolar = useSubsolarPoint(dateUtc)
   const relief = useFarRelief()
   const moonColor = token('--color-moon')
   const sunlightColor = token('--color-sunlight')
   const [notice, showNotice] = useTimedNotice(NOTICE_DURATION_MS)
+  const landing = useLandingAreas(dateUtc, showLandingAreas)
   const manifest = relief?.manifest ?? null
   /* Se a pessoa já mexeu na Lua. Sem isto, ela giraria sozinha o tempo todo, sem jeito de parar
      (a WCAG 2.2.2 pede um), e o ponto escolhido sairia andando da frente da pessoa (card C5). */
@@ -222,6 +248,8 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
             {relief && <Relief relief={relief} color={moonColor} />}
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
+          {/* só com o relevo: é nas malhas dele que o mapa é pintado */}
+          {relief && <LandingAreasLayer areas={landing.areas} color={token('--color-success')} />}
           {site && <SiteMarker site={site} relief={relief} />}
           {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto */}
           <CameraRig fitting={!hasMoved && !site} />
@@ -235,6 +263,22 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
             onStart={handleControlsStart}
           />
         </Canvas>
+      </div>
+      {/* O mapa das áreas de pouso: o botão liga e desliga, e a linha ao lado diz o que a conta
+          achou. O aria-live faz o leitor de tela ler a linha quando ela muda, sem ser um segundo
+          role="status" na cena: o do aviso do clique continua o único. */}
+      <div className="lunar-scene__landing">
+        <button
+          className="lunar-scene__toggle"
+          type="button"
+          aria-pressed={showLandingAreas}
+          onClick={onToggleLandingAreas}
+        >
+          {scene.landingToggle}
+        </button>
+        <p className="lunar-scene__landing-status" aria-live="polite">
+          {landingStatusText(landing, manifest)}
+        </p>
       </div>
       {/* Fora do role="img": lá dentro, o leitor de tela trataria o aviso como parte da imagem e
           não leria. O elemento existe desde o começo, vazio, porque o leitor de tela só anuncia a

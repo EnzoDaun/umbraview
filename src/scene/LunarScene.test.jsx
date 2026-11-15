@@ -36,6 +36,12 @@ const globo = vi.fn()
 const enquadramento = vi.fn()
 vi.mock('./MoonGlobe.jsx', () => ({ MoonGlobe: (props) => { globo(props); return null } }))
 vi.mock('./CameraRig.jsx', () => ({ CameraRig: (props) => { enquadramento(props); return null } }))
+// o mapa das áreas de pouso roda num Worker, que o jsdom não tem: o teste dá o resultado pronto
+const mapa = vi.hoisted(() => ({ pedidos: [], resultado: { status: 'idle', areas: null } }))
+vi.mock('../hooks/useLandingAreas.js', () => ({
+  useLandingAreas: (dateUtc, enabled) => { mapa.pedidos.push({ dateUtc, enabled }); return enabled ? mapa.resultado : { status: 'idle', areas: null } },
+}))
+vi.mock('./LandingAreasLayer.jsx', () => ({ LandingAreasLayer: () => null }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
 const NEXT_DAY = new Date('2026-11-15T00:00:00Z')
@@ -99,6 +105,32 @@ describe('LunarScene', () => {
     expect(distancia).toBeLessThan(ultimosControles().maxDistance)
     // no eixo y, a rotação da câmera fica indefinida
     expect(Math.hypot(x, z)).toBeGreaterThan(0.1)
+  })
+
+  it('o botão do mapa das áreas de pouso diz se está ligado e avisa o App ao ser apertado', () => {
+    sistemaPede(false)
+    const aoApertar = vi.fn()
+    const { rerender } = render(<LunarScene dateUtc={DATA} onToggleLandingAreas={aoApertar} />)
+    const botao = screen.getByRole('button', { name: scene.landingToggle })
+    expect(botao).toHaveAttribute('aria-pressed', 'false')
+    // desligado, a conta do mapa nem é pedida
+    expect(mapa.pedidos.at(-1)).toEqual({ dateUtc: DATA, enabled: false })
+    act(() => botao.click())
+    expect(aoApertar).toHaveBeenCalledTimes(1)
+    rerender(<LunarScene dateUtc={DATA} showLandingAreas onToggleLandingAreas={aoApertar} />)
+    expect(screen.getByRole('button', { name: scene.landingToggle })).toHaveAttribute('aria-pressed', 'true')
+    expect(mapa.pedidos.at(-1)).toEqual({ dateUtc: DATA, enabled: true })
+  })
+
+  it('com o mapa ligado, a linha ao lado do botão diz que está calculando, ou que a conta falhou', () => {
+    sistemaPede(false)
+    mapa.resultado = { status: 'loading', areas: null }
+    const { rerender } = render(<LunarScene dateUtc={DATA} showLandingAreas />)
+    expect(screen.getByText(scene.landingLoading)).toBeInTheDocument()
+    mapa.resultado = { status: 'error', areas: null }
+    rerender(<LunarScene dateUtc={NEXT_DAY} showLandingAreas />)
+    expect(screen.getByText(scene.landingError)).toBeInTheDocument()
+    mapa.resultado = { status: 'idle', areas: null }
   })
 
   it('tem o nome acessível que vem de src/data/scene.js', () => {

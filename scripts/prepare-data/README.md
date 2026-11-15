@@ -203,3 +203,28 @@ OK: 8920 estrelas até a magnitude 6.5, 178 kB em public/data/stars/stars.bin
 O endereço do HYG tem `media` no caminho, e não `raw`: o arquivo fica no Git LFS do Codeberg, e
 pelo `raw` chega só um ponteiro de 133 bytes. O `prepare_stars.py` confere o arquivo e para se ele
 não for o HYG 4.4 esperado.
+
+## 9. A grade do mapa das áreas de pouso
+
+O mapa das áreas com janela de pouso usa o horizonte, já calculado, de uma grade de pontos
+(`public/data/landing-grid/`). Ele só precisa ser refeito se o relevo de `public/data/relief/` ou os
+parâmetros do horizonte (`src/engine/config.js`) mudarem. Não usa Python: roda com o Node do projeto.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+node scripts\prepare-data\prepare-landing-grid.mjs
+```
+
+Leva uns 3 minutos e mostra o andamento a cada 500 pontos. Saída esperada, no fim, medida em
+15/11/2026:
+
+```
+OK: 4152 pontos, 1.49 MB em public/data/landing-grid/polar.bin
+OK: em 14/11/2026, 1540 pontos têm janela de pouso (37.1%)
+OK: o mapa e as janelas com o horizonte inteiro concordam em 166 de 167 pontos da amostra
+```
+
+A última linha é a conferência: o horizonte de cada ponto é guardado em passos de 0,2°, e um ponto
+no limite pode trocar de lado por causa do arredondamento.

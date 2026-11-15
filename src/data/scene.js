@@ -14,4 +14,11 @@ export const scene = {
   // falta relevo: entre 84° e uns 77°S a cena desenha o relevo grosso, e a pessoa estaria vendo
   // montanha onde o texto diria que não há (revisão do PR #9).
   outsideArea: (limitDeg) => `Landing sites can be chosen between the south pole and ${limitDeg}°S.`,
+  // O mapa das áreas com janela de pouso: o botão junto da cena e a linha que diz o que ele achou.
+  landingToggle: 'Show landing areas',
+  landingLoading: 'Finding the areas with a landing window…',
+  landingError: "Couldn't calculate the landing areas. Reload the page to try again.",
+  // found e total: pontos da grade; stepKm: o passo dela; limitDeg: até onde a grade vai.
+  landingReady: ({ found, total, stepKm, limitDeg }) =>
+    `${found} of ${total} points checked (one every ${stepKm} km, down to ${limitDeg}°S) have a landing window in this period.`,
 }

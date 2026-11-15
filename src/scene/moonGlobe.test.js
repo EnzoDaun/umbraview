@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest'
 import { sites } from '../data/sites.js'
 import { latLonToUnit, unitToPolarXY } from '../engine/geometry.js'
 import { latLonToScene } from './coordinates.js'
-import { applySouthColor, globeTextureUv, globeTextureWindow, southColorUv, southColorUniforms } from './moonGlobe.js'
+import {
+  applySouthColor, globeTextureUv, globeTextureWindow, landingUniforms, setLandingMask, southColorUv, southColorUniforms,
+} from './moonGlobe.js'
 
 const FAR = { x0: -384960, y0: 384960, columns: 802, rows: 802, resolutionM: 960 }
 
@@ -77,5 +79,27 @@ describe('a cor do polo sul nas malhas do relevo', () => {
     expect(shader.fragmentShader).toContain('texture2D(uSouthColor')
     // sem a imagem carregada, a mistura é zero: o relevo fica com a cor lisa, e não preto
     expect(southColorUniforms.uSouthColorMix.value).toBe(0)
+  })
+
+  it('o mapa das áreas de pouso entra no mesmo shader, desligado até a máscara chegar', () => {
+    const material = applySouthColor(new MeshStandardMaterial())
+    const shader = {
+      uniforms: {},
+      vertexShader: '#include <common>\nvoid main() {\n#include <begin_vertex>\n}',
+      fragmentShader: '#include <common>\nvoid main() {\n#include <color_fragment>\n}',
+    }
+    material.onBeforeCompile(shader)
+    expect(shader.uniforms.uLandingMask).toBe(landingUniforms.uLandingMask)
+    expect(shader.fragmentShader).toContain('texture2D(uLandingMask')
+    expect(landingUniforms.uLandingStrength.value).toBe(0)
+
+    const mascara = { nome: 'textura' }
+    setLandingMask(mascara, { x0: -185000, y0: 185000, columns: 74, stepM: 5000 }, [0.2, 0.8, 0.5])
+    expect(landingUniforms.uLandingMask.value).toBe(mascara)
+    expect(landingUniforms.uLandingStrength.value).toBe(1)
+    // a grade de 74 quadrados de 5 km tem 370 km de lado, em raios da Lua
+    expect(landingUniforms.uLandingFrame.value[2]).toBeCloseTo(370000 / 1737400, 12)
+    setLandingMask(null)
+    expect(landingUniforms.uLandingStrength.value).toBe(0)
   })
 })

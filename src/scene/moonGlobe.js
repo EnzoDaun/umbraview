@@ -47,6 +47,38 @@ export const southColorUniforms = {
   uSouthColorFrame: { value: [0, 0, 1] },
 }
 
+/* Os uniformes do mapa das áreas de pouso (LandingAreasLayer.jsx), também os mesmos para todas as
+   malhas do relevo: a máscara (um byte por quadrado da grade), onde ela fica (a borda esquerda, a de
+   cima e o lado, em raios da Lua), a cor e a força. Com a força em 0, o relevo fica como é. */
+export const landingUniforms = {
+  uLandingMask: { value: null },
+  uLandingFrame: { value: [0, 0, 1] },
+  uLandingColor: { value: [0, 0, 0] },
+  uLandingStrength: { value: 0 },
+}
+
+/* Liga o mapa: texture é a textura do three com a máscara (landingMask, em landingGridFiles.js),
+   layout é o desenho da grade, color é a cor em vermelho, verde e azul de 0 a 1. Com texture null,
+   desliga. Quem chama pede o quadro novo à cena. */
+export function setLandingMask(texture, layout, color) {
+  landingUniforms.uLandingMask.value = texture
+  landingUniforms.uLandingStrength.value = texture ? 1 : 0
+  if (texture) {
+    landingUniforms.uLandingFrame.value = [
+      layout.x0 / MOON_RADIUS_M,
+      layout.y0 / MOON_RADIUS_M,
+      (layout.columns * layout.stepM) / MOON_RADIUS_M,
+    ]
+    landingUniforms.uLandingColor.value = color
+  }
+}
+
+/* Quanto da cor do mapa entra na cor do chão, e quanto ela brilha por conta própria. O brilho
+   próprio existe porque um lugar com janela de pouso no período pode estar no escuro na hora
+   escolhida, e a mancha não pode sumir junto com a luz. */
+const LANDING_TINT = 0.35
+const LANDING_GLOW = 0.22
+
 /* Liga a cor polar: texture é a textura do three com a color-south.jpg, far é o campo far do
    manifesto do relevo. Com null, desliga. Quem chama pede o quadro novo à cena. */
 export function setSouthColor(texture, far) {
@@ -61,11 +93,12 @@ export function setSouthColor(texture, far) {
   }
 }
 
-/* Faz o material de uma malha do relevo ler a cor da imagem polar, no lugar da cor lisa. A posição
-   usada é a do vértice na cena, e a conta é a de southColorUv. Devolve o próprio material. */
+/* Faz o material de uma malha do relevo ler a cor da imagem polar, no lugar da cor lisa, e o mapa
+   das áreas de pouso por cima. A posição usada é a do vértice na cena, e a conta é a de
+   southColorUv. Devolve o próprio material. */
 export function applySouthColor(material) {
   material.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, southColorUniforms)
+    Object.assign(shader.uniforms, southColorUniforms, landingUniforms)
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vSouthPosition;')
       .replace(
@@ -79,6 +112,10 @@ export function applySouthColor(material) {
 uniform sampler2D uSouthColor;
 uniform float uSouthColorMix;
 uniform vec3 uSouthColorFrame;
+uniform sampler2D uLandingMask;
+uniform vec3 uLandingFrame;
+uniform vec3 uLandingColor;
+uniform float uLandingStrength;
 varying vec3 vSouthPosition;`,
       )
       .replace(
@@ -93,6 +130,15 @@ varying vec3 vSouthPosition;`,
     1.0 - (uSouthColorFrame.y - southPolar.y) / uSouthColorFrame.z
   );
   diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uSouthColor, southUv).rgb, uSouthColorMix);
+  vec2 landingUv = vec2(
+    (southPolar.x - uLandingFrame.x) / uLandingFrame.z,
+    1.0 - (uLandingFrame.y - southPolar.y) / uLandingFrame.z
+  );
+  // fora da grade a máscara não vale: sem isto, a borda dela se repetiria pelo relevo afora
+  float landingInside = step(0.0, landingUv.x) * step(landingUv.x, 1.0) * step(0.0, landingUv.y) * step(landingUv.y, 1.0);
+  float landing = texture2D(uLandingMask, landingUv).r * landingInside * uLandingStrength;
+  diffuseColor.rgb = mix(diffuseColor.rgb, uLandingColor, ${LANDING_TINT.toFixed(2)} * landing);
+  totalEmissiveRadiance += uLandingColor * (${LANDING_GLOW.toFixed(2)} * landing);
 }`,
       )
   }

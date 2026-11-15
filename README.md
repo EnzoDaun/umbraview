@@ -60,6 +60,11 @@ instala tudo no Windows, do zero.
   escolhe um ponto e põe um marcador nele (card C3), e o painel da direita mostra o céu desse
   ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
   período e as janelas de pouso.
+- O mapa das áreas com janela de pouso (o botão "Show landing areas", junto da cena): pinta sobre
+  o relevo, até 84°S, os lugares que têm janela de pouso no período da data escolhida, pela mesma
+  regra da lista do painel. Os horizontes de uma grade de 5 km são calculados antes, por
+  `scripts/prepare-data/prepare-landing-grid.mjs`, e a conta de cada data roda num Worker
+  (`src/engine/landingAreas.js`).
 - No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
   (card I2): o pouso do IM-2 e o centro de 7 das 9 regiões candidatas do Artemis III (card E16).
   Também no painel, a data e a hora em UTC, que começam na hora em que a página abriu (card
@@ -241,6 +246,7 @@ umbraview/
 │
 ├── public/
 │   ├── data/
+│   │   ├── landing-grid/            o horizonte de uma grade de pontos, para o mapa das áreas de pouso
 │   │   ├── moon/                    a cor e o relevo do globo da Lua inteira, da NASA, gerados pelo script
 │   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
 │   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
@@ -254,6 +260,7 @@ umbraview/
 │   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare-landing-grid.mjs gera public/data/landing-grid/, com o motor e o relevo do site
 │   │   ├── prepare_moon_global.py   gera public/data/moon/ e o relevo da Lua inteira, do CGI Moon Kit da NASA
 │   │   ├── prepare_relief.py        gera public/data/relief/
 │   │   ├── prepare_stars.py         gera public/data/stars/, do catálogo HYG
@@ -285,6 +292,8 @@ umbraview/
 │   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
+│   │   ├── landingAreas.js          quais pontos de uma grade têm janela de pouso no período de uma data
+│   │   ├── landingGridFiles.js      os arquivos da grade de pouso, e a máscara do mapa para a cena
 │   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
 │   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
 │   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
@@ -293,6 +302,7 @@ umbraview/
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
 │   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
+│   │   ├── useLandingAreas.js       o mapa das áreas com janela de pouso na data, calculado num Worker
 │   │   ├── useNearTiles.js          os ladrilhos do relevo fino em volta da câmera (card C6)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
 │   │   ├── useStars.js              as estrelas do céu da cena, lidas uma vez por página
@@ -316,6 +326,7 @@ umbraview/
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── CameraRig.jsx            a câmera que mantém a Lua inteira enquadrada até a pessoa mexer
+│   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre o relevo do polo
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
 │   │   ├── MoonGlobe.jsx            a esfera da Lua inteira, com a cor e o relevo de verdade
@@ -337,6 +348,8 @@ umbraview/
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
+│   ├── workers/
+│   │   └── landingAreas.worker.js   a conta do mapa das áreas de pouso, fora da linha principal da página
 │   ├── App.css
 │   ├── App.jsx
 │   ├── main.jsx
