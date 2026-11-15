@@ -31,6 +31,11 @@ vi.mock('../hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
 // o céu de estrelas desenha com WebGL, que o jsdom não tem; as contas dele têm teste próprio
 const ceu = vi.fn()
 vi.mock('./StarField.jsx', () => ({ StarField: (props) => { ceu(props); return null } }))
+// a esfera com as imagens e o enquadramento da câmera também são do WebGL; as contas têm teste próprio
+const globo = vi.fn()
+const enquadramento = vi.fn()
+vi.mock('./MoonGlobe.jsx', () => ({ MoonGlobe: (props) => { globo(props); return null } }))
+vi.mock('./CameraRig.jsx', () => ({ CameraRig: (props) => { enquadramento(props); return null } }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
 const NEXT_DAY = new Date('2026-11-15T00:00:00Z')
@@ -64,6 +69,36 @@ describe('LunarScene', () => {
     expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(DATA)
     rerender(<LunarScene dateUtc={NEXT_DAY} />)
     expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(NEXT_DAY)
+  })
+
+  it('sem o relevo do polo, a esfera da Lua vai inteira, sem buraco', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const { thetaLength, far } = globo.mock.calls.at(-1)[0]
+    expect(thetaLength).toBe(Math.PI)
+    expect(far).toBeNull()
+  })
+
+  it('a Lua fica enquadrada sozinha até a pessoa mexer na câmera ou escolher um ponto', () => {
+    sistemaPede(false)
+    const { rerender } = render(<LunarScene dateUtc={DATA} />)
+    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(true)
+    rerender(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
+    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(false)
+    rerender(<LunarScene dateUtc={DATA} />)
+    act(() => ultimosControles().onStart())
+    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(false)
+  })
+
+  it('a câmera começa numa distância dentro dos limites do zoom e fora do eixo dos controles', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const [x, y, z] = canvas.mock.calls.at(-1)[0].camera.position
+    const distancia = Math.hypot(x, y, z)
+    expect(distancia).toBeGreaterThan(ultimosControles().minDistance)
+    expect(distancia).toBeLessThan(ultimosControles().maxDistance)
+    // no eixo y, a rotação da câmera fica indefinida
+    expect(Math.hypot(x, z)).toBeGreaterThan(0.1)
   })
 
   it('tem o nome acessível que vem de src/data/scene.js', () => {

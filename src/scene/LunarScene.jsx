@@ -17,6 +17,9 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
 import { AreaRing } from './AreaRing.jsx'
+import { CameraRig } from './CameraRig.jsx'
+import { latLonToScene } from './coordinates.js'
+import { MoonGlobe } from './MoonGlobe.jsx'
 import { NearRelief } from './NearRelief.jsx'
 import { readMoonClick } from './picking.js'
 import { ReliefCap } from './ReliefCap.jsx'
@@ -27,21 +30,30 @@ import { StarField } from './StarField.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
-/* A câmera começa embaixo da esfera, olhando para o polo sul, que é onde o produto se concentra.
-   O 0.01 em z não é enfeite: com a câmera exatamente no eixo y, que é o "para cima" dos controles,
-   a direção da câmera e o "para cima" ficam paralelos e a rotação dela fica indefinida. */
-const CAMERA_POSITION = [0, -3, 0.01]
+/* A câmera começa do lado do polo sul, que é onde o relevo fino e os locais conhecidos estão, mas
+   inclinada para o lado da Lua virado para a Terra: assim a primeira tela mostra a Lua inteira, com
+   os mares, e o polo embaixo. A distância daqui vale só até o primeiro quadro: o CameraRig acerta
+   a distância para a Lua caber na cena, qualquer que seja o formato da tela.
+   A câmera nunca fica exatamente no eixo y, que é o "para cima" dos controles: ali a direção dela e
+   o "para cima" ficam paralelos e a rotação fica indefinida. */
+const CAMERA_START = { latDeg: -52, lonDeg: 12, distance: 4.2 }
+const CAMERA_POSITION = latLonToScene(CAMERA_START.latDeg, CAMERA_START.lonDeg).map((v) => v * CAMERA_START.distance)
+
+/* Campo de visão estreito, de teleobjetiva: com o padrão do three (75°), a Lua de perto parece uma
+   bola deformada, e as bordas dela fogem. Com 35°, ela parece a Lua vista de longe. */
+const CAMERA_FOV = 35
 
 /* Com o relevo na altura real, as montanhas só aparecem de perto: 1.02 deixa a câmera descer a
-   uns 35 km do polo, e o pico mais alto do relevo fica a 7 km. Mais longe que 6, a Lua vira um
-   ponto na região. */
+   uns 35 km do polo, e o pico mais alto do relevo fica a 7 km. O máximo cobre a distância em que a
+   Lua inteira cabe numa tela de celular em pé (framing.js): uns 8,5 raios. */
 const MIN_DISTANCE = 1.02
-const MAX_DISTANCE = 6
+const MAX_DISTANCE = 12
 
 /* O plano mais perto que a câmera desenha. O padrão do three (0.1, ou 174 km) cortaria a
-   superfície quando a câmera desce a 35 km dela. O far cobre a Lua inteira vista de longe. */
+   superfície quando a câmera desce a 35 km dela. O far cobre a Lua inteira vista de longe (as
+   estrelas não dependem dele: StarField.jsx). */
 const CAMERA_NEAR = 0.001
-const CAMERA_FAR = 20
+const CAMERA_FAR = 30
 
 const SUN_INTENSITY = 2.5
 
@@ -178,7 +190,7 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
              O resto das opções do React Three Fiber continua igual. */
           gl={{ stencil: true, antialias: false }}
           shadows={SHADOW_TYPE}
-          camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}
+          camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV, near: CAMERA_NEAR, far: CAMERA_FAR }}
         >
           {/* O fundo pintado pelo three, e não a cor da página por trás de um canvas transparente:
               as estrelas são semitransparentes, e sobre um canvas transparente a borda delas
@@ -204,19 +216,15 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
             shadow-normalBias={SHADOW_NORMAL_BIAS}
           />
           <group onClick={handleMoonClick}>
-            <mesh castShadow receiveShadow>
-              <sphereGeometry args={[1, 128, 64, 0, 2 * Math.PI, 0, sphereThetaLength]} />
-              {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que
-                  ela passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto
-                  piscariam disputando o mesmo pixel. */}
-              <meshStandardMaterial color={moonColor} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-            </mesh>
+            <MoonGlobe color={moonColor} thetaLength={sphereThetaLength} far={manifest?.far ?? null} />
             {/* Dentro do grupo do clique também o relevo fino: o grosso tem um buraco embaixo dele,
                 e a esfera lisa é aberta no polo; fora do grupo, o clique ali não acharia nada. */}
             {relief && <Relief relief={relief} color={moonColor} />}
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           {site && <SiteMarker site={site} relief={relief} />}
+          {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto */}
+          <CameraRig fitting={!hasMoved && !site} />
           <OrbitControls
             enablePan={false}
             minDistance={MIN_DISTANCE}

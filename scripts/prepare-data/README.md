@@ -162,3 +162,44 @@ node scripts/prepare-data/window-lengths.mjs
 
 Leva menos de 1 minuto. A saída traz, para cada grupo de pontos e cada período, a porcentagem de
 pontos com janela de pelo menos 24, 72 e 144 h, e termina com `OK: janelas medidas em 382 pontos`.
+
+## 8. A Lua inteira e as estrelas
+
+O globo da Lua da cena (`public/data/moon/`), o relevo de fora do polo sul
+(`public/data/relief/global/`) e o céu de estrelas (`public/data/stars/`) saem de três arquivos,
+também guardados em `data-raw/`: dois do *CGI Moon Kit* da NASA (59 e 32 MB) e o catálogo de
+estrelas HYG 4.4 (14 MB). As fontes e as licenças estão no [CREDITS.md](../../CREDITS.md).
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+New-Item -ItemType Directory -Force data-raw | Out-Null; if ($?) {
+  curl.exe -fL -o data-raw\lroc_color_16bit_srgb_4k.tif https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_16bit_srgb_4k.tif
+  if ($LASTEXITCODE -eq 0) {
+    curl.exe -fL -o data-raw\ldem_16_uint.tif https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_16_uint.tif
+    if ($LASTEXITCODE -eq 0) {
+      curl.exe -fL -o data-raw\hyg_v44.csv.gz https://codeberg.org/astronexus/hyg/media/branch/main/data/hyg/CURRENT/hyg_v44.csv.gz
+      if ($LASTEXITCODE -eq 0) {
+        .venv\Scripts\python.exe scripts\prepare-data\prepare_moon_global.py
+        if ($LASTEXITCODE -eq 0) { .venv\Scripts\python.exe scripts\prepare-data\prepare_stars.py }
+      }
+    }
+  }
+}
+```
+
+Os três `curl.exe` baixam os arquivos; os dois scripts geram o que o site usa. Saída esperada, no
+fim, medida em 15/11/2026:
+
+```
+OK: color.jpg, 1.45 MB
+OK: normal.jpg, 0.90 MB
+OK: color-south.jpg, 0.06 MB
+OK: 648 ladrilhos do relevo da Lua inteira, 33.2 MB em public/data/relief/global
+OK: 8920 estrelas até a magnitude 6.5, 178 kB em public/data/stars/stars.bin
+```
+
+O endereço do HYG tem `media` no caminho, e não `raw`: o arquivo fica no Git LFS do Codeberg, e
+pelo `raw` chega só um ponteiro de 133 bytes. O `prepare_stars.py` confere o arquivo e para se ele
+não for o HYG 4.4 esperado.

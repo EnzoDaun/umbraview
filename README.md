@@ -234,6 +234,7 @@ umbraview/
 │
 ├── public/
 │   ├── data/
+│   │   ├── moon/                    a cor e o relevo do globo da Lua inteira, da NASA, gerados pelo script
 │   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
 │   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
 │   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
@@ -246,6 +247,7 @@ umbraview/
 │   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare_moon_global.py   gera public/data/moon/ e o relevo da Lua inteira, do CGI Moon Kit da NASA
 │   │   ├── prepare_relief.py        gera public/data/relief/
 │   │   ├── prepare_stars.py         gera public/data/stars/, do catálogo HYG
 │   │   ├── requirements.txt
@@ -298,8 +300,10 @@ umbraview/
 │   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
+│   │   ├── CameraRig.jsx            a câmera que mantém a Lua inteira enquadrada até a pessoa mexer
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
+│   │   ├── MoonGlobe.jsx            a esfera da Lua inteira, com a cor e o relevo de verdade
 │   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
@@ -307,6 +311,8 @@ umbraview/
 │   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
+│   │   ├── framing.js               a distância da câmera para a Lua caber na cena
+│   │   ├── moonGlobe.js             onde cada ponto da Lua cai nas imagens, e a cor do polo nas malhas do relevo
 │   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
