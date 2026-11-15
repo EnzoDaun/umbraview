@@ -49,11 +49,13 @@ function PanelBody({ status, sky }) {
         </Row>
       )}
       <Row label={panel.nextSunset}>
-        {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
-            Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}
+        {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista, e sem separar os
+            dois o ponto escuro leria "dia". O sunFraction não separa: o motor só chama o Sol de à
+            vista com metade do disco, e o sunFraction conta também o Sol que só raspa o relevo
+            (summary.js). Escondido agora e sem volta é o Sol que nunca fica à vista no período. */}
         {sky.nextSunsetUtc ? (
           <span className="site-panel__number">{formatUtc(sky.nextSunsetUtc)}</span>
-        ) : sky.sunFraction === 0 ? (
+        ) : !sky.sunNow.visible && !sky.nextSunriseUtc ? (
           panel.sunAlwaysHidden
         ) : (
           panel.noSunset
