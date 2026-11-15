@@ -28,6 +28,9 @@ vi.mock('@react-three/drei', () => ({
 }))
 // o relevo é baixado da página, e o jsdom não serve arquivo; a leitura tem teste próprio
 vi.mock('../hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
+// o céu de estrelas desenha com WebGL, que o jsdom não tem; as contas dele têm teste próprio
+const ceu = vi.fn()
+vi.mock('./StarField.jsx', () => ({ StarField: (props) => { ceu(props); return null } }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
 const NEXT_DAY = new Date('2026-11-15T00:00:00Z')
@@ -53,6 +56,14 @@ describe('LunarScene', () => {
   // um teste que falha no meio não deixa o relógio falso para os outros
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('o céu de estrelas recebe a mesma data da luz, para a Terra e o Sol ficarem entre as estrelas certas', () => {
+    sistemaPede(false)
+    const { rerender } = render(<LunarScene dateUtc={DATA} />)
+    expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(DATA)
+    rerender(<LunarScene dateUtc={NEXT_DAY} />)
+    expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(NEXT_DAY)
   })
 
   it('tem o nome acessível que vem de src/data/scene.js', () => {

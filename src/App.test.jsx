@@ -25,6 +25,8 @@ vi.mock('@react-three/fiber', () => ({
 // o Html é o marcador do ponto escolhido (card C3), que aparece quando o teste escolhe um ponto
 vi.mock('@react-three/drei', () => ({ OrbitControls: () => null, Html: ({ children }) => <div>{children}</div> }))
 vi.mock('./hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
+// o céu de estrelas desenha com WebGL, que o jsdom não tem; as contas dele têm teste próprio
+vi.mock('./scene/StarField.jsx', () => ({ StarField: () => null }))
 
 /* A cena de verdade, com o onSelect e a data que o App entrega a ela guardados aqui: o teste
    escolhe o ponto pelo onSelect, como faz o clique na Lua (card C3), e confere a data da luz. O

@@ -234,7 +234,8 @@ umbraview/
 │
 ├── public/
 │   ├── data/
-│   │   └── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
 │   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
 │   ├── favicon.ico
 │   └── favicon.svg
@@ -246,6 +247,7 @@ umbraview/
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
 │   │   ├── prepare_relief.py        gera public/data/relief/
+│   │   ├── prepare_stars.py         gera public/data/stars/, do catálogo HYG
 │   │   ├── requirements.txt
 │   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
 │   ├── references/                  referências de fora para os testes do motor e da lista de locais
@@ -283,6 +285,7 @@ umbraview/
 │   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
 │   │   ├── useNearTiles.js          os ladrilhos do relevo fino em volta da câmera (card C6)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
+│   │   ├── useStars.js              as estrelas do céu da cena, lidas uma vez por página
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
 │   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
@@ -300,6 +303,7 @@ umbraview/
 │   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
+│   │   ├── StarField.jsx            o céu de estrelas de verdade, na posição da data
 │   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
@@ -307,6 +311,7 @@ umbraview/
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
+│   │   ├── starField.js             as estrelas: o arquivo, a cor, o brilho e o giro do céu na data
 │   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
 │   │   ├── global.css

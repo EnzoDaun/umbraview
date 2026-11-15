@@ -23,6 +23,7 @@ import { ReliefCap } from './ReliefCap.jsx'
 import { visibleHit } from './reliefLayers.js'
 import { smoothSphereThetaLength } from './reliefMesh.js'
 import { SiteMarker } from './SiteMarker.jsx'
+import { StarField } from './StarField.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
@@ -179,6 +180,11 @@ export function LunarScene({ dateUtc, site = null, onSelect = () => {} }) {
           shadows={SHADOW_TYPE}
           camera={{ position: CAMERA_POSITION, near: CAMERA_NEAR, far: CAMERA_FAR }}
         >
+          {/* O fundo pintado pelo three, e não a cor da página por trás de um canvas transparente:
+              as estrelas são semitransparentes, e sobre um canvas transparente a borda delas
+              sairia com a mistura errada. */}
+          <color attach="background" args={[token('--color-bg')]} />
+          <StarField dateUtc={dateUtc} />
           <ambientLight intensity={AMBIENT_INTENSITY} />
           <primitive object={sunTarget} />
           <directionalLight

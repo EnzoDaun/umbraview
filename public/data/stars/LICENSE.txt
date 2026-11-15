@@ -1,0 +1,9 @@
+stars.bin is a subset of the HYG star database, version 4.4, by David Nash
+(https://codeberg.org/astronexus/hyg): the stars down to apparent magnitude 6.5, with their
+J2000 direction, magnitude and B-V color index, written by
+scripts/prepare-data/prepare_stars.py.
+
+HYG is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License
+(https://creativecommons.org/licenses/by-sa/4.0/). This file is a derivative of HYG and is
+distributed under the same license. The rest of this repository is under the MIT license
+(see LICENSE at the repository root).
