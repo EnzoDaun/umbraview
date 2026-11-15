@@ -68,6 +68,24 @@ function PanelBody({ status, sky }) {
         {/* só o número na monoespaçada: nela o espaço tem a largura de um algarismo e parece duplo */}
         <span className="site-panel__number">{sky.longestDarkHours}</span> {panel.hoursUnit}
       </Row>
+      {!sky.earthNow.visible && sky.nextEarthriseUtc && (
+        <Row label={panel.nextEarthrise}>
+          <span className="site-panel__number">{formatUtc(sky.nextEarthriseUtc)}</span>
+        </Row>
+      )}
+      <Row label={panel.nextEarthset}>
+        {/* o null nos dois extremos, separados como no pôr do Sol acima */}
+        {sky.nextEarthsetUtc ? (
+          <span className="site-panel__number">{formatUtc(sky.nextEarthsetUtc)}</span>
+        ) : !sky.earthNow.visible && !sky.nextEarthriseUtc ? (
+          panel.earthAlwaysHidden
+        ) : (
+          panel.noEarthset
+        )}
+      </Row>
+      <Row label={panel.earthInView}>
+        <span className="site-panel__number">{formatPercent(sky.earthFraction)}</span>
+      </Row>
       <Row label={panel.landingWindows}>
         {sky.landingWindows.length === 0 ? (
           panel.noWindows

@@ -23,6 +23,12 @@ export const panel = {
   sunlight: 'Sunlight in the period',
   longestDark: 'Longest darkness',
   hoursUnit: 'h',
+  // A Terra no período, com as mesmas regras do Sol acima (card I8).
+  nextEarthrise: 'Next Earthrise',
+  nextEarthset: 'Next Earthset',
+  noEarthset: "The Earth doesn't set in this period.",
+  earthAlwaysHidden: 'The Earth stays behind the terrain for the whole period.',
+  earthInView: 'Earth in view in the period',
   landingWindows: 'Landing windows',
   noWindows: 'No landing window in this period.',
   // A janela cortada pelo período começa no começo dele, ou termina no último instante calculado:
