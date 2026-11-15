@@ -46,6 +46,13 @@ export default function App() {
 
       <footer className="app__footer">
         <p>{app.footer}</p>
+        <p>
+          {app.credits.data}
+          {app.credits.separator}
+          <a href={app.credits.sourceUrl}>{app.credits.source}</a>
+          {app.credits.separator}
+          {app.credits.ai}
+        </p>
       </footer>
     </div>
   )

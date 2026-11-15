@@ -1,13 +1,37 @@
 # UmbraView
 
+## In English
+
+UmbraView shows, for any site near the Moon's south pole and any date, when the Sun and the
+Earth are above that site's real horizon, built from NASA's LOLA terrain. It is the Umbra Team's
+project for the *Lunar Landing Site Navigator* challenge of the NASA Space Apps Challenge 2026.
+
+- **Live site:** [enzodaun.github.io/umbraview](https://enzodaun.github.io/umbraview/),
+  published by GitHub Pages on every merge into `main`.
+- **Run it locally:** `npm install`, then `npm run dev`. The Node version and the commands are in
+  *Como rodar*, below. `npm run verify` runs lint, tests, build and the build check, the same as
+  the CI.
+- **Data:** NASA's LOLA polar elevation models, checked against NASA's average visibility maps
+  and JPL's SPICE. Every data source, library and license is listed in
+  [CREDITS.md](CREDITS.md).
+- **Use of AI:** Claude (Anthropic) helped with research, code, tests, documentation and the
+  logo, and everything went through the team's review. The logo is labeled as AI-generated in the
+  site footer. The statement is at the end of [docs/uso-de-ia.md](docs/uso-de-ia.md), in English.
+- **License:** MIT, for the code and the logo ([LICENSE](LICENSE)).
+
+The rest of this README and the project documentation are in Portuguese, the team's working
+language.
+
+---
+
 Site que mostra, para um ponto da Lua, quando o Sol e a Terra ficam acima do horizonte de
 verdade, com o relevo medido pela NASA, e ajuda a escolher onde e quando pousar.
 
 Projeto da **Umbra Team** para o desafio *Lunar Landing Site Navigator* do NASA Space Apps
 Challenge 2026 (14 e 15/11/2026).
 
-É um site estático: toda conta roda no navegador, sem servidor. Ele é publicado pelo GitHub
-Pages quando o repositório ficar público (card E4 do [backlog](docs/backlog.md)).
+É um site estático: toda conta roda no navegador, sem servidor. O endereço dele está na seção
+em inglês, acima.
 
 **Antes de abrir o primeiro PR, leia o [CONTRIBUTING.md](CONTRIBUTING.md).** Ele tem a regra
 de branch e a regra do Claude, e as duas não são opcionais.

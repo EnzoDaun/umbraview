@@ -15,12 +15,20 @@ export const panel = {
   hidden: 'Hidden by terrain',
   // De quando a quando valem os números "in this period" (card I6).
   period: 'Period',
+  // Só com o Sol escondido agora: quando a luz volta (card I8).
+  nextSunrise: 'Next sunrise',
   nextSunset: 'Next sunset',
   noSunset: "The Sun doesn't set in this period.",
-  sunAlwaysHidden: 'The Sun stays behind the terrain for the whole period.',
+  sunAlwaysHidden: "The Sun doesn't rise above the terrain in this period.",
   sunlight: 'Sunlight in the period',
   longestDark: 'Longest darkness',
   hoursUnit: 'h',
+  // A Terra no período, com as mesmas regras do Sol acima (card I8).
+  nextEarthrise: 'Next Earthrise',
+  nextEarthset: 'Next Earthset',
+  noEarthset: "The Earth doesn't set in this period.",
+  earthAlwaysHidden: 'The Earth stays behind the terrain for the whole period.',
+  earthInView: 'Earth in view in the period',
   landingWindows: 'Landing windows',
   noWindows: 'No landing window in this period.',
   // A janela cortada pelo período começa no começo dele, ou termina no último instante calculado:

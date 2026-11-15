@@ -4,9 +4,9 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 
 ## Como usar este arquivo
 
-**Quem é de dev (Enzo, Marco, Miguel).** Avise no grupo que pegou o card, crie a branch com o
-código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
-card, troque o "Estado" dele para "feito em dd/mm, PR #n".
+**Quem é de dev (Enzo, Marco, Miguel, Rechierli).** Avise no grupo que pegou o card, crie a
+branch com o código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR
+que fecha o card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
 **Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
 manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
@@ -246,24 +246,20 @@ combinado em "O que a ponte entrega para a tela". Ligar a ponte no `App.jsx` é 
   arquivo do Worker, e não da página: a página passa o endereço completo da pasta,
   `new URL('data/relief/', document.baseURI).href`.
 
-### E4 · GitHub quando o repositório ficar público
+### E4 · GitHub com o repositório público
 
-**Estado:** a fazer · **Depende de:** o repositório ficar público
+**Estado:** em andamento: o site e a proteção da `main` e da `develop` foram ligados em 14/11,
+PR #38 · **Depende de:** nada
 
-**Para que serve.** No plano gratuito do GitHub, o site publicado (Pages) e a proteção das
-branches só existem em repositório público.
+**Para que serve.** Fechar o que falta no GitHub: a trava do Claude conferida no Windows e a
+marca do que foi submetido.
 
-**O que fazer.**
-1. Settings > Pages > Source: **GitHub Actions**. Conferir o endereço do site numa janela
-   anônima.
-2. Settings > Rules: proteger a `main` e a `develop` com PR obrigatório, 1 aprovação, as duas
-   verificações do CI (`lint, testes, build e conferência` e `sem assinatura do Claude`)
-   obrigatórias, sem force push e sem apagar a branch.
-3. Numa sessão do Claude Code no Windows, pedir a ele um `git commit` e ver a recusa
+**O que falta.**
+1. Numa sessão do Claude Code no Windows, pedir a ele um `git commit` e ver a recusa
    `Bloqueado pela politica do repositorio`. O gancho só foi testado no Linux até agora.
-4. Na hora da entrega (15/11, 23h59): uma tag na `main` marcando o que foi submetido.
+2. Na hora da entrega (15/11, 23h59): uma tag na `main` marcando o que foi submetido.
 
-**Pronto quando.** O site abre no endereço do Pages, e um push direto na `main` é recusado.
+**Pronto quando.** O gancho recusa o commit no Windows, e a tag da entrega está na `main`.
 
 ### E5 · Corrigir os documentos do projeto no claude.ai
 
@@ -696,7 +692,7 @@ dizer quando a luz volta (card I8).
   (`BODIES`), lida também pelo `nextChange` e pelas janelas de pouso.
 - A volta (`nextSunriseUtc` e `nextEarthriseUtc`) sai do `nextChange` só com o astro escondido
   agora: com ele à vista, o `nextChange` devolve o pôr, e não a volta.
-- Mostrar os campos na tela é do Marco e do Miguel; o nascer do Sol no painel é o card I8.
+- Mostrar os campos na tela é o card I8: o nascer do Sol e a Terra no painel.
 
 **Conferido** em 14/11/2026:
 - Com o esqueleto devolvendo `null` e `0`, só os testes novos reprovaram, pelo motivo certo: 2 no
@@ -707,6 +703,53 @@ dizer quando a luz volta (card I8).
 
 **Pronto quando.** Os quatro campos estão no `summary.js`, com teste, e na tabela da ponte, o Marco
 e o Miguel foram avisados, e o `verify` passa.
+
+---
+
+### E19 · O que o guia de submissão de 2026 pede no site e no repositório
+
+**Estado:** feito em 15/11, PR #40 · **Depende de:** nada
+
+**Para que serve.** O guia de submissão de 2026 (versão de 13/11, lida em 14/11) pede marca
+visível em toda imagem e vídeo feitos com IA, e inglês na página da submissão e em tudo o que ela
+linkar. O logo (card V2) foi feito com IA e aparece na aba do site, e o README estava todo em
+português.
+
+**Como ficou.**
+- O rodapé do site diz que o logo foi feito com IA e que o código teve ajuda de IA, e linka o
+  código e a origem do relevo. Na aba do navegador não cabe marca legível; o rodapé é a marca na
+  mesma página. Os textos estão em `src/data/app.js`.
+- O README abre com uma seção em inglês: o que é, o endereço do site, como rodar, os dados, o uso
+  de IA e a licença. O resto da documentação continua em português.
+- O `docs/uso-de-ia.md` diz onde estão as marcas, também no texto em inglês para a submissão.
+- A marca no vídeo é do card V4.
+
+**Pronto quando.** O rodapé tem a marca e o link, com teste; o README abre em inglês; e o `verify`
+passa.
+
+---
+
+### E20 · O CI deixa a proteção passar sem o verify quando a descrição do PR é editada
+
+**Estado:** a fazer · **Depende de:** nada
+
+**Para que serve.** A rodada da edição da descrição (evento `edited`) cancela a rodada do push que
+ainda está rodando (o `concurrency` com `cancel-in-progress`, em `.github/workflows/verify.yml`) e
+pula o `verify` (o `if` do job). O job pulado conta como aprovado no check obrigatório da proteção.
+No PR #39, a rodada da abertura foi cancelada aos 36 s, a da edição pulou o `verify`, e o GitHub
+mostrou "All checks have passed" (visto em 15/11/2026).
+
+**O que fazer.** Tirar o `if: github.event.action != 'edited'` do job `verify`: a edição passa a
+rodar o `verify` inteiro, cerca de 1 min a mais por edição. Descartados:
+- separar a conferência da descrição num workflow próprio: dois checks com o mesmo nome se
+  sobrepõem, e o último vence;
+- tirar a edição do grupo de cancelamento: o job pulado continuaria aprovando.
+
+**Até lá.** Antes de mergear, confira no último commit do PR que o job "lint, testes, build e
+conferência" rodou de verdade (mais de 0 s). Se não rodou, use Re-run na rodada cancelada.
+
+**Pronto quando.** Editar a descrição de um PR roda o `verify` inteiro, e o check obrigatório só
+fica verde com ele terminado.
 
 ---
 
@@ -1856,28 +1899,46 @@ dura cada janela, o Marco foi avisado dos dois campos novos, os testes passam e 
 **Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
 novo.
 
-### I8 · Próximo nascer do Sol no painel
+### I8 · O nascer do Sol e a Terra no painel
 
-**Estado:** a fazer · **Depende de:** E18 (feito)
+**Estado:** feito em 15/11, PR #39 · **Depende de:** E18 (feito)
 
 **Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
 nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
-quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. Aprovado pelo Enzo em
-12/11, junto com o I6.
+quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. E o challenge pede o
+tempo até o pôr da Terra ("Earthset"), e o painel dizia só se a Terra estava à vista agora.
+Aprovado pelo Enzo em 12/11, junto com o I6, e ampliado por ele para levar a Terra no mesmo PR.
 
-**O que a ponte já entrega.** O `sky.nextSunriseUtc` (card E18): com o Sol escondido agora,
-quando metade dele volta; `null` com o Sol à vista agora ou se ele não volta no período.
+**O que a ponte já entrega.** Os campos do card E18, na tabela de "O que a ponte entrega para a
+tela": `nextSunriseUtc`, `nextEarthriseUtc`, `nextEarthsetUtc` e `earthFraction`.
 
-**O que fazer.** `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com
-a data em UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período
-inteiro, o `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card
-I1).
+**O que fazer.** Em `src/panel/SitePanel.jsx`, com os textos em `src/data/panel.js`. As linhas
+ficam nesta ordem: Sun now, Earth now, Period, Next sunrise, Next sunset, Sunlight in the period,
+Longest darkness, Next Earthrise, Next Earthset, Earth in view in the period, Landing windows.
+1. **O nascer do Sol.** "Next sunrise", com a data em UTC pelo `formatUtc`, só com o Sol escondido
+   agora e o `nextSunriseUtc` com data.
+2. **A correção do Sol.** O pôr dizia "sempre escondido" (`panel.sunAlwaysHidden`) só com o
+   `sunFraction` 0. O motor só chama o Sol de à vista com metade do disco, e o `sunFraction` conta
+   também o Sol que só raspa o relevo: com uma pontinha de Sol em algumas horas e nunca a metade, o
+   painel dizia que o Sol não se põe, como se fosse dia o período inteiro. O "sempre escondido"
+   passa a ser o Sol escondido agora e sem volta (`!sky.sunNow.visible && !sky.nextSunriseUtc`).
+3. **A Terra.** "Next Earthrise" só com a Terra escondida agora e o `nextEarthriseUtc` com data.
+   "Next Earthset" com a data; no `null`, "sempre escondida" com a Terra escondida agora e sem
+   volta, e "não se põe" no resto, como no Sol. "Earth in view in the period" com o
+   `earthFraction`, no formato do "Sunlight in the period".
 
-**Como testar.** `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em
-UTC (a suíte roda em Tóquio); com o Sol à vista, a linha não aparece.
+**Como testar.** `src/panel/SitePanel.test.jsx`, que roda em Tóquio (a hora fora de UTC sai
+errada):
+- o Sol à vista, sem o nascer; o Sol escondido que volta, com o nascer em UTC;
+- o Sol que só raspa o relevo (`sunFraction` 0.02, sem volta e sem pôr) diz "sempre escondido"; o
+  Sol escondido que volta e não se põe mais diz "não se põe";
+- a Terra escondida que volta, à vista, à vista que não se põe, que volta e não se põe mais e
+  sempre escondida, e a porcentagem;
+- a ordem dos rótulos.
 
-**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, os testes passam
-e o `verify` passa.
+**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta; o ponto onde o Sol
+só raspa o relevo não lê mais "dia"; quem lê sabe quando a Terra volta, quando ela se põe e quanto
+do período ela fica à vista; os testes passam e o `verify` passa.
 
 ---
 
@@ -2006,20 +2067,18 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 
 ### V2 · Identidade visual da equipe e do projeto
 
-**Estado:** a fazer · **Depende de:** nada
+**Estado:** feito em 14/11, PR #36 · **Depende de:** nada
 
 **Para que serve.** O logo aparece no vídeo, na página da submissão e no ícone do site.
 
-**O que fazer.**
-- Logo da Umbra Team e do UmbraView.
-- Nas cores do site: fundo `#0b0d12`, dourado `#e9b450` (o Sol) e azul `#79aee8` (a Terra).
-- Arquivos em SVG e em PNG (512 e 1024 px, fundo transparente), mais uma versão simples que dê
-  para ler bem pequena, como ícone da aba do navegador.
-- **Sem o logo redondo da NASA, o logotipo ou o selo dela**: só com autorização da NASA. Escrever
-  "NASA Space Apps Challenge 2026" em texto pode.
-
-**Pronto quando.** Os arquivos estão na pasta compartilhada e a equipe aprovou. O Enzo troca o
-ícone do site.
+**Como ficou.**
+- O kit do logo da Umbra Team e do UmbraView está em `brand/`: SVG, PNG de 512 e 1024 px com
+  fundo transparente, versões de uma cor só e o favicon. As cores, a fonte e onde usar cada
+  versão estão no `brand/LEIA-ME.txt`.
+- O ícone do site (`public/favicon.ico`, `favicon.svg` e `apple-touch-icon.png`) é cópia do de
+  `brand/favicon/`.
+- **Sem o logo redondo da NASA, o logotipo ou o selo dela**, também no vídeo e na página da
+  submissão: só com autorização da NASA. Escrever "NASA Space Apps Challenge 2026" em texto pode.
 
 ### V3 · Kit de produção
 
@@ -2029,8 +2088,8 @@ montado no domingo (15/11), com pouco tempo: com o roteiro pronto antes, ningué
 1. Música: uma trilha cuja licença permita usar em vídeo publicado. Anote nome, autor, link e
    licença: o Mateus B. confere (P2) e o Enzo registra no projeto.
 2. Gravação de tela: OBS Studio (gratuito), configurado em 1080p. Faça uma gravação de teste de
-   qualquer janela, para acertar a configuração. O site ainda não está publicado (card E4): a
-   gravação dele sai do `npm run preview`, que mostra a versão final do site.
+   qualquer janela, para acertar a configuração. Grave o site publicado, no endereço que está
+   no [README](../README.md).
 3. Legenda em inglês: um arquivo `.srt` de modelo e o estilo definido (fonte, tamanho, posição).
 
 **Pronto quando.** Tudo na pasta compartilhada, com a licença da música anotada.

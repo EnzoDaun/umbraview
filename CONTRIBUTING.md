@@ -31,8 +31,8 @@ develop validada  ──►  Pull Request para main  ──►  Enzo mergeia
 Seis frases que resumem tudo:
 
 1. **Sua branch volta para a `develop`.** Nunca para a `main`.
-2. **O Enzo revisa os PRs do Marco e do Miguel; o Marco revisa os do Enzo.** Não faça merge do
-   próprio PR.
+2. **O Enzo revisa os PRs do Marco, do Miguel e do Rechierli; o Marco revisa os do Enzo.** Não
+   faça merge do próprio PR.
 3. **Quem mergeia na `main` é o Enzo, e só ele.** Se você está prestes a digitar
    `git push origin main`, pare: o comando está errado.
 4. **Sempre `git pull origin develop`** ao criar a branch e de novo antes do `push`. É o que
@@ -44,11 +44,10 @@ Seis frases que resumem tudo:
    antes de começar, ou assim que perceber a dependência, e sempre antes de abrir o PR. Um card
    entregue em dois PRs fica marcado como feito sem estar.
 
-Enquanto o repositório for privado no plano gratuito do GitHub, a proteção automática de
-branch não existe: tecnicamente, o `git push origin main` funciona se alguém digitar. As regras
-acima são o que impede, e por isso elas estão escritas aqui. Quando o repositório ficar
-público, o Enzo liga a proteção da `main` e da `develop` no GitHub (card E4 do
-[backlog](docs/backlog.md)).
+A `main` e a `develop` são protegidas no GitHub. Para quem não é administrador do repositório,
+elas só mudam por PR com uma aprovação e com as duas verificações do CI verdes, e o GitHub
+recusa o push direto, o force push e apagar a branch. As regras acima continuam valendo, porque
+a proteção não confere a branch de destino do seu PR nem quem faz o merge na `main`.
 
 ### Começando uma tarefa
 
@@ -168,7 +167,7 @@ Quatro travas garantem isso, e cada uma cobre um buraco da outra:
 | [`CLAUDE.md`](CLAUDE.md) | Todo Claude que abre o repositório, inclusive na nuvem | Diz a regra e como entregar o comando | É instrução, não barreira |
 | [`.claude/settings.json`](.claude/settings.json) | O Claude Code no seu computador | Desliga a assinatura, nega os comandos e roda o `block-git-write.sh` antes de todo comando de terminal | Não vale nas sessões do Claude Code na nuvem; no Windows, precisa do Git for Windows |
 | [`.githooks/commit-msg`](.githooks/commit-msg) | Todo commit feito no seu clone | Recusa a mensagem com assinatura do Claude | Só existe depois do `npm install`; `--no-verify` pula |
-| CI ([`.github/workflows/verify.yml`](.github/workflows/verify.yml)) | Todo PR | Reprova o PR com commit ou descrição assinados pelo Claude | Avisa depois do push; só impede o merge quando o repositório for público (card E4) |
+| CI ([`.github/workflows/verify.yml`](.github/workflows/verify.yml)) | Todo PR | Reprova o PR com commit ou descrição assinados pelo Claude | Avisa depois do push; com a proteção da `main` e da `develop`, o PR reprovado não entra |
 
 ### Se uma trava disparar
 
