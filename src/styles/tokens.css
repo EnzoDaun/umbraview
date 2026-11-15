@@ -99,4 +99,9 @@
   /* Layout */
   --panel-width: 380px;
   --container-max-width: 1600px;
+  /* Linha de leitura confortável para os textos que explicam (v4 · Explicativo): até 65 caracteres. */
+  --measure: 65ch;
+  /* A altura da vista do horizonte (HorizonChart): baixa o bastante para caber no painel com os
+     números, alta o bastante para a montanha de 2° não virar uma linha reta. */
+  --chart-height: 9rem;
 }

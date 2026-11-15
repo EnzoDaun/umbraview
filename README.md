@@ -263,8 +263,12 @@ umbraview/
 │   └── install-hooks.mjs
 │
 ├── src/
+│   ├── components/                  peças de tela usadas em mais de uma região
+│   │   ├── Explainer.css
+│   │   └── Explainer.jsx            o "What am I seeing?" de cada região, num <details> (v4)
 │   ├── data/
 │   │   ├── app.js                   textos da tela principal
+│   │   ├── explain.js               textos que explicam: cada região, a vista do horizonte, as notas e a libração (v4)
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
 │   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
 │   │   └── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
@@ -292,11 +296,14 @@ umbraview/
 │   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
 │   │   ├── DateTimeControl.css
 │   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
+│   │   ├── HorizonChart.css
+│   │   ├── HorizonChart.jsx         a vista do horizonte: o relevo em 360° e o caminho do Sol e da Terra (v4)
 │   │   ├── SiteList.css
 │   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
-│   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   ├── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   └── horizonChart.js          o groundView do motor na escala do desenho da vista do horizonte (v4)
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── LunarScene.css

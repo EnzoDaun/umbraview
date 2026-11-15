@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
+import { Explainer } from './components/Explainer.jsx'
 import { app } from './data/app.js'
+import { explain } from './data/explain.js'
 import { sites } from './data/sites.js'
 import { useSiteSky } from './hooks/useSiteSky.js'
 import { DateTimeControl } from './panel/DateTimeControl.jsx'
@@ -33,6 +35,7 @@ export default function App() {
       <main className="app__main">
         <section className="app__scene" aria-labelledby="scene-title">
           <h2 id="scene-title" className="app__region-title">{app.scene.title}</h2>
+          <Explainer paragraphs={explain.scene} />
           <LunarScene dateUtc={dateUtc} site={site} onSelect={setSite} />
         </section>
 
@@ -41,6 +44,12 @@ export default function App() {
           <SiteList sites={sites} selectedId={site?.id} onSelect={setSite} />
           <DateTimeControl dateUtc={dateUtc} onChange={setDateUtc} />
           <SitePanel status={status} sky={sky} />
+          <Explainer paragraphs={explain.panel} />
+          <Explainer
+            summary={explain.libration.title}
+            paragraphs={explain.libration.points}
+            source={{ label: explain.libration.source, url: explain.libration.sourceUrl }}
+          />
         </section>
       </main>
 

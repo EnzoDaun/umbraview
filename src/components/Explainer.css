@@ -1,0 +1,58 @@
+/* O "What am I seeing?" (Explainer.jsx). Só tokens (tokens.css). */
+.explainer {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.explainer__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  color: var(--color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* o triângulo do navegador some, e um sinal de mais/menos diz se está aberto */
+.explainer__summary::-webkit-details-marker {
+  display: none;
+}
+
+.explainer__summary::before {
+  content: '+';
+  font-family: var(--font-mono);
+}
+
+.explainer[open] > .explainer__summary::before {
+  content: '−';
+}
+
+.explainer__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  padding-block: var(--space-2);
+  line-height: var(--line-height-body);
+}
+
+/* abre com um fade curto: mostra a mudança de estado, sem mover nada de lugar */
+.explainer[open] > .explainer__body {
+  animation: explainer-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes explainer-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.explainer__source {
+  font-size: var(--font-size-xs);
+}
+
+/* sem cor própria, o link sairia no azul do navegador, que não é um par de cor conferido */
+.explainer__source a {
+  color: var(--color-text-secondary);
+}

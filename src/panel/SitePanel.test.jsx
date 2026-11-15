@@ -5,7 +5,9 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { explain } from '../data/explain.js'
 import { panel } from '../data/panel.js'
+import { TERRAIN_GRAZE_DEG } from '../engine/config.js'
 import { SitePanel } from './SitePanel.jsx'
 
 const sky = {
@@ -24,6 +26,21 @@ const sky = {
   landingWindows: [],
   // o fim é o começo mais 719 h, o último instante que o motor calcula (summary.js)
   period: { startUtc: new Date('2026-11-14T00:00:00Z'), endUtc: new Date('2026-12-13T23:00:00Z') },
+  // a vista do horizonte e as notas (C2): um relevo plano de 1° e três horas de Sol e de Terra
+  groundView: {
+    horizonDeg: Array.from({ length: 360 }, () => 1),
+    sun: [
+      { azimuthDeg: 10, elevationDeg: 2, visible: true },
+      { azimuthDeg: 11, elevationDeg: 1.5, visible: true },
+      { azimuthDeg: 12, elevationDeg: 0.5, visible: false },
+    ],
+    earth: [
+      { azimuthDeg: 200, elevationDeg: 0.5, visible: false },
+      { azimuthDeg: 200, elevationDeg: 0.6, visible: false },
+      { azimuthDeg: 200, elevationDeg: 1.2, visible: true },
+    ],
+  },
+  notes: { earthHiddenByTerrainHours: 161, sunNearTerrainHours: 118, earthNeverAboveHorizon: false },
 }
 
 // o Sol escondido agora, que volta antes do pôr do sky acima (card I8)
@@ -216,4 +233,20 @@ describe('SitePanel', () => {
       `≥ 20 min · 13 Dec 2026, 22:40 UTC – 13 Dec 2026, 23:00 UTC ${panel.continues}`,
     ])
   })
+
+  it('ready: mostra a vista do horizonte como imagem, com um resumo em texto para o leitor de tela', () => {
+    render(<SitePanel status="ready" sky={sky} />)
+    const vista = screen.getByRole('img', { name: /Horizon view/ })
+    expect(vista.getAttribute('aria-label')).toContain('the Sun is in view for 2 hours and the Earth for 1 hours')
+  })
+
+  it('ready: as notas trazem o número que o motor decidiu, e a do lado oculto troca a da montanha', () => {
+    const { rerender } = render(<SitePanel status="ready" sky={sky} />)
+    expect(screen.getByText(explain.notes.earthHidden(161))).toBeInTheDocument()
+    expect(screen.getByText(explain.notes.sunNear(118, TERRAIN_GRAZE_DEG))).toBeInTheDocument()
+    rerender(<SitePanel status="ready" sky={{ ...sky, notes: { ...sky.notes, earthNeverAboveHorizon: true } }} />)
+    expect(screen.getByText(explain.notes.earthNever)).toBeInTheDocument()
+    expect(screen.queryByText(explain.notes.earthHidden(161))).toBeNull()
+  })
 })
+

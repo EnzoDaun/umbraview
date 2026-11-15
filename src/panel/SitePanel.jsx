@@ -1,5 +1,8 @@
+import { explain } from '../data/explain.js'
 import { panel } from '../data/panel.js'
+import { TERRAIN_GRAZE_DEG } from '../engine/config.js'
 import { formatDegrees, formatDuration, formatPercent, formatUtc } from './format.js'
+import { HorizonChart } from './HorizonChart.jsx'
 import './SitePanel.css'
 
 /* Os números do ponto escolhido, em texto (card I1). Recebe o { status, sky } do useSiteSky, no
@@ -24,6 +27,35 @@ function PanelBody({ status, sky }) {
 
   /* elevationDeg negativo com visible: true não é erro: do alto de um morro, o Sol abaixo do plano
      do horizonte ainda pode estar acima das montanhas em volta. Os dois aparecem como chegam. */
+  return (
+    <>
+      <HorizonChart groundView={sky.groundView} />
+      <TerrainNotes notes={sky.notes} />
+      <SkyNumbers sky={sky} />
+    </>
+  )
+}
+
+/* As notas embaixo da vista do horizonte: quem decide se cada uma vale é o motor (sky.notes,
+   summary.js); aqui a frase só recebe o número. */
+function TerrainNotes({ notes }) {
+  const lines = []
+  if (notes.earthNeverAboveHorizon) lines.push(explain.notes.earthNever)
+  else if (notes.earthHiddenByTerrainHours > 0) lines.push(explain.notes.earthHidden(notes.earthHiddenByTerrainHours))
+  if (notes.sunNearTerrainHours > 0) lines.push(explain.notes.sunNear(notes.sunNearTerrainHours, TERRAIN_GRAZE_DEG))
+  if (lines.length === 0) lines.push(explain.notes.none)
+  return (
+    <section className="site-panel__notes" aria-label={explain.notes.title}>
+      <ul>
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function SkyNumbers({ sky }) {
   return (
     <dl className="site-panel__list">
       <Row label={panel.sunNow}>

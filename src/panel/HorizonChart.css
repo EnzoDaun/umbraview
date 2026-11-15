@@ -1,0 +1,131 @@
+/* A vista do horizonte (HorizonChart.jsx). Só tokens (tokens.css). */
+.horizon-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.horizon-chart__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.horizon-chart__svg {
+  display: block;
+  width: 100%;
+  height: var(--chart-height);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+
+/* as linhas não engrossam quando o SVG estica para a largura do painel */
+.horizon-chart__svg * {
+  vector-effect: non-scaling-stroke;
+}
+
+.horizon-chart__terrain {
+  fill: var(--color-surface-raised);
+  stroke: var(--color-border-control);
+  stroke-width: 1;
+}
+
+.horizon-chart__flat {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.horizon-chart__path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.horizon-chart__path--sun {
+  stroke: var(--color-sun);
+}
+
+.horizon-chart__path--earth {
+  stroke: var(--color-earth);
+}
+
+/* tracejado onde o relevo esconde: a mesma cor, para a pessoa seguir o astro atrás da montanha */
+.horizon-chart__path.is-hidden {
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.8;
+}
+
+.horizon-chart__now {
+  stroke: var(--color-bg);
+  stroke-width: 1.5;
+}
+
+.horizon-chart__now--sun {
+  fill: var(--color-sun);
+}
+
+.horizon-chart__now--earth {
+  fill: var(--color-earth);
+}
+
+/* os pontos cardeais embaixo do desenho, cada um no azimute dele */
+.horizon-chart__axis {
+  position: relative;
+  height: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.horizon-chart__axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.horizon-chart__axis span:first-child {
+  transform: none;
+}
+
+.horizon-chart__axis span:last-child {
+  transform: translateX(-100%);
+}
+
+.horizon-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.horizon-chart__key::before {
+  content: '';
+  display: inline-block;
+  width: var(--space-3);
+  height: var(--space-1);
+  margin-inline-end: var(--space-1);
+  vertical-align: middle;
+  border-radius: var(--radius-sm);
+}
+
+.horizon-chart__key--terrain::before {
+  background: var(--color-border-control);
+}
+
+.horizon-chart__key--sun::before {
+  background: var(--color-sun);
+}
+
+.horizon-chart__key--earth::before {
+  background: var(--color-earth);
+}
+
+.horizon-chart__key--hidden::before {
+  background: none;
+  border-top: 1px dashed var(--color-text-secondary);
+}
