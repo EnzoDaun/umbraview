@@ -692,7 +692,7 @@ dizer quando a luz volta (card I8).
   (`BODIES`), lida também pelo `nextChange` e pelas janelas de pouso.
 - A volta (`nextSunriseUtc` e `nextEarthriseUtc`) sai do `nextChange` só com o astro escondido
   agora: com ele à vista, o `nextChange` devolve o pôr, e não a volta.
-- Mostrar os campos na tela é do Marco e do Miguel; o nascer do Sol no painel é o card I8.
+- Mostrar os campos na tela é o card I8: o nascer do Sol e a Terra no painel.
 
 **Conferido** em 14/11/2026:
 - Com o esqueleto devolvendo `null` e `0`, só os testes novos reprovaram, pelo motivo certo: 2 no
@@ -1852,28 +1852,46 @@ dura cada janela, o Marco foi avisado dos dois campos novos, os testes passam e 
 **Estado:** passou para a área E, como card E16. O número I7 fica só aqui, para não ser usado de
 novo.
 
-### I8 · Próximo nascer do Sol no painel
+### I8 · O nascer do Sol e a Terra no painel
 
-**Estado:** a fazer · **Depende de:** E18 (feito)
+**Estado:** feito em 15/11, PR #39 · **Depende de:** E18 (feito)
 
 **Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
 nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
-quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. Aprovado pelo Enzo em
-12/11, junto com o I6.
+quando a luz volta. É a primeira pergunta de quem olha um ponto no escuro. E o challenge pede o
+tempo até o pôr da Terra ("Earthset"), e o painel dizia só se a Terra estava à vista agora.
+Aprovado pelo Enzo em 12/11, junto com o I6, e ampliado por ele para levar a Terra no mesmo PR.
 
-**O que a ponte já entrega.** O `sky.nextSunriseUtc` (card E18): com o Sol escondido agora,
-quando metade dele volta; `null` com o Sol à vista agora ou se ele não volta no período.
+**O que a ponte já entrega.** Os campos do card E18, na tabela de "O que a ponte entrega para a
+tela": `nextSunriseUtc`, `nextEarthriseUtc`, `nextEarthsetUtc` e `earthFraction`.
 
-**O que fazer.** `src/panel/SitePanel.jsx`: com o Sol escondido agora, uma linha "Next sunrise" com
-a data em UTC, pelo `formatUtc`. O texto em `src/data/panel.js`. Com o Sol escondido o período
-inteiro, o `nextSunriseUtc` vem `null`, e a linha do pôr já diz isso (`panel.sunAlwaysHidden`, card
-I1).
+**O que fazer.** Em `src/panel/SitePanel.jsx`, com os textos em `src/data/panel.js`. As linhas
+ficam nesta ordem: Sun now, Earth now, Period, Next sunrise, Next sunset, Sunlight in the period,
+Longest darkness, Next Earthrise, Next Earthset, Earth in view in the period, Landing windows.
+1. **O nascer do Sol.** "Next sunrise", com a data em UTC pelo `formatUtc`, só com o Sol escondido
+   agora e o `nextSunriseUtc` com data.
+2. **A correção do Sol.** O pôr dizia "sempre escondido" (`panel.sunAlwaysHidden`) só com o
+   `sunFraction` 0. O motor só chama o Sol de à vista com metade do disco, e o `sunFraction` conta
+   também o Sol que só raspa o relevo: com uma pontinha de Sol em algumas horas e nunca a metade, o
+   painel dizia que o Sol não se põe, como se fosse dia o período inteiro. O "sempre escondido"
+   passa a ser o Sol escondido agora e sem volta (`!sky.sunNow.visible && !sky.nextSunriseUtc`).
+3. **A Terra.** "Next Earthrise" só com a Terra escondida agora e o `nextEarthriseUtc` com data.
+   "Next Earthset" com a data; no `null`, "sempre escondida" com a Terra escondida agora e sem
+   volta, e "não se põe" no resto, como no Sol. "Earth in view in the period" com o
+   `earthFraction`, no formato do "Sunlight in the period".
 
-**Como testar.** `src/panel/SitePanel.test.jsx`: com o Sol escondido, a linha mostra o nascer em
-UTC (a suíte roda em Tóquio); com o Sol à vista, a linha não aparece.
+**Como testar.** `src/panel/SitePanel.test.jsx`, que roda em Tóquio (a hora fora de UTC sai
+errada):
+- o Sol à vista, sem o nascer; o Sol escondido que volta, com o nascer em UTC;
+- o Sol que só raspa o relevo (`sunFraction` 0.02, sem volta e sem pôr) diz "sempre escondido"; o
+  Sol escondido que volta e não se põe mais diz "não se põe";
+- a Terra escondida que volta, à vista, à vista que não se põe, que volta e não se põe mais e
+  sempre escondida, e a porcentagem;
+- a ordem dos rótulos.
 
-**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta, os testes passam
-e o `verify` passa.
+**Pronto quando.** Com o Sol escondido, quem lê o painel sabe quando a luz volta; o ponto onde o Sol
+só raspa o relevo não lê mais "dia"; quem lê sabe quando a Terra volta, quando ela se põe e quanto
+do período ela fica à vista; os testes passam e o `verify` passa.
 
 ---
 

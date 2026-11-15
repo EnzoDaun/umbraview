@@ -43,12 +43,19 @@ function PanelBody({ status, sky }) {
         {' – '}
         <span className="site-panel__number site-panel__date">{formatUtc(sky.period.endUtc)}</span>
       </Row>
+      {!sky.sunNow.visible && sky.nextSunriseUtc && (
+        <Row label={panel.nextSunrise}>
+          <span className="site-panel__number">{formatUtc(sky.nextSunriseUtc)}</span>
+        </Row>
+      )}
       <Row label={panel.nextSunset}>
-        {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
-            Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}
+        {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista, e sem separar os
+            dois o ponto escuro leria "dia". O sunFraction não separa: o motor só chama o Sol de à
+            vista com metade do disco, e o sunFraction conta também o Sol que só raspa o relevo
+            (summary.js). Escondido agora e sem volta é o Sol que nunca fica à vista no período. */}
         {sky.nextSunsetUtc ? (
           <span className="site-panel__number">{formatUtc(sky.nextSunsetUtc)}</span>
-        ) : sky.sunFraction === 0 ? (
+        ) : !sky.sunNow.visible && !sky.nextSunriseUtc ? (
           panel.sunAlwaysHidden
         ) : (
           panel.noSunset
@@ -60,6 +67,24 @@ function PanelBody({ status, sky }) {
       <Row label={panel.longestDark}>
         {/* só o número na monoespaçada: nela o espaço tem a largura de um algarismo e parece duplo */}
         <span className="site-panel__number">{sky.longestDarkHours}</span> {panel.hoursUnit}
+      </Row>
+      {!sky.earthNow.visible && sky.nextEarthriseUtc && (
+        <Row label={panel.nextEarthrise}>
+          <span className="site-panel__number">{formatUtc(sky.nextEarthriseUtc)}</span>
+        </Row>
+      )}
+      <Row label={panel.nextEarthset}>
+        {/* o null nos dois extremos, separados como no pôr do Sol acima */}
+        {sky.nextEarthsetUtc ? (
+          <span className="site-panel__number">{formatUtc(sky.nextEarthsetUtc)}</span>
+        ) : !sky.earthNow.visible && !sky.nextEarthriseUtc ? (
+          panel.earthAlwaysHidden
+        ) : (
+          panel.noEarthset
+        )}
+      </Row>
+      <Row label={panel.earthInView}>
+        <span className="site-panel__number">{formatPercent(sky.earthFraction)}</span>
       </Row>
       <Row label={panel.landingWindows}>
         {sky.landingWindows.length === 0 ? (
