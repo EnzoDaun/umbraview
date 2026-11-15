@@ -31,8 +31,8 @@ develop validada  ──►  Pull Request para main  ──►  Enzo mergeia
 Seis frases que resumem tudo:
 
 1. **Sua branch volta para a `develop`.** Nunca para a `main`.
-2. **O Enzo revisa os PRs do Marco e do Miguel; o Marco revisa os do Enzo.** Não faça merge do
-   próprio PR.
+2. **O Enzo revisa os PRs do Marco, do Miguel e do Rechierli; o Marco revisa os do Enzo.** Não
+   faça merge do próprio PR.
 3. **Quem mergeia na `main` é o Enzo, e só ele.** Se você está prestes a digitar
    `git push origin main`, pare: o comando está errado.
 4. **Sempre `git pull origin develop`** ao criar a branch e de novo antes do `push`. É o que

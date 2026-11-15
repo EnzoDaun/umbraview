@@ -4,9 +4,9 @@ O que falta fazer, de quem é e como saber que ficou pronto. Procure o seu nome.
 
 ## Como usar este arquivo
 
-**Quem é de dev (Enzo, Marco, Miguel).** Avise no grupo que pegou o card, crie a branch com o
-código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR que fecha o
-card, troque o "Estado" dele para "feito em dd/mm, PR #n".
+**Quem é de dev (Enzo, Marco, Miguel, Rechierli).** Avise no grupo que pegou o card, crie a
+branch com o código dele (`feat/i1-painel`) e siga o [CONTRIBUTING.md](../CONTRIBUTING.md). No PR
+que fecha o card, troque o "Estado" dele para "feito em dd/mm, PR #n".
 
 **Quem não é de dev (Mateus B.).** Você não usa o GitHub: o Enzo manda os seus cards em PDF, e
 manda de novo quando eles mudarem. O que você precisa ler vai no fim do PDF: as fontes de dados
