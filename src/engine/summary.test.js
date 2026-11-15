@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 
+import { TERRAIN_GRAZE_DEG } from './config.js'
 import { summarizeSky } from './summary.js'
 
 /* Série montada à mão, dez horas a partir de 14/11/2026, 03:00 UTC:
@@ -15,14 +16,19 @@ const SERIE = {
   sunFraction: Float32Array.from([1, 1, 0.8, 0.2, 0, 0, 0, 0.6, 1, 1]),
   earthElevationDeg: Float32Array.from([2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
   earthMarginDeg: Float32Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+  // o computeSeries entrega também as direções e o relevo nelas; aqui, neutros (C2)
+  sunAzimuthDeg: new Float32Array(10),
+  sunHorizonDeg: new Float32Array(10),
+  earthAzimuthDeg: new Float32Array(10),
+  earthHorizonDeg: new Float32Array(10),
 }
 
 describe('resultado no formato que a tela espera (docs/backlog.md, "O que a ponte entrega")', () => {
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthFraction', 'earthNow', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
-        'nextSunriseUtc', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
+      ['earthFraction', 'earthNow', 'groundView', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc',
+        'nextEarthsetUtc', 'nextSunriseUtc', 'nextSunsetUtc', 'notes', 'period', 'sunFraction', 'sunNow'],
     )
     expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
     expect(Object.keys(sky.earthNow).sort()).toEqual(['elevationDeg', 'visible'])
@@ -150,5 +156,58 @@ describe('a Terra e a volta do Sol no resumo (card E18)', () => {
   it('nextEarthriseUtc é null com a Terra à vista agora (e não o pôr), e com a Terra escondida o período todo', () => {
     expect(summarizeSky(TERRA_SOME, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
     expect(summarizeSky(TERRA_SEMPRE_ESCONDIDA, { minWindowHours: 2 }).nextEarthriseUtc).toBeNull()
+  })
+})
+
+/* C2: a vista do horizonte (groundView) e as notas automáticas embaixo dela. A série é a SERIE de
+   cima com os azimutes e a altura do relevo na direção de cada astro. */
+const HORIZONTE = { elevationsRad: Float32Array.from({ length: 360 }, (_, a) => ((a % 7) * Math.PI) / 180), directions: 360 }
+const COM_DIRECOES = comCeu({
+  sunAzimuthDeg: Float32Array.from({ length: 10 }, (_, i) => 100 + i),
+  sunHorizonDeg: Float32Array.from([1.3, 1.0, 0.8, 0.7, 0.5, 0.4, 0.2, 0.3, 0.5, 1.0]),
+  earthAzimuthDeg: new Float32Array(10).fill(2),
+  earthElevationDeg: Float32Array.from([3, 3, 3, 3, -1, -1, 2, 2, 2, 2]),
+  earthMarginDeg: Float32Array.from([1, 1, 1, 0.5, -0.5, -1, -0.2, 0.6, 1, 1]),
+})
+
+describe('a vista do horizonte no resumo (C2)', () => {
+  const sky = summarizeSky(COM_DIRECOES, { minWindowHours: 2, horizon: HORIZONTE })
+
+  it('horizonDeg: a altura do relevo em cada grau de azimute, igual ao computeHorizon', () => {
+    expect(sky.groundView.horizonDeg).toHaveLength(360)
+    for (let a = 0; a < 360; a++) expect(sky.groundView.horizonDeg[a]).toBeCloseTo((HORIZONTE.elevationsRad[a] * 180) / Math.PI, 5)
+  })
+
+  it('um ponto do Sol e um da Terra por hora, com o azimute e a elevação da série', () => {
+    expect(sky.groundView.sun).toHaveLength(10)
+    expect(sky.groundView.earth).toHaveLength(10)
+    expect(sky.groundView.sun[3]).toEqual({ azimuthDeg: 103, elevationDeg: expect.closeTo(0.6, 5), visible: false })
+    expect(sky.groundView.earth[0]).toEqual({ azimuthDeg: 2, elevationDeg: 3, visible: true })
+  })
+
+  it('o visible de cada hora segue as regras do painel: metade do Sol, alguma parte da Terra', () => {
+    sky.groundView.sun.forEach((p, i) => expect(p.visible).toBe(COM_DIRECOES.sunFraction[i] >= 0.5))
+    sky.groundView.earth.forEach((p, i) => expect(p.visible).toBe(COM_DIRECOES.earthMarginDeg[i] > 0))
+  })
+})
+
+describe('as notas embaixo da vista do horizonte (C2, decididas pelo motor)', () => {
+  const sky = summarizeSky(COM_DIRECOES, { minWindowHours: 2, horizon: HORIZONTE })
+
+  it('conta as horas em que a Terra está acima do horizonte plano, mas o relevo esconde', () => {
+    // horas 4 e 5: abaixo do plano, não conta; hora 6: acima do plano (2°) e escondida (−0,2)
+    expect(sky.notes.earthHiddenByTerrainHours).toBe(1)
+  })
+
+  it(`conta as horas em que o Sol à vista passa a menos de ${TERRAIN_GRAZE_DEG}° do relevo`, () => {
+    // Sol − relevo: 0,2 0,2 0,1 −0,1 −0,2 −0,4 −0,5 0,1 0,3 0,1; com alguma parte à vista (fração > 0)
+    // e a menos de 0,5° acima do relevo: horas 0, 1, 2, 3, 7, 8 e 9
+    expect(sky.notes.sunNearTerrainHours).toBe(7)
+  })
+
+  it('diz quando a Terra não sobe acima do horizonte plano no período inteiro', () => {
+    expect(sky.notes.earthNeverAboveHorizon).toBe(false)
+    const ladoOculto = comCeu({ ...COM_DIRECOES, earthElevationDeg: new Float32Array(10).fill(-5), earthMarginDeg: new Float32Array(10).fill(-6) })
+    expect(summarizeSky(ladoOculto, { minWindowHours: 2, horizon: HORIZONTE }).notes.earthNeverAboveHorizon).toBe(true)
   })
 })

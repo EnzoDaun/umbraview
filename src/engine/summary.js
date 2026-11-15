@@ -2,13 +2,61 @@
  * tela", no docs/backlog.md. Se aquele formato mudar, muda aqui e no teste deste arquivo, no mesmo
  * PR, para o painel (card I1) e a cena (card C2) não lerem um campo que não existe mais.
  */
+import { TERRAIN_GRAZE_DEG } from './config.js'
 import { findLandingWindows, nextChange, nextSetting, nextSunset } from './series.js'
 
 const HOUR_MS = 3600e3
+const DEG = 180 / Math.PI
+
+/* A altura do relevo em cada grau de azimute, de 0 (norte) a 359, crescendo para o leste: a linha do
+   chão da vista do horizonte. Com 360 direções (HORIZON.directions), é o próprio computeHorizon; com
+   outro número, a direção mais perto de cada grau. null sem horizonte. */
+function horizonByDegree(horizon) {
+  if (!horizon) return null
+  const { elevationsRad, directions } = horizon
+  return Array.from({ length: 360 }, (_, a) => elevationsRad[Math.round((a * directions) / 360) % directions] * DEG)
+}
+
+/* O caminho do Sol e da Terra hora a hora, para a vista do horizonte (C2). O visible segue as
+   regras do painel (BODIES, series.js): o Sol com metade do disco, a Terra com alguma parte. */
+function bodyPath(series, kind) {
+  const path = new Array(series.count)
+  for (let i = 0; i < series.count; i++) {
+    path[i] = kind === 'sun'
+      ? { azimuthDeg: series.sunAzimuthDeg[i], elevationDeg: series.sunElevationDeg[i], visible: series.sunFraction[i] >= 0.5 }
+      : { azimuthDeg: series.earthAzimuthDeg[i], elevationDeg: series.earthElevationDeg[i], visible: series.earthMarginDeg[i] > 0 }
+  }
+  return path
+}
+
+/* O que vale a pena dizer embaixo da vista do horizonte, contado aqui para a tela só encaixar o
+   número na frase (src/data/). earthHiddenByTerrainHours: horas com a Terra acima do horizonte
+   plano, mas escondida pelo relevo: é a montanha, e não a geometria, que tira a Terra.
+   sunNearTerrainHours: horas com alguma parte do Sol à vista e o centro dele a menos de
+   TERRAIN_GRAZE_DEG acima do relevo (config.js diz por que isso importa).
+   earthNeverAboveHorizon: a Terra fica abaixo do horizonte plano o período inteiro, como no lado
+   oculto: nenhum relevo resolve. */
+function buildNotes(series) {
+  let earthHidden = 0
+  let sunNear = 0
+  let earthAbove = false
+  for (let i = 0; i < series.count; i++) {
+    const earthUp = series.earthElevationDeg[i] > 0
+    if (earthUp) earthAbove = true
+    if (earthUp && series.earthMarginDeg[i] <= 0) earthHidden++
+    if (series.sunFraction[i] > 0 && series.sunElevationDeg[i] - series.sunHorizonDeg[i] < TERRAIN_GRAZE_DEG) sunNear++
+  }
+  return {
+    earthHiddenByTerrainHours: earthHidden * series.stepHours,
+    sunNearTerrainHours: sunNear * series.stepHours,
+    earthNeverAboveHorizon: !earthAbove,
+  }
+}
 
 /* series: o resultado de computeSeries; o "agora" é o primeiro instante dela.
-   minWindowHours: a duração mínima de uma janela de pouso (MIN_LANDING_WINDOW_HOURS, config.js). */
-export function summarizeSky(series, { minWindowHours }) {
+   minWindowHours: a duração mínima de uma janela de pouso (MIN_LANDING_WINDOW_HOURS, config.js).
+   horizon: o resultado de computeHorizon, para a linha do chão da vista do horizonte (C2). */
+export function summarizeSky(series, { minWindowHours, horizon = null }) {
   const { startMs, stepHours, sunFraction } = series
   const at = (hours) => new Date(startMs + hours * HOUR_MS)
 
@@ -62,5 +110,7 @@ export function summarizeSky(series, { minWindowHours }) {
     // o fim é o último instante calculado, e não o começo mais PERIOD_DAYS: é onde termina uma
     // janela com endsAfterPeriod, e assim a duração do período fica só no siteSky.js
     period: { startUtc: at(0), endUtc: at((series.count - 1) * stepHours) },
+    groundView: { horizonDeg: horizonByDegree(horizon), sun: bodyPath(series, 'sun'), earth: bodyPath(series, 'earth') },
+    notes: buildNotes(series),
   }
 }

@@ -60,6 +60,6 @@ export function createSiteSky(readFile) {
     if (lastEphemeris === null || lastEphemeris.startMs !== startMs) {
       lastEphemeris = computeEphemeris(startMs, COUNT, STEP_HOURS)
     }
-    return summarizeSky(computeSeries(pointHorizon, lastEphemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS })
+    return summarizeSky(computeSeries(pointHorizon, lastEphemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS, horizon: pointHorizon })
   }
 }

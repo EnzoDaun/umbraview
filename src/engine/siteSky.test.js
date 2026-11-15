@@ -69,7 +69,7 @@ describe('céu de um ponto com o relevo do site (siteSky.js)', () => {
     const point = latLonToUnit(TOP_1.lat, TOP_1.lon)
     const horizon = computeHorizon(await loadReliefLayers(manifest, point, readFile), point, HORIZON)
     const ephemeris = computeEphemeris(NOV_14, PERIOD_DAYS * 24, 1)
-    const expected = summarizeSky(computeSeries(horizon, ephemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS })
+    const expected = summarizeSky(computeSeries(horizon, ephemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS, horizon })
 
     expect(await createSiteSky(readFile)(TOP_1, NOV_14)).toEqual(expected)
   })

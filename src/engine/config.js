@@ -42,3 +42,10 @@ export const MIN_LANDING_WINDOW_HOURS = 24
    79 ms a cada troca de data; a de 365 dias, de 123 a 180 ms, e o ponto mais iluminado do mapa da
    NASA chega a 13 janelas de pouso na lista. Muda aqui, e só aqui. */
 export const PERIOD_DAYS = 30
+
+/* Quão perto do relevo o Sol precisa passar para a nota "o Sol raspa o relevo" aparecer embaixo da
+   vista do horizonte (C2). 0,5° é cerca do diâmetro do disco do Sol visto da Lua (0,53°): a essa
+   distância, o disco quase encosta na montanha, e um erro pequeno no relevo (o grosso tem 1,9 km
+   por pixel, card E2) ou na altura do observador (HORIZON.mastM) já muda se o ponto fica na luz.
+   É a hora de a pessoa desconfiar do número, e não só ler. Muda aqui, e só aqui. */
+export const TERRAIN_GRAZE_DEG = 0.5
