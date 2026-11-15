@@ -9,7 +9,7 @@ import { systemStateAt } from '../engine/system.js'
 import { formatUtc } from '../panel/format.js'
 import { SystemView } from './SystemView.jsx'
 
-vi.mock('@react-three/fiber', () => ({ Canvas: () => <div data-testid="canvas" /> }))
+vi.mock('@react-three/fiber', () => ({ Canvas: () => <div data-testid="canvas" />, useFrame: () => {} }))
 vi.mock('@react-three/drei', () => ({ Html: () => null, Line: () => null, OrbitControls: () => null }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
@@ -57,5 +57,22 @@ describe('SystemView', () => {
     expect(screen.getByRole('button', { name: systemView.pause })).toHaveAttribute('aria-pressed', 'true')
     fireEvent.change(relogio(), { target: { value: '10' } })
     expect(screen.getByRole('button', { name: systemView.play })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  /* O Sol fica parado no centro e a Terra anda em volta dele; a câmera começa presa ao Sol, que é
+     de onde se vê a Terra andar. O botão a prende na Terra, para acompanhar a Lua de perto. */
+  it('a câmera começa no Sol, e o botão de seguir a Terra liga e desliga', () => {
+    render(<SystemView dateUtc={DATA} onDateChange={() => {}} />)
+    const seguir = screen.getByRole('button', { name: systemView.followEarth })
+    expect(seguir).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(seguir)
+    expect(seguir).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(seguir)
+    expect(seguir).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('explica que é a Terra que anda em volta do Sol, com o ano sideral do motor', () => {
+    render(<SystemView dateUtc={DATA} onDateChange={() => {}} />)
+    expect(screen.getByText(/Earth travels along the blue line/, { selector: 'p' })).toHaveTextContent('365.256 days')
   })
 })

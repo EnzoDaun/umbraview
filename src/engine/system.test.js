@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { computeEphemeris } from './ephemeris.js'
 import { latLonToUnit } from './geometry.js'
-import { ECLIPTIC_SKY_MATRIX, moonOrbitPath, systemStateAt } from './system.js'
+import { ECLIPTIC_SKY_MATRIX, SIDEREAL_YEAR_DAYS, earthOrbitPath, moonOrbitPath, sunPositionAu, systemStateAt } from './system.js'
 
 const GRAU = 180 / Math.PI
 const NOV_14 = Date.UTC(2026, 10, 14)
@@ -85,5 +85,54 @@ describe('o céu de estrelas no desenho da eclíptica (ECLIPTIC_SKY_MATRIX)', ()
     // a coluna 2 é para onde vai o eixo z do catálogo, o polo norte celeste
     expect(angulo(coluna(ECLIPTIC_SKY_MATRIX, 2), NORTE)).toBeCloseTo(23.44, 1)
     for (let c = 0; c < 3; c++) expect(tamanho(coluna(ECLIPTIC_SKY_MATRIX, c))).toBeCloseTo(1, 12)
+  })
+})
+
+/* A órbita da Terra em volta do Sol, para a linha dela na vista do sistema. As posições são as do
+   motor (a mesma direção do Sol do systemStateAt), só vistas do Sol em vez de vistas da Terra. */
+describe('a órbita da Terra em volta do Sol (earthOrbitPath)', () => {
+  const PASSOS = 180
+  const caminho = earthOrbitPath(NOV_14, PASSOS)
+
+  it('o Sol fica a 1 UA da Terra, na direção que o systemStateAt dá', () => {
+    const sol = sunPositionAu(NOV_14)
+    // a distância ao Sol varia entre 0,983 UA (janeiro) e 1,017 UA (julho)
+    expect(tamanho(sol)).toBeGreaterThan(0.983)
+    expect(tamanho(sol)).toBeLessThan(1.017)
+    // 1e-4 e não menos: perto de 0° o arco-cosseno só enxerga até uns 1e-6° (o arredondamento do float)
+    expect(angulo(sol, systemStateAt(NOV_14).sunDirection)).toBeLessThan(1e-4)
+  })
+
+  it('a Terra está no próprio caminho: o primeiro ponto é onde ela está na data, vista do Sol', () => {
+    const sol = sunPositionAu(NOV_14)
+    // a Terra vista do Sol é o Sol visto da Terra, ao contrário: somados, dão zero
+    caminho[0].forEach((valor, k) => expect(valor + sol[k]).toBeCloseTo(0, 12))
+    expect(caminho).toHaveLength(PASSOS + 1)
+  })
+
+  it('o caminho é quase um círculo de 1 UA, deitado no plano da eclíptica', () => {
+    for (const ponto of caminho) {
+      expect(tamanho(ponto)).toBeGreaterThan(0.983)
+      expect(tamanho(ponto)).toBeLessThan(1.017)
+      // o y do desenho é o norte da eclíptica: a Terra nunca sai do plano da própria órbita
+      expect(Math.abs(ponto[1])).toBeLessThan(1e-3)
+    }
+  })
+
+  it('dá uma volta inteira em um ano sideral: termina onde começou, e no meio está do outro lado', () => {
+    expect(angulo(caminho[0], caminho[PASSOS])).toBeLessThan(0.5)
+    expect(angulo(caminho[0], caminho[PASSOS / 2])).toBeGreaterThan(175)
+    // o ano sideral da NASA NSSDC Earth Fact Sheet
+    expect(SIDEREAL_YEAR_DAYS).toBe(365.256)
+  })
+
+  it('a Terra anda no caminho no sentido certo: um dia depois, perto de 1° adiante', () => {
+    const hoje = sunPositionAu(NOV_14).map((v) => -v)
+    const amanha = sunPositionAu(NOV_14 + DIA).map((v) => -v)
+    const passo = angulo(hoje, amanha)
+    expect(passo).toBeGreaterThan(0.95)
+    expect(passo).toBeLessThan(1.05)
+    // e o ponto de amanhã cai entre o primeiro e o segundo ponto do caminho (2° por trecho)
+    expect(angulo(amanha, caminho[1])).toBeLessThan(angulo(hoje, caminho[1]))
   })
 })

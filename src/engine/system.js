@@ -17,6 +17,9 @@ import { unitToLatLon } from './geometry.js'
 const AU_KM = 149597870.7
 // O mês sideral: o tempo de uma volta da Lua em relação às estrelas (NASA NSSDC, CREDITS.md).
 export const SIDEREAL_MONTH_DAYS = 27.3217
+// O ano sideral: o tempo de uma volta da Terra em volta do Sol em relação às estrelas (NASA NSSDC,
+// Earth Fact Sheet, "Sidereal orbit period (days) 365.256", lida em 15/11/2026; CREDITS.md).
+export const SIDEREAL_YEAR_DAYS = 365.256
 const DAY_MS = 24 * 3600e3
 
 const TO_ECLIPTIC = Rotation_EQJ_ECL()
@@ -90,4 +93,24 @@ export function moonOrbitPath(dateMs, steps) {
     const moon = GeoMoon(time)
     return toDrawing(moon.x, moon.y, moon.z, time).map((v) => v * AU_KM)
   })
+}
+
+/* Onde o Sol está a partir da Terra num instante, em UA, no desenho: a mesma direção do
+   sunDirection do systemStateAt, com a distância de verdade, que muda uns 3% ao longo do ano
+   porque a órbita da Terra é um pouco oval. */
+export function sunPositionAu(dateMs) {
+  const time = MakeTime(new Date(dateMs))
+  const sun = GeoVector(Body.Sun, time, true)
+  return toDrawing(sun.x, sun.y, sun.z, time)
+}
+
+/* O caminho da Terra em volta do Sol durante um ano sideral a partir de dateMs: steps + 1 posições
+   em UA, no desenho, a partir do Sol, para a linha da órbita da Terra. A Terra vista do Sol é o Sol
+   visto da Terra, ao contrário: é a mesma conta do motor, sem órbita aproximada nem número
+   digitado. O primeiro ponto é a Terra na data; pondo o Sol no lugar dele em cada instante
+   (sunPositionAu), a Terra fica sempre em cima da linha, andando nela. */
+export function earthOrbitPath(dateMs, steps) {
+  return Array.from({ length: steps + 1 }, (_, i) =>
+    sunPositionAu(dateMs + (i / steps) * SIDEREAL_YEAR_DAYS * DAY_MS).map((v) => -v),
+  )
 }

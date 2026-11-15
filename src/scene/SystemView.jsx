@@ -9,17 +9,25 @@
  * do cálculo, porque trocar a data refaz a conta do céu do ponto, e fazer isso a cada quadro
  * travaria a página. A data só muda quando a pessoa pede ("Set as date").
  */
-import { Html, Line, OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
-import { useEffect, useMemo, useState } from 'react'
-import { Matrix4, SRGBColorSpace, Texture } from 'three'
+import { Html, Line } from '@react-three/drei'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Color, Matrix4, SRGBColorSpace, Texture } from 'three'
 
 import { systemView } from '../data/systemView.js'
 import { PERIOD_DAYS } from '../engine/config.js'
-import { ECLIPTIC_SKY_MATRIX, moonOrbitPath, systemStateAt } from '../engine/system.js'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
+import {
+  ECLIPTIC_SKY_MATRIX, SIDEREAL_YEAR_DAYS, earthOrbitPath, moonOrbitPath, sunPositionAu, systemStateAt,
+} from '../engine/system.js'
 import { formatPercent, formatUtc } from '../panel/format.js'
+import { earthImageOfPage } from './earthImage.js'
 import { moonImagesOfPage } from './moonImages.js'
 import { StarField } from './StarField.jsx'
+import { EarthHaze } from './EarthHaze.jsx'
+import { sunSideStart } from './framing.js'
+import { SunBody } from './SunBody.jsx'
+import { ZoomControls } from './ZoomControls.jsx'
 import './SystemView.css'
 
 const HOUR_MS = 3600e3
@@ -31,16 +39,55 @@ const PERIOD_HOURS = PERIOD_DAYS * 24
 const UNITS_PER_KM = 2.3 / 384400
 const EARTH_RADIUS = 0.36
 const MOON_RADIUS = 0.17
-const SUN_MARK_FROM = 3.0
-const SUN_MARK_TO = 3.5
+/* O Sol em 3D, na direção de verdade, perto e pequeno para caber na tela: o de verdade fica uns 390
+   vezes mais longe que a Lua. Fica além da órbita da Lua, para ela nunca passar por dentro dele.
+   UNITS_PER_AU é a distância do desenho que vale 1 UA: a Terra fica a ela do Sol, vezes a
+   distância de verdade da data (entre 0,983 e 1,017 UA), e a linha da órbita da Terra usa a mesma
+   escala. Por isso a Terra fica sempre em cima da própria órbita, e anda nela quando o tempo corre.
+
+   O Sol é o centro parado da cena, e a Terra é que muda de lugar. Com a Terra parada no centro e
+   o Sol andando, as posições eram as mesmas, mas o olho lia que o Sol girava em volta da Terra. */
+const UNITS_PER_AU = 3.9
+const SUN_BODY_RADIUS = 0.34
+// a linha da órbita da Terra: um trecho a cada 2°
+const EARTH_ORBIT_STEPS = 180
+/* A partir de qual distância da câmera os nomes somem: de longe a cena inteira vira um ponto, e os
+   quatro nomes ficavam empilhados em cima dele (visto no navegador). */
+const TAGS_MAX_DISTANCE = 30
+/* Em qual ponto da linha fica a etiqueta dela: no meio da volta, do outro lado do Sol, onde a
+   Terra e a órbita da Lua não chegam durante o período do relógio. */
+const EARTH_ORBIT_TAG_STEP = EARTH_ORBIT_STEPS / 2
 const LIGHT_DISTANCE = 10
 
-const CAMERA = { position: [0.4, 2.4, 6.4], fov: 35, near: 0.1, far: 60 }
+/* O zoom vai de perto da Terra até muito longe. Até 50, a órbita vai ficando pequena no meio do
+   céu; dali em diante a câmera sai de dentro do próprio céu de estrelas, e a 750 elas todas
+   cabem num aglomerado pequeno, com a órbita no meio (starPoints.js). O far da câmera cobre o Sol
+   do outro lado, visto de lá. */
+const CAMERA = { position: [0, 4.6, 12], fov: 35, near: 0.1, far: 1200 }
+/* As duas distâncias da câmera: presa ao Sol, a da abertura, de onde se vê a órbita da Terra quase
+   inteira; presa à Terra, mais perto, a que mostra a órbita da Lua em volta dela. */
+const SUN_VIEW_DISTANCE = Math.hypot(...CAMERA.position)
+const EARTH_VIEW_DISTANCE = 6.8
+const SUN_CENTER = Object.freeze([0, 0, 0])
 const MIN_DISTANCE = 2
-const MAX_DISTANCE = 14
+const MAX_DISTANCE = 750
+/* A casca em que as estrelas ficam presas de longe: o raio dela, e as distâncias da câmera entre
+   as quais elas passam do infinito para a casca. */
+const STAR_SHELL = Object.freeze({ radius: 75, from: 50, to: 220 })
+/* Entre estas duas distâncias o céu de estrelas vai se revelando (starPoints.js): começa na vista
+   de abertura e termina com a órbita pequena. */
+const STAR_ZOOM_RANGE = [13, 60]
 const ORBIT_STEPS = 160
 const RING_STEPS = 96
 const SUN_INTENSITY = 2.6
+/* A imagem da Terra é escura: o mar ocupa a maior parte dela e é quase preto, e com a luz da cena a
+   Terra sumia no fundo. Dois ajustes só no desenho dela, sem mexer na luz da Lua: o lado do dia
+   reflete uma vez e meia a cor da imagem, e a imagem inteira brilha um pouco por conta própria,
+   para o lado da noite não ficar preto. O Sol continua mandando: o lado do dia é bem mais claro
+   que o da noite, e a linha entre os dois continua onde a direção do Sol a põe. */
+const EARTH_DAY_GAIN = new Color().setScalar(1.5)
+const EARTH_OWN_LIGHT = new Color().setScalar(1)
+const EARTH_OWN_LIGHT_INTENSITY = 0.2
 const AMBIENT_INTENSITY = 0.08
 
 // Tocando, o período inteiro (30 dias) passa em 24 segundos.
@@ -50,19 +97,24 @@ function token(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
-/* A cor da Lua, a mesma imagem da cena principal. Enquanto não chega, a Lua fica lisa. */
-function useMoonColorTexture() {
+const moonColorImage = () => moonImagesOfPage().then((images) => images.color)
+
+/* A imagem de um corpo virando textura. load: a leitura da imagem, uma função de fora do
+   componente (está nas dependências do efeito). Enquanto a imagem não chega, ou se não chegar, o
+   corpo fica liso, na cor do token. A Lua usa a mesma imagem da cena principal; a Terra, o Blue
+   Marble da NASA (earthImage.js). */
+function useBodyTexture(load) {
   const [image, setImage] = useState(null)
   useEffect(() => {
     let current = true
-    moonImagesOfPage().then(
-      (images) => current && setImage(images.color),
+    load().then(
+      (loaded) => current && setImage(loaded),
       () => {},
     )
     return () => {
       current = false
     }
-  }, [])
+  }, [load])
   const texture = useMemo(() => {
     if (!image) return null
     const built = new Texture(image)
@@ -81,8 +133,22 @@ const ECLIPTIC_RING = Array.from({ length: RING_STEPS + 1 }, (_, i) => {
   return [Math.cos(angle) * 384400 * UNITS_PER_KM, 0, Math.sin(angle) * 384400 * UNITS_PER_KM]
 })
 
-function Bodies({ state, orbit, dateUtc }) {
-  const moonTexture = useMoonColorTexture()
+/* labels: a ref da camada onde os nomes dos corpos são postos (o portal do Html do Drei). Sem um
+   alvo fixo, o Html troca de alvo logo depois de montar e recria a raiz dele; nessa troca o
+   primeiro nome da cena nascia vazio (o da Terra não aparecia, visto no navegador, também no
+   build), e o React reclamava no console de raiz desmontada no meio do desenho. */
+function Bodies({ state, orbit, earthOrbit, sunAu, dateUtc, reducedMotion, followEarth, onFarChange, labels }) {
+  /* Avisa a vista quando a câmera passa da distância em que os nomes somem. Só na passagem, e não
+     a cada quadro: cada aviso redesenha a vista inteira. */
+  const far = useRef(false)
+  useFrame(({ camera }) => {
+    const next = camera.position.length() > TAGS_MAX_DISTANCE
+    if (next === far.current) return
+    far.current = next
+    onFarChange(next)
+  })
+  const moonTexture = useBodyTexture(moonColorImage)
+  const earthTexture = useBodyTexture(earthImageOfPage)
   const moonPosition = state.moonKm.map((v) => v * UNITS_PER_KM)
   const moonMatrix = useMemo(
     () => new Matrix4().fromArray(state.moonMatrix).setPosition(...state.moonKm.map((v) => v * UNITS_PER_KM)),
@@ -91,27 +157,56 @@ function Bodies({ state, orbit, dateUtc }) {
   const earthMatrix = useMemo(() => new Matrix4().fromArray(state.earthMatrix), [state])
   const orbitPoints = useMemo(() => orbit.map((point) => point.map((v) => v * UNITS_PER_KM)), [orbit])
   const sun = state.sunDirection
+  /* O Sol fica parado no centro da cena. A Terra vista do Sol é o Sol visto da Terra, ao
+     contrário: ela muda de lugar a cada instante e leva junto a Lua e a órbita da Lua. A linha da
+     órbita da Terra é fixa no espaço (calculada uma vez por data), e a Terra anda em cima dela. */
+  const earthPosition = useMemo(() => sunAu.map((v) => -v * UNITS_PER_AU), [sunAu])
+  const earthOrbitPoints = useMemo(
+    () => earthOrbit.map((point) => point.map((v) => v * UNITS_PER_AU)),
+    [earthOrbit],
+  )
 
   return (
     <>
       <color attach="background" args={[token('--color-bg')]} />
-      <StarField dateUtc={dateUtc} skyMatrix={ECLIPTIC_SKY_MATRIX} />
+      <StarField dateUtc={dateUtc} skyMatrix={ECLIPTIC_SKY_MATRIX} zoomRange={STAR_ZOOM_RANGE} shell={STAR_SHELL} />
       <ambientLight intensity={AMBIENT_INTENSITY} />
       <directionalLight position={sun.map((v) => v * LIGHT_DISTANCE)} intensity={SUN_INTENSITY} color={token('--color-sunlight')} />
 
-      {/* A Terra, com o eixo dela: a grade por cima mostra a rotação, uma volta por dia. */}
+      {/* Tudo o que anda com a Terra em volta do Sol: ela, a Lua, a órbita da Lua e os nomes. A luz
+          não entra aqui: é a mesma direção para a Terra e para a Lua, a do Sol de verdade, e não a
+          do Sol do desenho, que está perto demais e mudaria as fases. */}
+      <group position={earthPosition}>
+      {/* A Terra, com o eixo dela e a imagem de verdade (o Blue Marble da NASA): com os continentes,
+          dá para ver a rotação, uma volta por dia, e qual lado está virado para a Lua. Enquanto a
+          imagem não chega, a Terra fica lisa, com uma grade por cima para a rotação aparecer. */}
       <group matrix={earthMatrix} matrixAutoUpdate={false}>
         <mesh>
           <sphereGeometry args={[EARTH_RADIUS, 48, 24]} />
-          <meshStandardMaterial color={token('--color-earth')} />
+          {earthTexture ? (
+            <meshStandardMaterial
+              key="textured"
+              color={EARTH_DAY_GAIN}
+              map={earthTexture}
+              emissive={EARTH_OWN_LIGHT}
+              emissiveMap={earthTexture}
+              emissiveIntensity={EARTH_OWN_LIGHT_INTENSITY}
+            />
+          ) : (
+            <meshStandardMaterial key="plain" color={token('--color-earth')} />
+          )}
         </mesh>
-        <mesh>
-          <sphereGeometry args={[EARTH_RADIUS * 1.003, 12, 6]} />
-          <meshBasicMaterial color={token('--color-bg')} wireframe transparent opacity={0.35} />
-        </mesh>
+        {!earthTexture && (
+          <mesh>
+            <sphereGeometry args={[EARTH_RADIUS * 1.003, 12, 6]} />
+            <meshBasicMaterial color={token('--color-bg')} wireframe transparent opacity={0.35} />
+          </mesh>
+        )}
         <Line points={[[0, -EARTH_RADIUS * 1.6, 0], [0, EARTH_RADIUS * 1.6, 0]]} color={token('--color-text-muted')} lineWidth={1} />
       </group>
-      <Html position={[0, -EARTH_RADIUS * 1.9, 0]} center pointerEvents="none" zIndexRange={[1, 0]}>
+      {/* fora do grupo que gira com a Terra: o véu é do lado do dia, e não dos continentes */}
+      <EarthHaze radius={EARTH_RADIUS} sunDirection={sun} color={token('--color-earth')} />
+      <Html position={[0, -EARTH_RADIUS * 1.9, 0]} center pointerEvents="none" zIndexRange={[1, 0]} portal={labels}>
         <span className="system-view__tag">{systemView.earth}</span>
       </Html>
 
@@ -123,20 +218,41 @@ function Bodies({ state, orbit, dateUtc }) {
         </mesh>
         <Line points={[[0, -MOON_RADIUS * 1.7, 0], [0, MOON_RADIUS * 1.7, 0]]} color={token('--color-text-muted')} lineWidth={1} />
       </group>
-      <Html position={[moonPosition[0], moonPosition[1] - MOON_RADIUS * 2.2, moonPosition[2]]} center pointerEvents="none" zIndexRange={[1, 0]}>
+      <Html position={[moonPosition[0], moonPosition[1] - MOON_RADIUS * 2.2, moonPosition[2]]} center pointerEvents="none" zIndexRange={[1, 0]} portal={labels}>
         <span className="system-view__tag">{systemView.moon}</span>
       </Html>
 
       <Line points={orbitPoints} color={token('--color-text-secondary')} lineWidth={1.5} />
       <Line points={ECLIPTIC_RING} color={token('--color-border-control')} lineWidth={1} dashed dashSize={0.06} gapSize={0.06} />
+      </group>
 
-      {/* O Sol fica 400 vezes mais longe que a Lua: aqui só a direção dele. */}
-      <Line points={[sun.map((v) => v * SUN_MARK_FROM), sun.map((v) => v * SUN_MARK_TO)]} color={token('--color-sun')} lineWidth={2} />
-      <Html position={sun.map((v) => v * (SUN_MARK_TO + 0.25))} center pointerEvents="none" zIndexRange={[1, 0]}>
+      {/* A órbita da Terra em volta do Sol, na cor da Terra: parada no espaço, com a Terra andando
+          em cima dela. */}
+      <Line points={earthOrbitPoints} color={token('--color-earth')} lineWidth={1.5} />
+      <Html position={earthOrbitPoints[EARTH_ORBIT_TAG_STEP]} center pointerEvents="none" zIndexRange={[1, 0]} portal={labels}>
+        <span className="system-view__tag system-view__tag--earth">{systemView.earthOrbit}</span>
+      </Html>
+
+      {/* O Sol em 3D, no centro, perto e pequeno para caber na tela (SunBody.jsx): o de verdade fica
+          uns 390 vezes mais longe que a Lua. */}
+      <SunBody
+        position={SUN_CENTER}
+        radius={SUN_BODY_RADIUS}
+        color={token('--color-sunlight')}
+        haloColor={token('--color-sun')}
+      />
+      <Html position={[0, -SUN_BODY_RADIUS * 2.4, 0]} center pointerEvents="none" zIndexRange={[1, 0]} portal={labels}>
         <span className="system-view__tag system-view__tag--sun">{systemView.sun}</span>
       </Html>
 
-      <OrbitControls enablePan={false} minDistance={MIN_DISTANCE} maxDistance={MAX_DISTANCE} />
+      <ZoomControls
+        minDistance={MIN_DISTANCE}
+        maxDistance={MAX_DISTANCE}
+        reducedMotion={reducedMotion}
+        target={followEarth ? earthPosition : SUN_CENTER}
+        targetName={followEarth ? 'earth' : 'sun'}
+        distance={followEarth ? EARTH_VIEW_DISTANCE : SUN_VIEW_DISTANCE}
+      />
     </>
   )
 }
@@ -146,9 +262,25 @@ function Bodies({ state, orbit, dateUtc }) {
 export function SystemView({ dateUtc, onDateChange }) {
   const [hour, setHour] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const reducedMotion = usePrefersReducedMotion()
+  const [far, setFar] = useState(false)
+  const labels = useRef(null)
+  /* Para onde a câmera olha: o Sol, parado (de onde se vê a Terra andar em volta dele), ou a
+     Terra, andando junto com ela (de onde se vê a Lua de perto). */
+  const [followEarth, setFollowEarth] = useState(false)
+  /* A câmera nasce olhando para o Sol, com a Terra à direita dele e meio iluminada, pela direção
+     do Sol na data em que a vista abriu. Fica no estado, e não é recalculada: depois de aberta,
+     quem manda na câmera é a pessoa. */
+  const [camera] = useState(() => ({
+    ...CAMERA,
+    position: sunSideStart(CAMERA.position, systemStateAt(dateUtc.getTime()).sunDirection),
+  }))
   const dateMs = dateUtc.getTime() + hour * HOUR_MS
   const state = useMemo(() => systemStateAt(dateMs), [dateMs])
   const orbit = useMemo(() => moonOrbitPath(dateUtc.getTime(), ORBIT_STEPS), [dateUtc])
+  // a órbita da Terra é a do ano que começa na data; o Sol é o do instante do relógio da vista
+  const earthOrbit = useMemo(() => earthOrbitPath(dateUtc.getTime(), EARTH_ORBIT_STEPS), [dateUtc])
+  const sunAu = useMemo(() => sunPositionAu(dateMs), [dateMs])
 
   // Tocando, o relógio da vista anda sozinho; só começa quando a pessoa aperta o botão.
   useEffect(() => {
@@ -169,10 +301,15 @@ export function SystemView({ dateUtc, onDateChange }) {
 
   return (
     <div className="system-view">
-      <div className="system-view__scene" role="img" aria-label={systemView.label}>
-        <Canvas frameloop="demand" gl={{ antialias: true }} camera={CAMERA}>
-          <Bodies state={state} orbit={orbit} dateUtc={dateUtc} />
+      <div
+        className={far ? 'system-view__scene system-view__scene--far' : 'system-view__scene'}
+        role="img"
+        aria-label={systemView.label}
+      >
+        <Canvas frameloop="demand" gl={{ antialias: true }} camera={camera}>
+          <Bodies state={state} orbit={orbit} earthOrbit={earthOrbit} sunAu={sunAu} dateUtc={dateUtc} reducedMotion={reducedMotion} followEarth={followEarth} onFarChange={setFar} labels={labels} />
         </Canvas>
+        <div className="system-view__labels" ref={labels} />
       </div>
       <div className="system-view__controls">
         <button className="system-view__button" type="button" aria-pressed={playing} onClick={() => setPlaying((value) => !value)}>
@@ -201,6 +338,14 @@ export function SystemView({ dateUtc, onDateChange }) {
         >
           {systemView.useThisTime}
         </button>
+        <button
+          className="system-view__button"
+          type="button"
+          aria-pressed={followEarth}
+          onClick={() => setFollowEarth((value) => !value)}
+        >
+          {systemView.followEarth}
+        </button>
       </div>
       <dl className="system-view__facts">
         <div>
@@ -221,6 +366,7 @@ export function SystemView({ dateUtc, onDateChange }) {
           {note}
         </p>
       ))}
+      <p className="system-view__note">{systemView.earthOrbitNote(SIDEREAL_YEAR_DAYS, 360 / SIDEREAL_YEAR_DAYS, PERIOD_DAYS)}</p>
     </div>
   )
 }

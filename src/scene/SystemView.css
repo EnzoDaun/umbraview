@@ -27,10 +27,20 @@
   letter-spacing: var(--letter-spacing-label);
   text-transform: uppercase;
   white-space: nowrap;
+  transition: opacity var(--duration-base);
+}
+
+/* de longe a cena vira um ponto: os nomes somem, para não ficarem empilhados em cima dele */
+.system-view__scene--far .system-view__tag {
+  opacity: 0;
 }
 
 .system-view__tag--sun {
   color: var(--color-sun);
+}
+
+.system-view__tag--earth {
+  color: var(--color-earth);
 }
 
 .system-view__controls {
@@ -101,4 +111,13 @@
   max-width: 80ch;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+/* A camada dos nomes dos corpos, por cima do desenho e do tamanho dele: os nomes não recebem
+   clique (o arrasto é da câmera) e o que sai da cena é cortado. */
+.system-view__labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
