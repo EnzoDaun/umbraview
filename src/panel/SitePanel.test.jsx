@@ -13,11 +13,20 @@ const sky = {
   sunNow: { elevationDeg: -0.84, visible: true },
   earthNow: { elevationDeg: 3.21, visible: false },
   nextSunsetUtc: new Date('2026-11-14T03:00:00Z'),
+  // com o Sol à vista agora, o motor não dá a volta dele (summary.js)
+  nextSunriseUtc: null,
   sunFraction: 0.855,
   longestDarkHours: 36,
   landingWindows: [],
   // o fim é o começo mais 719 h, o último instante que o motor calcula (summary.js)
   period: { startUtc: new Date('2026-11-14T00:00:00Z'), endUtc: new Date('2026-12-13T23:00:00Z') },
+}
+
+// o Sol escondido agora, que volta antes do pôr do sky acima (card I8)
+const darkSky = {
+  ...sky,
+  sunNow: { elevationDeg: -2.4, visible: false },
+  nextSunriseUtc: new Date('2026-11-14T01:00:00Z'),
 }
 
 // o valor que a tela mostra ao lado de um rótulo: o <dd> logo depois do <dt>
@@ -57,6 +66,31 @@ describe('SitePanel', () => {
     expect(valueOf(panel.sunlight)).toHaveTextContent('85.5%')
     // texto exato: o toHaveTextContent junta espaços repetidos e não pegaria um espaço a mais
     expect(valueOf(panel.longestDark).textContent).toBe(`36 ${panel.hoursUnit}`)
+  })
+
+  it('ready: mostra as linhas na ordem do card I8', () => {
+    render(<SitePanel status="ready" sky={darkSky} />)
+    expect(screen.getAllByRole('term').map((term) => term.textContent)).toEqual([
+      panel.sunNow,
+      panel.earthNow,
+      panel.period,
+      panel.nextSunrise,
+      panel.nextSunset,
+      panel.sunlight,
+      panel.longestDark,
+      panel.landingWindows,
+    ])
+  })
+
+  it('ready com o Sol à vista: não mostra o próximo nascer', () => {
+    render(<SitePanel status="ready" sky={sky} />)
+    expect(screen.queryByText(panel.nextSunrise)).not.toBeInTheDocument()
+  })
+
+  it('ready com o Sol escondido que volta: mostra o próximo nascer em UTC', () => {
+    render(<SitePanel status="ready" sky={darkSky} />)
+    // em Tóquio seriam 10:00
+    expect(valueOf(panel.nextSunrise).textContent).toBe('14 Nov 2026, 01:00 UTC')
   })
 
   it('ready: mostra o próximo pôr do Sol em UTC, e não no fuso de quem usa', () => {

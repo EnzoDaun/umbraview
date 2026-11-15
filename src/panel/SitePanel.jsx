@@ -43,6 +43,11 @@ function PanelBody({ status, sky }) {
         {' – '}
         <span className="site-panel__number site-panel__date">{formatUtc(sky.period.endUtc)}</span>
       </Row>
+      {!sky.sunNow.visible && sky.nextSunriseUtc && (
+        <Row label={panel.nextSunrise}>
+          <span className="site-panel__number">{formatUtc(sky.nextSunriseUtc)}</span>
+        </Row>
+      )}
       <Row label={panel.nextSunset}>
         {/* o null vem nos dois extremos, Sol sempre à vista e Sol nunca à vista: sunFraction 0 é
             Sol escondido em todas as horas (summary.js), e sem isso o ponto escuro leria "dia" */}

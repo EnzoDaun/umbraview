@@ -15,6 +15,8 @@ export const panel = {
   hidden: 'Hidden by terrain',
   // De quando a quando valem os números "in this period" (card I6).
   period: 'Period',
+  // Só com o Sol escondido agora: quando a luz volta (card I8).
+  nextSunrise: 'Next sunrise',
   nextSunset: 'Next sunset',
   noSunset: "The Sun doesn't set in this period.",
   sunAlwaysHidden: 'The Sun stays behind the terrain for the whole period.',
