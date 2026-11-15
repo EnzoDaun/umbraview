@@ -48,8 +48,10 @@ const FRAGMENT_SHADER = `
   }
 `
 
-/* dateUtc: a data do céu (um Date), a mesma da luz da cena. */
-export function StarField({ dateUtc }) {
+/* dateUtc: a data do céu (um Date), a mesma da luz da cena. skyMatrix: os 16 números de outro giro
+   do céu, para quem desenha noutro referencial (a vista do sistema, no da eclíptica); sem ele, o céu
+   gira para o referencial da Lua na data. */
+export function StarField({ dateUtc, skyMatrix = null }) {
   const stars = useStars()
   const pixelRatio = useThree((state) => state.viewport.dpr)
 
@@ -82,7 +84,10 @@ export function StarField({ dateUtc }) {
   )
   useEffect(() => () => material.dispose(), [material])
 
-  const matrix = useMemo(() => new Matrix4().fromArray(skyRotationMatrix(dateUtc.getTime())), [dateUtc])
+  const matrix = useMemo(
+    () => new Matrix4().fromArray(skyMatrix ?? skyRotationMatrix(dateUtc.getTime())),
+    [dateUtc, skyMatrix],
+  )
 
   if (!geometry) return null
   /* frustumCulled desligado: o three decide se desenha pela caixa dos vértices, que aqui são

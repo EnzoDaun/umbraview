@@ -7,9 +7,10 @@
  */
 import { useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useState } from 'react'
-import { ImageLoader, SRGBColorSpace, Texture } from 'three'
+import { SRGBColorSpace, Texture } from 'three'
 
 import { globeTextureWindow, setSouthColor } from './moonGlobe.js'
+import { moonImagesOfPage } from './moonImages.js'
 
 /* Triângulos da esfera: com o mapa de normais, a luz não depende deles, mas a borda da Lua contra
    o céu, sim. Com 128 × 64, de perto a borda mostrava as quinas. */
@@ -22,25 +23,6 @@ const WHITE = '#ffffff'
 /* Quanto a textura continua nítida vista de lado, perto da borda da Lua. 4 é o que toda placa de
    vídeo com o filtro anisotrópico oferece. */
 const ANISOTROPY = 4
-
-const FILES = { color: 'color.jpg', normal: 'normal.jpg', south: 'color-south.jpg' }
-
-/* Uma leitura por página, como o relevo: montar a cena de novo não baixa as imagens outra vez. Uma
-   leitura que falhou é esquecida, para a próxima montagem tentar de novo. */
-let pageImages = null
-function imagesOfPage() {
-  if (!pageImages) {
-    const base = new URL('data/moon/', document.baseURI).href
-    const loader = new ImageLoader()
-    pageImages = Promise.all(Object.values(FILES).map((file) => loader.loadAsync(base + file))).then((images) =>
-      Object.fromEntries(Object.keys(FILES).map((key, i) => [key, images[i]])),
-    )
-    pageImages.catch(() => {
-      pageImages = null
-    })
-  }
-  return pageImages
-}
 
 function textureOf(image, { srgb }) {
   const texture = new Texture(image)
@@ -59,7 +41,7 @@ export function MoonGlobe({ color, thetaLength, far }) {
 
   useEffect(() => {
     let current = true
-    imagesOfPage().then(
+    moonImagesOfPage().then(
       (result) => {
         if (current) setImages(result)
       },

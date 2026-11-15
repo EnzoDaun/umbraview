@@ -55,7 +55,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: clamp(var(--scene-min-height), 58dvh, var(--scene-max-height));
+  min-height: clamp(var(--scene-min-height), 58dvh, var(--scene-max-height));
   min-width: 0;
 }
 
@@ -91,6 +91,40 @@
   left: 0;
   z-index: var(--z-panel);
   pointer-events: none;
+}
+
+/* O seletor de vista, no canto de cima da cena, por cima dela. */
+.app__views {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: var(--z-panel);
+  display: flex;
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.app__view {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.app__view[aria-pressed='true'] {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+/* O foco fica por dentro do botão: por fora, a moldura do grupo cortaria o anel. */
+.app__view:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-focus);
 }
 
 .app__footer {
