@@ -12,17 +12,23 @@ export const scene = {
   // (areaMaxLatDeg), para o texto não ficar com um número velho se a área mudar.
   coarseTerrain: (limitDeg) =>
     `North of ${limitDeg}°S the horizon comes from coarser terrain: results there are approximate.`,
-  // O botão que leva a câmera de volta ao quadro com a Lua inteira, depois de a pessoa ter
-  // chegado perto ou voado até um ponto.
+  // O botão da Lua inteira, um liga e desliga: aceso com a Lua inteira no quadro. Apertar leva a
+  // câmera de volta ao quadro amplo; apertar de novo, para onde ela estava antes.
   wholeMoon: 'Show the whole Moon',
   // O mapa das áreas com janela de pouso: o botão junto da cena e a linha que diz o que ele achou.
   landingToggle: 'Show landing areas',
-  landingLoading: 'Finding the areas with a landing window…',
+  // Enquanto a conta roda: o que está sendo procurado e o que vai aparecer. periodDays e minHours
+  // são os da regra do motor (config.js), para o texto não ficar com um número velho.
+  landingLoading: ({ periodDays, minHours }) =>
+    `Checking where on the Moon a landing window opens in the ${periodDays} days after the chosen date: at least ${minHours} hours in a row with the Sun and the Earth above the horizon together. Those areas will turn green.`,
   landingError: "Couldn't calculate the landing areas. Reload the page to try again.",
   // found e total: pontos das duas grades somados; stepKm e limitDeg: o passo da grade fina e até
-  // onde ela vai; globalStepKm: o passo da grade do resto da Lua, ou null se o site não tem essa.
-  landingReady: ({ found, total, stepKm, limitDeg, globalStepKm }) =>
-    globalStepKm === null
-      ? `${found} of ${total} points checked (one every ${stepKm} km, down to ${limitDeg}°S) have a landing window in this period.`
-      : `${found} of ${total} points checked have a landing window in this period (one every ${stepKm} km south of ${limitDeg}°S, one every ${globalStepKm} km on the rest of the Moon).`,
+  // onde ela vai; globalStepKm: o passo da grade do resto da Lua, ou null se o site não tem essa;
+  // minHours: a duração mínima da janela. A frase começa pelo que o verde quer dizer.
+  landingReady: ({ found, total, stepKm, limitDeg, globalStepKm, minHours }) => {
+    const meaning = `Green areas have a landing window in this period: at least ${minHours} hours in a row with the Sun and the Earth above the horizon together.`
+    return globalStepKm === null
+      ? `${meaning} ${found} of ${total} points checked have one (one every ${stepKm} km, down to ${limitDeg}°S).`
+      : `${meaning} ${found} of ${total} points checked have one (one every ${stepKm} km south of ${limitDeg}°S, one every ${globalStepKm} km on the rest of the Moon).`
+  },
 }
