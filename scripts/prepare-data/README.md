@@ -197,7 +197,7 @@ OK: color.jpg, 1.45 MB
 OK: normal.jpg, 0.90 MB
 OK: color-south.jpg, 0.06 MB
 OK: 648 ladrilhos do relevo da Lua inteira, 33.2 MB em public/data/relief/global
-OK: 8920 estrelas até a magnitude 6.5, 178 kB em public/data/stars/stars.bin
+OK: 8920 estrelas de 119613 do catálogo (magnitude até 6.5), 40 sem B-V, 178400 bytes em public/data/stars/stars.bin
 ```
 
 O endereço do HYG tem `media` no caminho, e não `raw`: o arquivo fica no Git LFS do Codeberg, e
@@ -231,3 +231,27 @@ OK: em 14/11/2026, 5105 pontos da Lua inteira têm janela de pouso (49.6%)
 
 A terceira linha é a conferência: o horizonte de cada ponto é guardado em passos de 0,2°, e um ponto
 no limite pode trocar de lado por causa do arredondamento.
+
+## 10. A imagem da Terra
+
+A Terra da vista do sistema usa o Blue Marble da NASA
+([svs.gsfc.nasa.gov/2915](https://svs.gsfc.nasa.gov/2915), domínio público, link conferido em
+15/11/2026). O `prepare_earth.py` lê a imagem da Terra inteira (2048 × 1024, em latitude e longitude,
+com Greenwich no meio) e grava `public/data/earth/color.jpg`. Usa o ambiente da seção 2.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+New-Item -ItemType Directory -Force data-raw | Out-Null; if ($?) {
+  curl.exe -fL -o data-raw\bluemarble-2048.png https://svs.gsfc.nasa.gov/vis/a000000/a002900/a002915/bluemarble-2048.png
+  if ($?) { .venv\Scripts\python.exe scripts\prepare-data\prepare_earth.py }
+}
+```
+
+O download tem 1,5 MB, e o script confere o SHA-256 dele. Saída esperada:
+
+```
+OK: bluemarble-2048.png confere
+OK: color.jpg, 0.25 MB em public/data/earth
+```
