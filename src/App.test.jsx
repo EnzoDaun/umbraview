@@ -11,11 +11,13 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.jsx'
+import { about } from './data/about.js'
 import { app } from './data/app.js'
 import { panel } from './data/panel.js'
 import { scene } from './data/scene.js'
 import { sites } from './data/sites.js'
 import { systemView } from './data/systemView.js'
+import { MIN_LANDING_WINDOW_HOURS } from './engine/config.js'
 import { createSiteSky } from './engine/siteSky.js'
 import { SitePanel } from './panel/SitePanel.jsx'
 
@@ -96,6 +98,34 @@ describe('App, esqueleto da tela', () => {
     render(<App />)
     const cabecalho = screen.getByRole('banner')
     expect(within(cabecalho).getByRole('heading', { level: 1, name: app.name })).toBeInTheDocument()
+  })
+
+  /* O título principal é o logo do projeto (card V2), e não o nome escrito: quem não vê a imagem
+     ouve o nome pelo alt, e o título continua sendo um h1 só. O símbolo da equipe no rodapé é
+     decorativo, porque o nome dela já está escrito ao lado. */
+  it('o logo do projeto é o título principal, e o símbolo da equipe no rodapé é decorativo', () => {
+    render(<App />)
+    const titulo = within(screen.getByRole('banner')).getByRole('heading', { level: 1 })
+    const logo = within(titulo).getByRole('img', { name: app.name })
+    expect(logo).toHaveAttribute('src', expect.stringContaining('.svg'))
+    const rodape = screen.getByRole('contentinfo')
+    expect(within(rodape).queryByRole('img')).not.toBeInTheDocument()
+    expect(rodape.querySelector('img')).toHaveAttribute('alt', '')
+  })
+
+  /* O bloco que explica o produto (o problema, o que o site faz e como começar) fica no fim do
+     painel e nasce aberto: quem chega sem contexto precisa dele antes de clicar em qualquer coisa.
+     A duração mínima da janela de pouso vem do motor, e não escrita à mão no texto. */
+  it('o painel explica o que a pessoa está vendo, com a regra da janela vinda do motor', () => {
+    render(<App />)
+    const painel = screen.getByRole('region', { name: app.panel.title })
+    expect(within(painel).getByText(about.title)).toBeInTheDocument()
+    for (const bloco of about.blocks) {
+      expect(within(painel).getByRole('heading', { level: 3, name: bloco.heading })).toBeInTheDocument()
+    }
+    const comecar = about.blocks.at(-1)
+    expect(within(painel).getByText(comecar.body(MIN_LANDING_WINDOW_HOURS))).toBeInTheDocument()
+    expect(painel.querySelector('details')).toHaveAttribute('open')
   })
 
   it('tem a região da cena e a do painel, cada uma com nome acessível', () => {

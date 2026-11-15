@@ -1,0 +1,37 @@
+/* O bloco "What am I seeing?", no fim do painel. Só tokens (tokens.css): nada de #hex nem px solto.
+
+   Separado do resto por uma linha fina em cima, como as linhas do painel do ponto: é a mesma
+   coluna, e um cartão com fundo próprio brigaria com os números ao lado. */
+.about {
+  padding-block-start: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  max-width: 60ch;
+}
+
+/* O rótulo da seta: o mesmo tamanho e espaçamento dos títulos de região do esqueleto, para a
+   pessoa ler o painel inteiro na mesma régua. */
+.about__title {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.about__block {
+  padding-block-start: var(--space-3);
+}
+
+.about__heading {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.about__body {
+  margin-block-start: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-body);
+}

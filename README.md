@@ -241,15 +241,15 @@ umbraview/
 │   │   └── verify.yml               o verify e a conferência de assinatura em todo PR
 │   └── pull_request_template.md
 │
-├── brand/                           o kit do logo da equipe e do projeto, em SVG e PNG (card V2)
+├── brand/                           o kit do logo da equipe e do projeto, em vetor (card V2)
 │   ├── favicon/                     os ícones de aba e de celular, de onde saem os de public/
-│   ├── png/
-│   ├── svg/
+│   ├── svg/                         a fonte de toda versão do logo; o PNG sai daqui quando precisa
 │   └── LEIA-ME.txt                  as cores, a fonte e onde usar cada versão
 │
 ├── docs/
 │   ├── backlog.md
 │   ├── primeiros-passos.md
+│   ├── submissao.md                 o texto da submissão, em inglês, para a página do projeto (card P4)
 │   └── uso-de-ia.md
 │
 ├── public/
@@ -259,6 +259,7 @@ umbraview/
 │   │   ├── moon/                    a cor e o relevo do globo da Lua inteira, da NASA, gerados pelo script
 │   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
 │   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
+│   ├── brand/                       o logo do cabeçalho e o símbolo do rodapé, copiados de brand/svg/
 │   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
 │   ├── favicon.ico
 │   └── favicon.svg
@@ -288,6 +289,7 @@ umbraview/
 │
 ├── src/
 │   ├── data/
+│   │   ├── about.js                 o texto que explica o produto: o problema, o que o site faz e como começar
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
 │   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
@@ -324,6 +326,8 @@ umbraview/
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
 │   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
+│   │   ├── About.css
+│   │   ├── About.jsx                o bloco que explica o produto, no fim do painel
 │   │   ├── DateTimeControl.css
 │   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
 │   │   ├── GroundView.css

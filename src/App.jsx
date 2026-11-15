@@ -5,6 +5,7 @@ import { siteSky } from './data/siteSky.js'
 import { sites } from './data/sites.js'
 import { systemView } from './data/systemView.js'
 import { useSiteSky } from './hooks/useSiteSky.js'
+import { About } from './panel/About.jsx'
 import { DateTimeControl } from './panel/DateTimeControl.jsx'
 import { SiteList } from './panel/SiteList.jsx'
 import { SitePanel } from './panel/SitePanel.jsx'
@@ -12,6 +13,15 @@ import { SiteSky } from './panel/SiteSky.jsx'
 import { LunarScene } from './scene/LunarScene.jsx'
 import { SystemView } from './scene/SystemView.jsx'
 import './App.css'
+
+/* O logo do projeto, no cabeçalho, e o símbolo da equipe, no rodapé (card V2). São os arquivos do
+   kit (brand/), copiados para public/brand/ porque só o que está em public/ é servido. A versão do
+   cabeçalho é a compacta: o símbolo nela já vem simplificado, para não sumir em 40 px
+   (brand/LEIA-ME.txt). São SVG, de 3 e 2 KB: num tamanho só, nítidos em qualquer tela.
+   O caminho sai do document.baseURI, como o das imagens e dos dados (earthImage.js): no GitHub
+   Pages o site mora em /umbraview/, e um caminho começando com barra cairia na raiz do domínio. */
+const LOGO_SRC = new URL('brand/umbraview-header.svg', document.baseURI).href
+const SYMBOL_SRC = new URL('brand/umbra-symbol.svg', document.baseURI).href
 
 /* Esqueleto da tela: cabeçalho; à esquerda, a região da cena e, embaixo dela, o céu do ponto em
    desenho (a vista do chão e a linha do tempo, que pedem largura); à direita, o painel do ponto,
@@ -36,7 +46,11 @@ export default function App() {
   return (
     <div className="app">
       <header className="app__header">
-        <h1 className="app__name">{app.name}</h1>
+        {/* O logo é o título principal: o alt leva o nome, para quem não vê a imagem ouvir a mesma
+            coisa. width e height são os do desenho, para o cabeçalho não pular enquanto ele chega. */}
+        <h1 className="app__name">
+          <img className="app__logo" src={LOGO_SRC} alt={app.name} width="188" height="49" />
+        </h1>
         <p className="app__tagline">{app.tagline}</p>
       </header>
 
@@ -77,11 +91,18 @@ export default function App() {
           <SiteList sites={sites} selectedId={site?.id} onSelect={setSite} />
           <DateTimeControl dateUtc={dateUtc} onChange={setDateUtc} />
           <SitePanel status={status} sky={sky} />
+          {/* por último: quem já escolheu um ponto quer os números primeiro */}
+          <About />
         </section>
       </main>
 
       <footer className="app__footer">
-        <p>{app.footer}</p>
+        {/* O símbolo da equipe é decorativo (alt vazio): o nome dela já está escrito ao lado, e
+            repetir faria o leitor de tela ler "Umbra Team" duas vezes. */}
+        <p className="app__sign">
+          <img className="app__mark" src={SYMBOL_SRC} alt="" width="266" height="266" />
+          {app.footer}
+        </p>
         <p>
           {app.credits.data}
           {app.credits.separator}

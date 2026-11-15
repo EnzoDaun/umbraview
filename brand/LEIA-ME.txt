@@ -12,8 +12,7 @@ Tipografia
   O "Λ" é a letra grega lambda maiúscula (U+039B).
 
 Arquivos
-  svg/  vetores, fundo transparente
-  png/  512 e 1024 px no lado maior, fundo transparente
+  svg/  vetores, fundo transparente; é daqui que sai qualquer PNG, quando a submissão pedir um
   favicon/  favicon.ico (16, 32, 48), PNG avulsos, favicon.svg, apple-touch-icon-180.png
 
   umbra-simbolo            símbolo sozinho (com escala de elevação)
@@ -25,6 +24,8 @@ Arquivos
   ...-mono-preto           uma cor, para fundos claros
 
 Uso
+  O site usa duas destas versões, copiadas para public/brand/: umbraview-cabecalho (no cabeçalho)
+  e umbra-simbolo-mono-branco (no rodapé). Só o que está em public/ é servido.
   As versões em cores e mono-branco foram feitas para fundo escuro (ideal: #050608).
   Abaixo de ~64 px de altura do símbolo, use o favicon ou o umbraview-cabecalho: a escala e o horizonte fino somem.
   Em 16 px o favicon não tem a linha do horizonte, de propósito.
