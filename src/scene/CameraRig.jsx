@@ -63,6 +63,21 @@ function dropIdleTime(clock) {
   clock.getDelta()
 }
 
+/* Quanto a distância da câmera pode fugir da do enquadramento e a Lua inteira ainda contar como
+   "no quadro": 2%, menos do que um passo da roda do mouse. */
+const WIDE_TOLERANCE = 0.02
+
+/* Troca o modo da câmera e avisa a cena quando a Lua inteira entra ou sai do quadro, que é o que
+   acende e apaga o botão "Show the whole Moon". Só na passagem: cada aviso redesenha a cena.
+   mode, wide e latest são as refs do CameraRig. */
+function changeMode(mode, wide, latest, next) {
+  mode.current = next
+  const isWide = next === 'wide'
+  if (isWide === wide.current) return
+  wide.current = isWide
+  latest.current.onWideChange?.(isWide)
+}
+
 /* Em quanto tempo o deslocamento da lente chega na metade do caminho quando o painel abre ou
    fecha, em segundos: a Lua desliza para o meio da área livre em uns 240 ms. */
 const SHIFT_HALF_LIFE_S = 0.05
@@ -74,10 +89,12 @@ const SHIFT_HALF_LIFE_S = 0.05
    vista Terra–Lua–Sol, na cena (framing.js): a câmera mira o alvo, na direção dada, da distância
    em que uma esfera daquele raio cabe na tela. turn: o ângulo do céu na data da vista (skyAngle);
    quando ele muda, a câmera gira junto, para as estrelas ficarem paradas na tela. onUserStart: a
-   pessoa mexeu na câmera. onArrive: a câmera parou em cima do ponto escolhido. */
+   pessoa mexeu na câmera. onArrive: a câmera parou em cima do ponto escolhido. onWideChange:
+   chamada com true quando a Lua inteira entra no quadro e com false quando sai dele (a pessoa
+   chegou perto, afastou ou voou até um ponto). */
 export function CameraRig({
   subsolar, insets, site = null, reducedMotion, autoRotate, homeSignal = 0, system = null, turn = 0,
-  minDistance, maxDistance, systemMaxDistance, onUserStart, onArrive,
+  minDistance, maxDistance, systemMaxDistance, onUserStart, onArrive, onWideChange,
 }) {
   const controls = useRef(null)
   const camera = useThree((state) => state.camera)
@@ -95,13 +112,18 @@ export function CameraRig({
   const latest = useRef({})
   useEffect(() => {
     latest.current = {
-      fit, unitFit, subsolar, reducedMotion, interactiveSmooth, onArrive, onUserStart, minDistance, maxDistance,
-      systemMaxDistance, clock,
+      fit, unitFit, subsolar, reducedMotion, interactiveSmooth, onArrive, onUserStart, onWideChange, minDistance,
+      maxDistance, systemMaxDistance, clock,
     }
   })
 
   // 'wide': a Lua inteira; 'site': em cima de um ponto; 'free': a pessoa escolheu o zoom; 'system'
   const mode = useRef('wide')
+  // se a Lua inteira está no quadro, como a cena sabe por último (changeMode)
+  const wide = useRef(true)
+  /* De onde a câmera saiu no último pedido de Lua inteira: { azimuth, polar, distance }, ou null.
+     Apertar o botão de novo, com a Lua inteira no quadro, leva a câmera de volta para lá. */
+  const previous = useRef(null)
   // o voo em andamento: um voo novo, ou a pessoa mexendo, cancela a continuação do anterior
   const flight = useRef(0)
   const pendingArrival = useRef(false)
@@ -195,7 +217,8 @@ export function CameraRig({
     }
     const [lat, lon] = siteKey.split(' ').map(Number)
     const token = ++flight.current
-    mode.current = 'site'
+    previous.current = null
+    changeMode(mode, wide, latest, 'site')
     const { azimuth, polar } = orbitAngles(latLonToScene(lat, lon))
     const toAzimuth = nearestAzimuth(azimuth, c.azimuthAngle)
     const toPolar = clampPolar(polar)
@@ -227,7 +250,9 @@ export function CameraRig({
       })
   }, [siteKey])
 
-  // "Back to the Moon": de volta ao quadro amplo, na direção em que a câmera já está
+  /* O botão "Show the whole Moon" é um liga e desliga. Ligar: de volta ao quadro amplo, na direção
+     em que a câmera já está, guardando de onde ela saiu. Desligar (apertar com a Lua inteira já no
+     quadro): a câmera volta para onde estava antes. Sem ter de onde voltar, a Lua inteira fica. */
   useEffect(() => {
     const c = controls.current
     if (!c || homeSignal === lastHome.current) return
@@ -239,13 +264,26 @@ export function CameraRig({
       pendingArrival.current = false
       latest.current.onArrive?.()
     }
-    mode.current = 'wide'
-    dropIdleTime(latest.current.clock)
-    c.smoothTime = latest.current.reducedMotion ? 0 : SMOOTH_FLIGHT_TURN_S
-    c.moveTo(0, 0, 0, !latest.current.reducedMotion)
-    c.dollyTo(latest.current.fit, !latest.current.reducedMotion).then(() => {
+    const animate = !latest.current.reducedMotion
+    const settle = () => {
       c.smoothTime = latest.current.interactiveSmooth
-    })
+    }
+    dropIdleTime(latest.current.clock)
+    c.smoothTime = animate ? SMOOTH_FLIGHT_TURN_S : 0
+    const back = previous.current
+    if (mode.current === 'wide' && back) {
+      previous.current = null
+      changeMode(mode, wide, latest, 'free')
+      c.rotateTo(nearestAzimuth(back.azimuth, c.azimuthAngle), back.polar, animate)
+      c.dollyTo(back.distance, animate).then(settle)
+      return
+    }
+    if (mode.current !== 'wide') {
+      previous.current = { azimuth: c.azimuthAngle, polar: c.polarAngle, distance: c.distance }
+    }
+    changeMode(mode, wide, latest, 'wide')
+    c.moveTo(0, 0, 0, animate)
+    c.dollyTo(latest.current.fit, animate).then(settle)
   }, [homeSignal])
 
   /* A vista Terra–Lua–Sol: a mesma câmera recua da Lua até caberem a Terra e a órbita, num
@@ -265,7 +303,7 @@ export function CameraRig({
         pendingArrival.current = false
         latest.current.onArrive?.()
       }
-      mode.current = 'system'
+      changeMode(mode, wide, latest, 'system')
       c.maxDistance = latest.current.systemMaxDistance
       // só a entrada voa: depois, o alvo acompanha a Terra sem a câmera sair de onde a pessoa a pôs
       if (entering) {
@@ -288,7 +326,7 @@ export function CameraRig({
       return
     }
     if (mode.current !== 'system') return
-    mode.current = 'wide'
+    changeMode(mode, wide, latest, 'wide')
     const [x, y, z] = heroDirection(latest.current.subsolar)
     const d = latest.current.fit
     dropIdleTime(latest.current.clock)
@@ -330,10 +368,25 @@ export function CameraRig({
      tamanho da tela deixa de reenquadrar. */
   function handleControl() {
     const c = controls.current
-    if (c && mode.current === 'wide' && Math.abs(c.distance - latest.current.fit) > 0.02 * latest.current.fit) {
-      mode.current = 'free'
+    if (c && mode.current === 'wide' && Math.abs(c.distance - latest.current.fit) > WIDE_TOLERANCE * latest.current.fit) {
+      changeMode(mode, wide, latest, 'free')
     }
     latest.current.onUserStart?.()
+  }
+
+  /* A câmera parou. A roda avisa o control antes de a câmera andar, e um passo só dela passava sem
+     o modo mudar: o botão ficava aceso com a Lua já de perto. Parada, a distância é a de verdade:
+     perto da do enquadramento, a Lua inteira está no quadro, e o botão acende, mesmo que a pessoa
+     tenha voltado até ali com a roda; longe dela, não está.
+     Vale para o rest e para o sleep dos controles: enquanto a Lua gira sozinha a câmera nunca
+     dorme, e o camera-controls só avisa o rest de novo depois de ela dormir e acordar. O primeiro
+     movimento da pessoa, que é o que para o giro, só chega pelo sleep (visto no navegador). */
+  function handleRest() {
+    const c = controls.current
+    if (!c || mode.current === 'system') return
+    const isWide = Math.abs(c.distance - latest.current.fit) <= WIDE_TOLERANCE * latest.current.fit
+    if (isWide) changeMode(mode, wide, latest, 'wide')
+    else if (mode.current === 'wide') changeMode(mode, wide, latest, 'free')
   }
 
   return (
@@ -343,6 +396,8 @@ export function CameraRig({
       maxDistance={maxDistance}
       onControlStart={handleControlStart}
       onControl={handleControl}
+      onRest={handleRest}
+      onSleep={handleRest}
     />
   )
 }

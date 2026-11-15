@@ -16,15 +16,27 @@
 
 .app__header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-4);
   flex-wrap: wrap;
   padding-block-end: var(--space-3);
   border-bottom: 1px solid var(--color-border);
 }
 
+/* O logo ocupa o lugar do nome escrito. O display: flex tira a folga que o navegador deixa embaixo
+   de uma imagem em linha, que desalinhava o logo da frase ao lado. */
 .app__name {
+  display: flex;
   font-size: var(--font-size-lg);
+}
+
+/* A altura manda, e a largura acompanha o desenho. Em 2,5 rem a palavra UmbraView fica do tamanho
+   da frase ao lado, e o símbolo, do tamanho do título que ele substitui: menos que isso, o logo
+   ficava mais tímido que o texto que estava ali antes (visto no navegador). */
+.app__logo {
+  display: block;
+  width: auto;
+  height: var(--space-10);
 }
 
 .app__tagline {
@@ -132,6 +144,18 @@
   border-top: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+}
+
+/* O símbolo da equipe junto do nome dela, na primeira linha do rodapé. */
+.app__sign {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app__mark {
+  width: auto;
+  height: var(--space-5);
 }
 
 /* sem cor própria, o link sairia no azul do navegador, que não é um par de cor conferido */

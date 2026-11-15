@@ -10,6 +10,7 @@ import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { scene } from '../data/scene.js'
+import { MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from '../engine/config.js'
 import { MOON_RADIUS_M } from '../engine/geometry.js'
 import { LunarScene } from './LunarScene.jsx'
 
@@ -98,6 +99,20 @@ describe('LunarScene', () => {
     expect(enquadramento.mock.calls.at(-1)[0].homeSignal).toBe(homeSignal + 1)
   })
 
+  /* O botão tem o quadradinho de ligado e desligado, como o do mapa: ele acende quando a Lua
+     inteira está no quadro e apaga quando a pessoa chega perto ou voa até um ponto. Antes, nunca
+     acendia, e parecia quebrado. Quem sabe onde a câmera está é o CameraRig, que avisa a cena. */
+  it('o botão da Lua inteira acende com a Lua inteira no quadro e apaga quando a câmera chega perto', async () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const botao = screen.getByRole('button', { name: scene.wholeMoon })
+    expect(botao).toHaveAttribute('aria-pressed', 'true')
+    act(() => enquadramento.mock.calls.at(-1)[0].onWideChange(false))
+    expect(botao).toHaveAttribute('aria-pressed', 'false')
+    act(() => enquadramento.mock.calls.at(-1)[0].onWideChange(true))
+    expect(botao).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('a câmera recebe o ponto escolhido, para voar até ele, e o pedido de menos movimento, para pular', () => {
     sistemaPede(true)
     const ponto = { lat: -89.475, lon: -137.44 }
@@ -137,12 +152,21 @@ describe('LunarScene', () => {
     sistemaPede(false)
     mapa.resultado = { status: 'loading', areas: null }
     const { rerender } = render(<LunarScene dateUtc={DATA} showLandingAreas />)
-    expect(screen.getByText(scene.landingLoading)).toBeInTheDocument()
+    // a linha diz o que é uma janela de pouso, com os números da regra do motor, e não só "calculando"
+    const calculando = scene.landingLoading({ periodDays: PERIOD_DAYS, minHours: MIN_LANDING_WINDOW_HOURS })
+    expect(calculando).toContain(`${PERIOD_DAYS} days`)
+    expect(calculando).toContain(`${MIN_LANDING_WINDOW_HOURS} hours`)
+    expect(calculando).toContain('the Sun and the Earth above the horizon')
+    expect(screen.getByText(calculando)).toBeInTheDocument()
     mapa.resultado = { status: 'error', areas: null }
     rerender(<LunarScene dateUtc={NEXT_DAY} showLandingAreas />)
     expect(screen.getByText(scene.landingError)).toBeInTheDocument()
-    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: 61 })).toContain('61 km on the rest of the Moon')
-    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: null })).not.toContain('rest of the Moon')
+    const pronto = scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: 61, minHours: 24 })
+    expect(pronto).toContain('61 km on the rest of the Moon')
+    // o resultado diz o que o verde quer dizer
+    expect(pronto).toContain('Green areas')
+    expect(pronto).toContain('24 hours')
+    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: null, minHours: 24 })).not.toContain('rest of the Moon')
     mapa.resultado = { status: 'idle', areas: null }
   })
 

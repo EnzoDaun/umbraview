@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
+import { MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from '../engine/config.js'
 import { MOON_RADIUS_M } from '../engine/geometry.js'
 import { useFarRelief } from '../hooks/useFarRelief.js'
 import { useLandingAreas } from '../hooks/useLandingAreas.js'
@@ -139,11 +140,13 @@ function landingStatusText({ status, areas }, manifest) {
       total: areas.flags.length + (global ? global.flags.length : 0),
       stepKm: areas.layout.stepM / METERS_PER_KM,
       limitDeg: Math.abs(manifest.areaMaxLatDeg),
+      minHours: MIN_LANDING_WINDOW_HOURS,
       // o passo da grade da Lua inteira, de graus para quilômetros no chão
       globalStepKm: global ? Math.round((global.layout.stepDeg * Math.PI * MOON_RADIUS_M) / 180 / METERS_PER_KM) : null,
     })
   }
-  return status === 'loading' ? scene.landingLoading : ''
+  // os números da regra são os do motor (config.js), os mesmos que o mapa e o painel usam
+  return status === 'loading' ? scene.landingLoading({ periodDays: PERIOD_DAYS, minHours: MIN_LANDING_WINDOW_HOURS }) : ''
 }
 
 /* dateUtc: a data da luz (um Date). site: o ponto escolhido, { lat, lon } em graus, ou null; o
@@ -174,6 +177,10 @@ export function LunarScene({
   const autoRotate = !reducedMotion && !hasMoved && !site
   // cada pedido de volta ao quadro com a Lua inteira soma um: a câmera reage à mudança do número
   const [homeSignal, setHomeSignal] = useState(0)
+  /* Se a Lua inteira está no quadro: é o que acende o botão "Show the whole Moon". Quem sabe é a
+     câmera (CameraRig), que avisa quando a pessoa chega perto, afasta ou voa até um ponto. A cena
+     abre com a Lua inteira, e por isso o botão nasce aceso. */
+  const [wholeMoon, setWholeMoon] = useState(true)
   /* Quanto a faixa dos botões cobre da parte de baixo da cena, em pixels: a câmera enquadra a Lua
      no que sobra em cima dela. No celular os dois botões ficam um embaixo do outro e cobriam o
      polo sul, que é o assunto do site (visto no navegador em 390 × 844). Sem ResizeObserver (o
@@ -286,6 +293,7 @@ export function LunarScene({
             maxDistance={MAX_DISTANCE}
             systemMaxDistance={MAX_DISTANCE}
             onUserStart={handleUserStart}
+            onWideChange={setWholeMoon}
           />
         </Canvas>
       </div>
@@ -301,7 +309,12 @@ export function LunarScene({
         >
           {scene.landingToggle}
         </button>
-        <button className="lunar-scene__toggle" type="button" onClick={() => setHomeSignal((count) => count + 1)}>
+        <button
+          className="lunar-scene__toggle"
+          type="button"
+          aria-pressed={wholeMoon}
+          onClick={() => setHomeSignal((count) => count + 1)}
+        >
           {scene.wholeMoon}
         </button>
         <p className="lunar-scene__landing-status" aria-live="polite">
