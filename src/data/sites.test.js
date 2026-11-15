@@ -1,6 +1,10 @@
 /* Os locais de pouso da lista (cards I2 e E16). Conferem o que uma linha da planilha do P1 pode
- * trazer de errado: fonte que não é https, coordenada fora da faixa, id repetido e local fora da
- * área com relevo. Cada conferência lista o nome do local culpado, e não só "falhou". */
+ * trazer de errado: fonte que não é https, coordenada fora da faixa e id repetido. Cada conferência
+ * lista o nome do local culpado, e não só "falhou".
+ *
+ * Na v2 (contrato C4) o motor calcula a Lua inteira: o local ao norte de 84°S deixou de ser
+ * recusado e usa o relevo global, de 1,9 km por pixel. O teste que barrava esses locais saiu, e
+ * o das regiões do Artemis III passou a cobrar as nove. */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -43,11 +47,12 @@ describe('sites.js', () => {
     expect(ids.filter((id, index) => ids.indexOf(id) !== index)).toEqual([])
   })
 
-  /* A mesma regra com que o motor recusa o ponto e o clique da cena barra: o areaMaxLatDeg do
-     manifest (-84.0: negativo é sul). Um local ao norte dele daria erro no painel até o card E8. */
-  it('todo local fica dentro da área com relevo, ao sul de 84°S', () => {
+  /* Com a Lua inteira no cálculo, os locais de fora do polo entram na lista. Os de hoje são só as
+     duas regiões do Artemis III com o centro ao norte de 84°S: se outro aparecer aqui, é para
+     aparecer de propósito, sabendo que o painel dele usa o relevo mais grosso. */
+  it('os locais fora da área polar são as duas regiões do Artemis III com o centro ao norte de 84°S', () => {
     const outside = sites.filter((site) => !isInsideReliefArea(MANIFEST, site.lat))
-    expect(outside.map((site) => site.name)).toEqual([])
+    expect(outside.map((site) => site.id).sort()).toEqual(['artemis-cb', 'artemis-n2'])
   })
 })
 
@@ -58,10 +63,9 @@ describe('sites.js', () => {
 describe('regiões do Artemis III na lista (card E16)', () => {
   const listed = sites.filter((site) => site.id.startsWith('artemis-'))
 
-  it('a lista traz toda região com o centro dentro da área com relevo, e só elas', () => {
-    const expected = ARTEMIS_REGIONS.filter((region) =>
-      isInsideReliefArea(MANIFEST, region.center.lat),
-    ).map((region) => region.id)
+  it('a lista traz as nove regiões candidatas, e só elas', () => {
+    expect(ARTEMIS_REGIONS).toHaveLength(9)
+    const expected = ARTEMIS_REGIONS.map((region) => region.id)
     expect(listed.map((site) => site.id).sort()).toEqual(expected.sort())
   })
 
