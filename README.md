@@ -329,7 +329,7 @@ umbraview/
 │   │   └── skyChart.js              as contas de desenho da vista do chão e da linha do tempo
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
-│   │   ├── CameraRig.jsx            a câmera que mantém a Lua inteira enquadrada até a pessoa mexer
+│   │   ├── CameraRig.jsx            a câmera: a Lua inteira enquadrada até a pessoa mexer, e o voo até o ponto escolhido
 │   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre o relevo do polo
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
@@ -341,7 +341,7 @@ umbraview/
 │   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
-│   │   ├── framing.js               a distância da câmera para a Lua caber na cena
+│   │   ├── framing.js               a distância da câmera para a Lua caber na cena, e o caminho do voo até o ponto
 │   │   ├── moonGlobe.js             onde cada ponto da Lua cai nas imagens, e a cor do polo nas malhas do relevo
 │   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)

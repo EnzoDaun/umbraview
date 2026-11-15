@@ -96,6 +96,15 @@ describe('LunarScene', () => {
     expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(false)
   })
 
+  it('a câmera recebe o ponto escolhido, para voar até ele, e o pedido de menos movimento, para pular', () => {
+    sistemaPede(true)
+    const ponto = { lat: -89.475, lon: -137.44 }
+    render(<LunarScene dateUtc={DATA} site={ponto} />)
+    const { site, reducedMotion } = enquadramento.mock.calls.at(-1)[0]
+    expect(site).toBe(ponto)
+    expect(reducedMotion).toBe(true)
+  })
+
   it('a câmera começa numa distância dentro dos limites do zoom e fora do eixo dos controles', () => {
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)

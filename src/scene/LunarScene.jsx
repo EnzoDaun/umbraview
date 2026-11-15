@@ -252,8 +252,9 @@ export function LunarScene({
           {/* só com o relevo: é nas malhas dele que o mapa é pintado */}
           {relief && <LandingAreasLayer areas={landing.areas} color={token('--color-success')} />}
           {site && <SiteMarker site={site} relief={relief} />}
-          {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto */}
-          <CameraRig fitting={!hasMoved && !site} />
+          {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto; com
+              um ponto escolhido, a câmera voa até ele */}
+          <CameraRig fitting={!hasMoved && !site} site={site} reducedMotion={reducedMotion} />
           <OrbitControls
             enablePan={false}
             minDistance={MIN_DISTANCE}
