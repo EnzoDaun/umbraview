@@ -37,6 +37,8 @@ function BodyPath({ hours, range, className }) {
 
 function Marker({ hour, range, className }) {
   const { x, y } = chartPosition(hour.azimuthDeg, hour.elevationDeg, range)
+  // abaixo da escala (a noite funda, fora do polo) não há onde pôr o marcador
+  if (y > 1) return null
   return (
     <span
       className={`ground-view__marker ${className} ${hour.visible ? '' : 'ground-view__marker--hidden'}`}

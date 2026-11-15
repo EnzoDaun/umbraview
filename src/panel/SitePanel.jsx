@@ -27,12 +27,12 @@ function PanelBody({ status, sky }) {
   return (
     <dl className="site-panel__list">
       <Row label={panel.sunNow} kind="sun" now>
-        {sky.sunNow.visible ? panel.visible : panel.hidden}
+        {stateText(sky.sunNow)}
         {' · '}
         <span className="site-panel__number">{formatDegrees(sky.sunNow.elevationDeg)}</span>
       </Row>
       <Row label={panel.earthNow} kind="earth" now>
-        {sky.earthNow.visible ? panel.visible : panel.hidden}
+        {stateText(sky.earthNow)}
         {' · '}
         <span className="site-panel__number">{formatDegrees(sky.earthNow.elevationDeg)}</span>
       </Row>
@@ -79,7 +79,8 @@ function PanelBody({ status, sky }) {
         {sky.nextEarthsetUtc ? (
           <span className="site-panel__number">{formatUtc(sky.nextEarthsetUtc)}</span>
         ) : !sky.earthNow.visible && !sky.nextEarthriseUtc ? (
-          panel.earthAlwaysHidden
+          // abaixo do horizonte o período inteiro (o lado oculto) não é o relevo escondendo
+          sky.earthBelowHorizonFraction === 1 ? panel.earthNeverRises : panel.earthAlwaysHidden
         ) : (
           panel.noEarthset
         )}
@@ -116,8 +117,19 @@ function PanelBody({ status, sky }) {
           </ul>
         )}
       </Row>
+      {sky.terrain && (
+        <Row label={panel.terrain} kind="wide">
+          {sky.terrain.coarse ? panel.terrainCoarse(sky.terrain.metersPerPixel) : panel.terrainFine(sky.terrain.metersPerPixel)}
+        </Row>
+      )}
     </dl>
   )
+}
+
+/* À vista, escondido pelo relevo ou abaixo do horizonte (a noite, o lado oculto, a libração). */
+function stateText({ visible, belowHorizon }) {
+  if (visible) return panel.visible
+  return belowHorizon ? panel.belowHorizon : panel.hidden
 }
 
 /* kind: 'sun' e 'earth' põem a linha na coluna do astro, lado a lado (SitePanel.css); 'wide' ocupa

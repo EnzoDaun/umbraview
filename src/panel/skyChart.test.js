@@ -50,6 +50,11 @@ describe('a escala de altura do gráfico (elevationRange)', () => {
     expect(range.min).toBeLessThan(0)
   })
 
+  it('fora do polo, a noite funda não espreme o gráfico: a escala para em −12°', () => {
+    const range = elevationRange({ horizonDeg: [0, 1], sun: [hora(0, -58, false), hora(0, 61, true)], earth: [hora(0, 48, true)] })
+    expect(range).toEqual({ min: -12, max: 62 })
+  })
+
   it('sem o contorno do relevo, usa só o Sol e a Terra', () => {
     expect(elevationRange({ horizonDeg: [], sun: [hora(0, 40, true)], earth: [hora(0, 10, true)] })).toEqual({ min: -2, max: 41 })
   })

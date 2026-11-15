@@ -72,7 +72,7 @@ describe('céu de um ponto com o relevo do site (siteSky.js)', () => {
     const expected = summarizeSky(computeSeries(horizon, ephemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS, horizon })
 
     const sky = await createSiteSky(readFile)(TOP_1, NOV_14)
-    expect(sky).toEqual(expected)
+    expect(sky).toEqual({ ...expected, terrain: { coarse: false, metersPerPixel: 80 } })
     // a vista do chão vem com o contorno do relevo do próprio ponto, e não vazia
     expect(sky.groundView.horizonDeg).toHaveLength(360)
   })
@@ -138,11 +138,11 @@ describe('céu de um ponto com o relevo do site (siteSky.js)', () => {
     expect(computeHorizon).toHaveBeenCalledTimes(1)
   })
 
-  it('ponto fora da área com relevo é recusado sem baixar nenhum relevo', async () => {
+  it('ponto fora da área do polo usa o relevo da Lua inteira, sem baixar o relevo fino', async () => {
     const { readFile, reads } = diskReader()
-    await expect(createSiteSky(readFile)({ lat: -80, lon: 0 }, NOV_14)).rejects.toThrow(
-      'o ponto está fora da área com relevo',
-    )
-    expect(reads).toEqual(['manifest.json'])
+    const sky = await createSiteSky(readFile)({ lat: -80, lon: 0 }, NOV_14)
+    expect(sky.terrain.coarse).toBe(true)
+    expect(reads.slice(0, 2)).toEqual(['manifest.json', 'global/manifest.json'])
+    expect(reads.slice(2).every((path) => path.startsWith('global/r'))).toBe(true)
   })
 })

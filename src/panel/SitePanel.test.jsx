@@ -216,4 +216,43 @@ describe('SitePanel', () => {
       `≥ 20 min · 13 Dec 2026, 22:40 UTC – 13 Dec 2026, 23:00 UTC ${panel.continues}`,
     ])
   })
+
+  it('o astro inteiro abaixo do horizonte não é dito como escondido pelo relevo: é a noite, ou o lado oculto', () => {
+    const noite = {
+      ...sky,
+      sunNow: { elevationDeg: -31.2, visible: false, belowHorizon: true },
+      earthNow: { elevationDeg: -40, visible: false, belowHorizon: true },
+    }
+    render(<SitePanel status="ready" sky={noite} />)
+    expect(valueOf(panel.sunNow)).toHaveTextContent(panel.belowHorizon)
+    expect(valueOf(panel.earthNow)).toHaveTextContent(panel.belowHorizon)
+    expect(valueOf(panel.sunNow)).not.toHaveTextContent(panel.hidden)
+  })
+
+  it('atrás de um morro, mas acima do horizonte, continua escondido pelo relevo', () => {
+    const morro = { ...sky, earthNow: { elevationDeg: 3.21, visible: false, belowHorizon: false } }
+    render(<SitePanel status="ready" sky={morro} />)
+    expect(valueOf(panel.earthNow)).toHaveTextContent(panel.hidden)
+  })
+
+  it('no lado oculto, diz que a Terra fica abaixo do horizonte o período inteiro, e não atrás do relevo', () => {
+    const ladoOculto = {
+      ...sky,
+      earthNow: { elevationDeg: -60, visible: false, belowHorizon: true },
+      nextEarthriseUtc: null,
+      nextEarthsetUtc: null,
+      earthFraction: 0,
+      earthBelowHorizonFraction: 1,
+    }
+    render(<SitePanel status="ready" sky={ladoOculto} />)
+    expect(valueOf(panel.nextEarthset)).toHaveTextContent(panel.earthNeverRises)
+  })
+
+  it('diz de qual relevo veio o horizonte: o fino do polo, ou o da Lua inteira, com o aviso', () => {
+    const { rerender } = render(<SitePanel status="ready" sky={{ ...sky, terrain: { coarse: false, metersPerPixel: 80 } }} />)
+    expect(valueOf(panel.terrain)).toHaveTextContent(panel.terrainFine(80))
+    rerender(<SitePanel status="ready" sky={{ ...sky, terrain: { coarse: true, metersPerPixel: 1895 } }} />)
+    expect(valueOf(panel.terrain)).toHaveTextContent('1.9 km per pixel')
+    expect(valueOf(panel.terrain)).toHaveTextContent('approximate')
+  })
 })

@@ -74,6 +74,10 @@ instala tudo no Windows, do zero.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
   `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
   `useSiteSky` e entrega o resultado ao painel.
+- A Lua inteira pode ser escolhida, pelo clique: dentro de 84°S o horizonte vem do relevo fino do
+  polo; fora, do relevo da Lua inteira (`public/data/relief/global/`, 1,9 km por pixel), e o painel
+  avisa que o resultado é aproximado. O painel separa "escondido pelo relevo" de "abaixo do
+  horizonte" (a noite, o lado oculto, a libração).
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).

@@ -17,17 +17,18 @@ const SERIE = {
   earthElevationDeg: Float32Array.from([2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
   earthAzimuthDeg: Float32Array.from([60, 60.5, 61, 61.5, 62, 62.5, 63, 63.5, 64, 64.5]),
   earthMarginDeg: Float32Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+  earthHorizonDeg: Float32Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
 }
 
 describe('resultado no formato que a tela espera (docs/backlog.md, "O que a ponte entrega")', () => {
   it('tem exatamente os campos combinados', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(Object.keys(sky).sort()).toEqual(
-      ['earthFraction', 'earthNow', 'groundView', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
+      ['earthBelowHorizonFraction', 'earthFraction', 'earthNow', 'groundView', 'landingWindows', 'longestDarkHours', 'nextEarthriseUtc', 'nextEarthsetUtc',
         'nextSunriseUtc', 'nextSunsetUtc', 'period', 'sunFraction', 'sunNow'],
     )
-    expect(Object.keys(sky.sunNow).sort()).toEqual(['elevationDeg', 'visible'])
-    expect(Object.keys(sky.earthNow).sort()).toEqual(['elevationDeg', 'visible'])
+    expect(Object.keys(sky.sunNow).sort()).toEqual(['belowHorizon', 'elevationDeg', 'visible'])
+    expect(Object.keys(sky.earthNow).sort()).toEqual(['belowHorizon', 'elevationDeg', 'visible'])
   })
 
   it('o período vai do primeiro ao último instante calculado, onde termina a janela que continua', () => {
@@ -43,8 +44,8 @@ describe('resultado no formato que a tela espera (docs/backlog.md, "O que a pont
 
   it('o agora é o primeiro instante da série', () => {
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
-    expect(sky.sunNow).toEqual({ elevationDeg: 1.5, visible: true })
-    expect(sky.earthNow).toEqual({ elevationDeg: 2, visible: true })
+    expect(sky.sunNow).toEqual({ elevationDeg: 1.5, visible: true, belowHorizon: false })
+    expect(sky.earthNow).toEqual({ elevationDeg: 2, visible: true, belowHorizon: false })
   })
 
   it('o pôr do Sol vira data e hora em UTC', () => {
@@ -200,5 +201,27 @@ describe('a vista do chão: o horizonte do ponto e o caminho do Sol e da Terra p
     const sky = summarizeSky(SERIE, { minWindowHours: 2 })
     expect(sky.groundView.horizonDeg).toEqual([])
     expect(sky.groundView.sun).toHaveLength(SERIE.count)
+  })
+})
+
+describe('abaixo do horizonte não é o mesmo que escondido pelo relevo', () => {
+  it('o Sol 10° abaixo do plano do horizonte está abaixo do horizonte; a 0,5° atrás de um morro, não', () => {
+    const noite = { ...SERIE, sunElevationDeg: Float32Array.from([-10, 1.2, 0.9, 0.6, 0.3, 0, -0.3, 0.4, 0.8, 1.1]), sunFraction: Float32Array.from([0, 1, 0.8, 0.2, 0, 0, 0, 0.6, 1, 1]) }
+    expect(summarizeSky(noite, { minWindowHours: 2 }).sunNow).toEqual({ elevationDeg: -10, visible: false, belowHorizon: true })
+    const morro = { ...SERIE, sunElevationDeg: Float32Array.from([0.5, 1.2, 0.9, 0.6, 0.3, 0, -0.3, 0.4, 0.8, 1.1]), sunFraction: Float32Array.from([0, 1, 0.8, 0.2, 0, 0, 0, 0.6, 1, 1]) }
+    expect(summarizeSky(morro, { minWindowHours: 2 }).sunNow.belowHorizon).toBe(false)
+  })
+
+  it('a Terra inteira abaixo do plano do horizonte conta como abaixo, e a parte das horas assim sai no resumo', () => {
+    // a borda de cima da Terra é a margem mais o relevo: −3 + 1 = −2° nas cinco primeiras horas
+    const libracao = { ...SERIE, earthMarginDeg: Float32Array.from([-3, -3, -3, -3, -3, 1, 1, 1, 1, 1]) }
+    const sky = summarizeSky(libracao, { minWindowHours: 2 })
+    expect(sky.earthNow.belowHorizon).toBe(true)
+    expect(sky.earthBelowHorizonFraction).toBe(0.5)
+    // atrás de um morro de 1°, com a borda de cima a 0,5°: escondida, mas acima do horizonte
+    const morro = { ...SERIE, earthMarginDeg: Float32Array.from([-0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1]) }
+    const comMorro = summarizeSky(morro, { minWindowHours: 2 })
+    expect(comMorro.earthNow).toEqual({ elevationDeg: 2, visible: false, belowHorizon: false })
+    expect(comMorro.earthBelowHorizonFraction).toBe(0)
   })
 })

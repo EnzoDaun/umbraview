@@ -81,6 +81,29 @@ export function cylindricalGridRelief({
   }
 }
 
+/* Um pedaço da grade da Lua inteira do site (public/data/relief/global/, gerada por
+   scripts/prepare-data/prepare_moon_global.py): latitude e longitude, com a linha 0 no polo norte e a
+   coluna 0 na longitude 0°, crescendo para o leste. firstRow e firstColumn: onde o pedaço começa na
+   grade inteira; firstColumn pode ser negativa, quando o pedaço atravessa a longitude 0°.
+   totalColumns: as colunas da grade inteira, para a longitude dar a volta. O pedaço que cobre todas
+   as longitudes traz a primeira coluna repetida no fim, e assim a interpolação na emenda lê dois
+   pixels vizinhos como em qualquer outro lugar. */
+export function cylindricalWindowRelief({
+  heights, scale = 1, pixelsPerDegree, totalColumns, firstRow, firstColumn, rows, columns,
+}) {
+  return {
+    sample(x, y, z) {
+      const lat = Math.asin(Math.max(-1, Math.min(1, z))) * DEG
+      const lon = Math.atan2(y, x) * DEG
+      const fr = (90 - lat) * pixelsPerDegree - 0.5 - firstRow
+      // a coluna dentro do pedaço, contando a volta: o pedaço pode começar antes da longitude 0°
+      let fc = (lon * pixelsPerDegree - 0.5 - firstColumn) % totalColumns
+      if (fc < 0) fc += totalColumns
+      return bilinear(heights, columns, rows, scale, undefined, fc, fr)
+    },
+  }
+}
+
 /* Grade polar em ladrilhos quadrados, o formato do relevo fino do site (public/data/relief/near,
    gerado por scripts/prepare-data/). O ladrilho da linha r e coluna c cobre, sem contar a borda,
    x de originX + c·tileM até originX + (c + 1)·tileM e y de originY − (r + 1)·tileM até

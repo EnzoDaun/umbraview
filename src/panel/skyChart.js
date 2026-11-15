@@ -43,6 +43,10 @@ export function hourOfDate(date, period, count) {
    sobe dezenas. A faixa mínima evita que um ponto plano vire uma linha esticada na tela inteira. */
 const PADDING_DEG = 1
 const MIN_SPAN_DEG = 6
+/* Fora do polo, o Sol desce dezenas de graus abaixo do horizonte de noite. Mostrar isso tudo
+   espremeria a parte que interessa, que é o Sol e a Terra perto do relevo: a escala para aqui, e o
+   caminho mais fundo sai pela base do gráfico. */
+const FLOOR_DEG = -12
 
 export function elevationRange({ horizonDeg, sun, earth }) {
   let min = Infinity
@@ -55,7 +59,7 @@ export function elevationRange({ horizonDeg, sun, earth }) {
   sun.forEach((hour) => include(hour.elevationDeg))
   earth.forEach((hour) => include(hour.elevationDeg))
   // o plano do horizonte (0°) sempre aparece, com espaço embaixo dele
-  min = Math.floor(Math.min(min, -PADDING_DEG) - PADDING_DEG)
+  min = Math.max(FLOOR_DEG, Math.floor(Math.min(min, -PADDING_DEG) - PADDING_DEG))
   max = Math.ceil(max + PADDING_DEG)
   if (max - min < MIN_SPAN_DEG) max = min + MIN_SPAN_DEG
   return { min, max }

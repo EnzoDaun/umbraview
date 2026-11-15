@@ -189,8 +189,9 @@ export function LunarScene({
     const hit = visibleHit(event.intersections ?? []) ?? event
     const result = readMoonClick({ point: hit.point.toArray(), delta: event.delta }, manifest)
     if (!result) return
-    if (result.outside) showNotice(scene.outsideArea(Math.abs(manifest.areaMaxLatDeg)))
-    else onSelect(result.site)
+    // fora da área do polo o ponto também é escolhido; o aviso diz que o resultado ali é aproximado
+    if (result.coarse) showNotice(scene.coarseTerrain(Math.abs(manifest.areaMaxLatDeg)))
+    onSelect(result.site)
   }
 
   /* Os controles chamam isto quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou
