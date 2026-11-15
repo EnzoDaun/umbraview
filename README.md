@@ -61,8 +61,9 @@ instala tudo no Windows, do zero.
   ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
   período e as janelas de pouso.
 - O mapa das áreas com janela de pouso (o botão "Show landing areas", junto da cena): pinta sobre
-  o relevo, até 84°S, os lugares que têm janela de pouso no período da data escolhida, pela mesma
-  regra da lista do painel. Os horizontes de uma grade de 5 km são calculados antes, por
+  a Lua os lugares que têm janela de pouso no período da data escolhida, pela mesma regra da lista
+  do painel. Até 84°S, com uma grade de 5 km e o relevo fino; no resto da Lua, com uma grade de 2°
+  (61 km) e o relevo da Lua inteira. Os horizontes das duas grades são calculados antes, por
   `scripts/prepare-data/prepare-landing-grid.mjs`, e a conta de cada data roda num Worker
   (`src/engine/landingAreas.js`).
 - A vista do sistema (o seletor "Earth, Moon and Sun", em cima da cena): a Terra, a Lua na órbita
@@ -335,7 +336,7 @@ umbraview/
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
 │   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
 │   │   ├── CameraRig.jsx            a câmera: a Lua inteira enquadrada até a pessoa mexer, e o voo até o ponto escolhido
-│   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre o relevo do polo
+│   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre a Lua
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
 │   │   ├── MoonGlobe.jsx            a esfera da Lua inteira, com a cor e o relevo de verdade

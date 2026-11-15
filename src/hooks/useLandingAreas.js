@@ -15,8 +15,8 @@ const IDLE = { status: 'idle', areas: null }
 /* dateUtc: a data (um Date). enabled: se o mapa está ligado. createWorker: quem cria o Worker; só os
    testes trocam, e precisa ser sempre a mesma função, porque está nas dependências do efeito.
    Devolve { status, areas }: status é 'idle' (desligado), 'loading', 'ready' ou 'error'; areas, no
-   'ready', é { flags, layout, elapsedMs }: um byte por ponto da grade (1 com janela de pouso), o
-   desenho da grade e quanto a conta levou. */
+   'ready', é { flags, layout, global, elapsedMs }: um byte por ponto da grade do polo (1 com janela de
+   pouso), o desenho dela, o mesmo par da grade da Lua inteira (ou null) e quanto a conta levou. */
 export function useLandingAreas(dateUtc, enabled, createWorker = workerOfPage) {
   const [result, setResult] = useState(IDLE)
   const worker = useRef(null)
@@ -50,7 +50,10 @@ export function useLandingAreas(dateUtc, enabled, createWorker = workerOfPage) {
         console.error('useLandingAreas: a conta do mapa das áreas de pouso falhou', data.error)
         setResult({ status: 'error', areas: null })
       } else {
-        setResult({ status: 'ready', areas: { flags: data.flags, layout: data.layout, elapsedMs: data.elapsedMs } })
+        setResult({
+          status: 'ready',
+          areas: { flags: data.flags, layout: data.layout, global: data.global ?? null, elapsedMs: data.elapsedMs },
+        })
       }
     }
     active.addEventListener('message', onMessage)

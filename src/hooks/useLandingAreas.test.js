@@ -42,6 +42,8 @@ describe('useLandingAreas', () => {
     expect(result.current.status).toBe('ready')
     expect(Array.from(result.current.areas.flags)).toEqual([1, 0])
     expect(result.current.areas.elapsedMs).toBe(12)
+    // sem a grade da Lua inteira na resposta, o campo dela vem null, e não undefined
+    expect(result.current.areas.global).toBeNull()
   })
 
   it('a resposta de uma data velha, chegando depois da troca, não entra na tela', async () => {

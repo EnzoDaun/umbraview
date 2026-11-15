@@ -139,6 +139,8 @@ describe('LunarScene', () => {
     mapa.resultado = { status: 'error', areas: null }
     rerender(<LunarScene dateUtc={NEXT_DAY} showLandingAreas />)
     expect(screen.getByText(scene.landingError)).toBeInTheDocument()
+    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: 61 })).toContain('61 km on the rest of the Moon')
+    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: null })).not.toContain('rest of the Moon')
     mapa.resultado = { status: 'idle', areas: null }
   })
 

@@ -9,7 +9,7 @@ import { useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useState } from 'react'
 import { SRGBColorSpace, Texture } from 'three'
 
-import { globeTextureWindow, setSouthColor } from './moonGlobe.js'
+import { globalLandingShader, globeTextureWindow, setSouthColor } from './moonGlobe.js'
 import { moonImagesOfPage } from './moonImages.js'
 
 /* Triângulos da esfera: com o mapa de normais, a luz não depende deles, mas a borda da Lua contra
@@ -91,12 +91,14 @@ export function MoonGlobe({ color, thetaLength, far }) {
       {/* O polygonOffset empurra a esfera um pouco para trás na profundidade: na faixa em que ela
           passa por baixo da borda do relevo, as duas ficam no mesmo raio, e sem isto piscariam
           disputando o mesmo pixel. A key refaz o material quando as imagens chegam: o three só
-          decide uma vez, ao montar o shader, se o material tem imagem. */}
+          decide uma vez, ao montar o shader, se o material tem imagem. O onBeforeCompile põe no
+          shader o mapa das áreas de pouso da Lua inteira (moonGlobe.js). */}
       <meshStandardMaterial
         key={textures ? 'textured' : 'plain'}
         color={textures ? WHITE : color}
         map={textures?.map ?? null}
         normalMap={textures?.normalMap ?? null}
+        onBeforeCompile={globalLandingShader}
         polygonOffset
         polygonOffsetFactor={1}
         polygonOffsetUnits={1}

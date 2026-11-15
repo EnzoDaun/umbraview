@@ -5,12 +5,14 @@
  * arquivos de public/data/relief/), e grava em public/data/landing-grid/. No site, a cada data,
  * src/engine/landingAreas.js só compara o Sol e a Terra com esses horizontes.
  *
- * A grade do polo sul: um ponto a cada 5 km na projeção polar, até 84°S (a área em que dá para
- * escolher um ponto com o relevo fino). Formato: polar.bin, com 360 bytes por ponto (o horizonte,
- * encodeGridHorizon), e manifest.json, com a coluna e a linha de cada ponto na grade.
+ * São duas grades. A do polo sul: um ponto a cada 5 km na projeção polar, até 84°S (a área com o
+ * relevo fino). A da Lua inteira: um ponto a cada 2° de latitude, com o mesmo espaçamento em
+ * quilômetros nas longitudes (globalGridPoints), com o relevo da Lua inteira, bem mais grosso.
+ * Formato: polar.bin e global.bin, com 360 bytes por ponto (o horizonte, encodeGridHorizon), e
+ * manifest.json, com o desenho de cada grade.
  *
  * Como rodar, na raiz do repositório: node scripts/prepare-data/prepare-landing-grid.mjs
- * Leva alguns minutos. No fim, confere uma amostra: o sim ou não do mapa contra o das janelas de
+ * Leva uns 15 minutos (3 da grade do polo e o resto da grade da Lua inteira). No fim, confere uma amostra: o sim ou não do mapa contra o das janelas de
  * pouso com o horizonte inteiro, sem o arredondamento do byte.
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -20,8 +22,10 @@ import { HORIZON, MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from '../../src/engine
 import { computeEphemeris } from '../../src/engine/ephemeris.js'
 import { MOON_RADIUS_M, polarXYToUnit, unitToLatLon } from '../../src/engine/geometry.js'
 import { computeHorizon } from '../../src/engine/horizon.js'
-import { encodeGridHorizon, evaluateLandingGrid, GRID_DIRECTIONS } from '../../src/engine/landingAreas.js'
-import { isInsideReliefArea, loadReliefLayers } from '../../src/engine/reliefFiles.js'
+import {
+  encodeGridHorizon, evaluateLandingGrid, globalGridPoints, globalGridVectors, GRID_DIRECTIONS,
+} from '../../src/engine/landingAreas.js'
+import { isInsideReliefArea, loadGlobalReliefLayers, loadReliefLayers } from '../../src/engine/reliefFiles.js'
 import { computeSeries, findLandingWindows } from '../../src/engine/series.js'
 
 const ROOT = join(import.meta.dirname, '..', '..')
@@ -34,6 +38,8 @@ const POLAR_STEP_M = 5000
 // A data da conferência do fim: qualquer uma serve, e esta é a do começo do hackathon.
 const CHECK_DATE_MS = Date.UTC(2026, 10, 14)
 const CHECK_EVERY = 25
+// O passo da grade da Lua inteira, em graus: 61 km entre as faixas, uns 10 mil pontos ao todo.
+const GLOBAL_STEP_DEG = 2
 
 const readRelief = async (path) => {
   const bytes = await readFile(join(RELIEF, path))
@@ -72,8 +78,24 @@ async function main() {
     if (i % 500 === 0) console.log(`${i} de ${grid.cells.length} pontos, ${Math.round((Date.now() - started) / 1000)} s`)
   }
 
+  // A grade da Lua inteira, com o relevo de public/data/relief/global/. O cache dos ladrilhos é
+  // esvaziado de tempos em tempos: são 648 ladrilhos, e os pontos seguem faixa por faixa.
+  const globalManifest = JSON.parse(await readFile(join(RELIEF, 'global', 'manifest.json'), 'utf8'))
+  const globalPoints = globalGridPoints(GLOBAL_STEP_DEG, manifest.areaMaxLatDeg)
+  const globalVectors = globalGridVectors(globalPoints)
+  const globalHorizons = new Uint8Array(globalPoints.length * GRID_DIRECTIONS)
+  let globalCache = new Map()
+  for (let i = 0; i < globalPoints.length; i++) {
+    const point = [globalVectors[3 * i], globalVectors[3 * i + 1], globalVectors[3 * i + 2]]
+    if (globalCache.size > 120) globalCache = new Map()
+    const horizon = computeHorizon(await loadGlobalReliefLayers(globalManifest, point, readRelief, globalCache), point, HORIZON)
+    globalHorizons.set(encodeGridHorizon(horizon.elevationsRad), i * GRID_DIRECTIONS)
+    if (i % 1000 === 0) console.log(`Lua inteira: ${i} de ${globalPoints.length} pontos, ${Math.round((Date.now() - started) / 1000)} s`)
+  }
+
   await mkdir(OUT, { recursive: true })
   await writeFile(join(OUT, 'polar.bin'), horizons)
+  await writeFile(join(OUT, 'global.bin'), globalHorizons)
   const description = {
     source: 'Horizontes calculados por scripts/prepare-data/prepare-landing-grid.mjs com o relevo de public/data/relief/',
     directions: GRID_DIRECTIONS,
@@ -87,6 +109,13 @@ async function main() {
       points: grid.cells.length,
       // a coluna e a linha de cada ponto, na ordem do arquivo: c0, r0, c1, r1...
       cells: grid.cells.flatMap(({ column, row }) => [column, row]),
+    },
+    // a posição de cada ponto sai de globalGridPoints(stepDeg, polarMaxLatDeg), em landingAreas.js
+    global: {
+      file: 'global.bin',
+      stepDeg: GLOBAL_STEP_DEG,
+      polarMaxLatDeg: manifest.areaMaxLatDeg,
+      points: globalPoints.length,
     },
   }
   await writeFile(join(OUT, 'manifest.json'), JSON.stringify(description) + '\n')
@@ -105,6 +134,10 @@ async function main() {
   console.log(`OK: ${grid.cells.length} pontos, ${(horizons.length / 1e6).toFixed(2)} MB em public/data/landing-grid/polar.bin`)
   console.log(`OK: em 14/11/2026, ${withWindow} pontos têm janela de pouso (${((100 * withWindow) / flags.length).toFixed(1)}%)`)
   console.log(`OK: o mapa e as janelas com o horizonte inteiro concordam em ${same} de ${exact.length} pontos da amostra`)
+  const globalFlags = evaluateLandingGrid({ horizons: globalHorizons, points: globalVectors }, ephemeris, { minWindowHours: MIN_LANDING_WINDOW_HOURS, mastM: HORIZON.mastM })
+  const globalWithWindow = globalFlags.reduce((sum, flag) => sum + flag, 0)
+  console.log(`OK: Lua inteira, ${globalPoints.length} pontos, ${(globalHorizons.length / 1e6).toFixed(2)} MB em public/data/landing-grid/global.bin`)
+  console.log(`OK: em 14/11/2026, ${globalWithWindow} pontos da Lua inteira têm janela de pouso (${((100 * globalWithWindow) / globalFlags.length).toFixed(1)}%)`)
 }
 
 await main()

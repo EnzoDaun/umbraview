@@ -55,7 +55,28 @@ export const landingUniforms = {
   uLandingFrame: { value: [0, 0, 1] },
   uLandingColor: { value: [0, 0, 0] },
   uLandingStrength: { value: 0 },
+  // a máscara da Lua inteira, na projeção de latitude e longitude (globalLandingMask), e a força dela
+  uGlobalLandingMask: { value: null },
+  uGlobalLandingStrength: { value: 0 },
 }
+
+/* Liga a máscara da Lua inteira, para a esfera e para a parte do relevo do polo que fica fora da
+   grade fina. A cor é a mesma do mapa do polo (setLandingMask). Com texture null, desliga. */
+export function setGlobalLandingMask(texture, color) {
+  landingUniforms.uGlobalLandingMask.value = texture
+  landingUniforms.uGlobalLandingStrength.value = texture ? 1 : 0
+  if (texture) landingUniforms.uLandingColor.value = color
+}
+
+/* O trecho de shader que lê a máscara da Lua inteira no ponto unit (a direção do ponto na cena): a
+   longitude 0° fica em +x e cresce para −z (coordinates.js), e a máscara começa na longitude 0°. */
+const GLOBAL_LANDING_GLSL = `
+float globalLandingAt(vec3 unit) {
+  float longitude = atan(-unit.z, unit.x);
+  float latitude = asin(clamp(unit.y, -1.0, 1.0));
+  vec2 uv = vec2(fract(longitude / 6.283185307), latitude / 3.141592654 + 0.5);
+  return texture2D(uGlobalLandingMask, uv).r * uGlobalLandingStrength;
+}`
 
 /* Liga o mapa: texture é a textura do three com a máscara (landingMask, em landingGridFiles.js),
    layout é o desenho da grade, color é a cor em vermelho, verde e azul de 0 a 1. Com texture null,
@@ -78,6 +99,10 @@ export function setLandingMask(texture, layout, color) {
    escolhida, e a mancha não pode sumir junto com a luz. */
 const LANDING_TINT = 0.35
 const LANDING_GLOW = 0.22
+/* Na esfera, o mapa da Lua inteira cobre o lado visível quase todo: mais fraco que no polo, para a
+   Lua continuar aparecendo por baixo dele. */
+const GLOBE_LANDING_TINT = 0.2
+const GLOBE_LANDING_GLOW = 0.1
 
 /* Liga a cor polar: texture é a textura do three com a color-south.jpg, far é o campo far do
    manifesto do relevo. Com null, desliga. Quem chama pede o quadro novo à cena. */
@@ -116,7 +141,10 @@ uniform sampler2D uLandingMask;
 uniform vec3 uLandingFrame;
 uniform vec3 uLandingColor;
 uniform float uLandingStrength;
-varying vec3 vSouthPosition;`,
+uniform sampler2D uGlobalLandingMask;
+uniform float uGlobalLandingStrength;
+varying vec3 vSouthPosition;
+${GLOBAL_LANDING_GLSL}`,
       )
       .replace(
         '#include <color_fragment>',
@@ -136,11 +164,44 @@ varying vec3 vSouthPosition;`,
   );
   // fora da grade a máscara não vale: sem isto, a borda dela se repetiria pelo relevo afora
   float landingInside = step(0.0, landingUv.x) * step(landingUv.x, 1.0) * step(0.0, landingUv.y) * step(landingUv.y, 1.0);
-  float landing = texture2D(uLandingMask, landingUv).r * landingInside * uLandingStrength;
+  // a grade fina vale até 84°S; dali para fora, no relevo do polo, vale a da Lua inteira
+  float landing = max(
+    texture2D(uLandingMask, landingUv).r * landingInside * uLandingStrength,
+    globalLandingAt(southUnit)
+  );
   diffuseColor.rgb = mix(diffuseColor.rgb, uLandingColor, ${LANDING_TINT.toFixed(2)} * landing);
   totalEmissiveRadiance += uLandingColor * (${LANDING_GLOW.toFixed(2)} * landing);
 }`,
       )
   }
   return material
+}
+
+/* O onBeforeCompile do material da esfera da Lua: faz ele ler o mapa das áreas de pouso da Lua
+   inteira, pela posição do vértice na cena, como as malhas do relevo. A cena entrega esta função ao
+   material (MoonGlobe.jsx). */
+export function globalLandingShader(shader) {
+  Object.assign(shader.uniforms, landingUniforms)
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vGlobePosition;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlobePosition = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      '#include <common>',
+      `#include <common>
+uniform sampler2D uGlobalLandingMask;
+uniform float uGlobalLandingStrength;
+uniform vec3 uLandingColor;
+varying vec3 vGlobePosition;
+${GLOBAL_LANDING_GLSL}`,
+    )
+    .replace(
+      '#include <color_fragment>',
+      `#include <color_fragment>
+{
+  float landing = globalLandingAt(normalize(vGlobePosition));
+  diffuseColor.rgb = mix(diffuseColor.rgb, uLandingColor, ${GLOBE_LANDING_TINT.toFixed(2)} * landing);
+  totalEmissiveRadiance += uLandingColor * (${GLOBE_LANDING_GLOW.toFixed(2)} * landing);
+}`,
+    )
 }

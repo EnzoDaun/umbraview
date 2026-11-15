@@ -16,7 +16,10 @@ export const scene = {
   landingToggle: 'Show landing areas',
   landingLoading: 'Finding the areas with a landing window…',
   landingError: "Couldn't calculate the landing areas. Reload the page to try again.",
-  // found e total: pontos da grade; stepKm: o passo dela; limitDeg: até onde a grade vai.
-  landingReady: ({ found, total, stepKm, limitDeg }) =>
-    `${found} of ${total} points checked (one every ${stepKm} km, down to ${limitDeg}°S) have a landing window in this period.`,
+  // found e total: pontos das duas grades somados; stepKm e limitDeg: o passo da grade fina e até
+  // onde ela vai; globalStepKm: o passo da grade do resto da Lua, ou null se o site não tem essa.
+  landingReady: ({ found, total, stepKm, limitDeg, globalStepKm }) =>
+    globalStepKm === null
+      ? `${found} of ${total} points checked (one every ${stepKm} km, down to ${limitDeg}°S) have a landing window in this period.`
+      : `${found} of ${total} points checked have a landing window in this period (one every ${stepKm} km south of ${limitDeg}°S, one every ${globalStepKm} km on the rest of the Moon).`,
 }

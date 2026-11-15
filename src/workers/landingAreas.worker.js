@@ -3,7 +3,8 @@
  * conta roda. A conta é do motor (landingAreas.js); aqui fica só a conversa com a página.
  *
  * A página manda { id, dateMs, baseUrl }: o número do pedido, a data (milissegundos UTC) e a pasta
- * da grade. A resposta é { id, flags, layout, elapsedMs } ou { id, error }. A grade é lida uma vez
+ * da grade. A resposta é { id, flags, layout, global, elapsedMs } ou { id, error }; global é
+ * { flags, layout } da grade da Lua inteira, ou null se o site não tem uma. A grade é lida uma vez
  * e fica guardada para as próximas datas.
  */
 import { HORIZON, MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from '../engine/config.js'
@@ -30,14 +31,13 @@ function gridOf(baseUrl) {
 
 self.onmessage = async ({ data: { id, dateMs, baseUrl } }) => {
   try {
-    const { horizons, points, layout } = await gridOf(baseUrl)
+    const { horizons, points, layout, global } = await gridOf(baseUrl)
     const started = performance.now()
     const ephemeris = computeEphemeris(dateMs, PERIOD_DAYS * 24, 1)
-    const flags = evaluateLandingGrid({ horizons, points }, ephemeris, {
-      minWindowHours: MIN_LANDING_WINDOW_HOURS,
-      mastM: HORIZON.mastM,
-    })
-    self.postMessage({ id, flags, layout, elapsedMs: performance.now() - started })
+    const options = { minWindowHours: MIN_LANDING_WINDOW_HOURS, mastM: HORIZON.mastM }
+    const flags = evaluateLandingGrid({ horizons, points }, ephemeris, options)
+    const globalResult = global && { flags: evaluateLandingGrid(global, ephemeris, options), layout: global.layout }
+    self.postMessage({ id, flags, layout, global: globalResult, elapsedMs: performance.now() - started })
   } catch (error) {
     self.postMessage({ id, error: String(error) })
   }

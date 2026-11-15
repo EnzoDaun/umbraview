@@ -6,7 +6,8 @@ import { sites } from '../data/sites.js'
 import { latLonToUnit, unitToPolarXY } from '../engine/geometry.js'
 import { latLonToScene } from './coordinates.js'
 import {
-  applySouthColor, globeTextureUv, globeTextureWindow, landingUniforms, setLandingMask, southColorUv, southColorUniforms,
+  applySouthColor, globalLandingShader, globeTextureUv, globeTextureWindow, landingUniforms, setGlobalLandingMask, setLandingMask,
+  southColorUv, southColorUniforms,
 } from './moonGlobe.js'
 
 const FAR = { x0: -384960, y0: 384960, columns: 802, rows: 802, resolutionM: 960 }
@@ -101,5 +102,28 @@ describe('a cor do polo sul nas malhas do relevo', () => {
     expect(landingUniforms.uLandingFrame.value[2]).toBeCloseTo(370000 / 1737400, 12)
     setLandingMask(null)
     expect(landingUniforms.uLandingStrength.value).toBe(0)
+  })
+
+  it('a esfera da Lua lê o mapa da Lua inteira, e o relevo do polo também, fora da grade fina', () => {
+    const fonte = () => ({
+      uniforms: {},
+      vertexShader: '#include <common>\nvoid main() {\n#include <begin_vertex>\n}',
+      fragmentShader: '#include <common>\nvoid main() {\n#include <color_fragment>\n}',
+    })
+    const esfera = fonte()
+    globalLandingShader(esfera)
+    expect(esfera.uniforms.uGlobalLandingMask).toBe(landingUniforms.uGlobalLandingMask)
+    expect(esfera.fragmentShader).toContain('globalLandingAt(normalize(vGlobePosition))')
+    const relevo = fonte()
+    applySouthColor(new MeshStandardMaterial()).onBeforeCompile(relevo)
+    expect(relevo.fragmentShader).toContain('globalLandingAt(southUnit)')
+
+    expect(landingUniforms.uGlobalLandingStrength.value).toBe(0)
+    const mascara = { nome: 'textura' }
+    setGlobalLandingMask(mascara, [0.2, 0.8, 0.5])
+    expect(landingUniforms.uGlobalLandingMask.value).toBe(mascara)
+    expect(landingUniforms.uGlobalLandingStrength.value).toBe(1)
+    setGlobalLandingMask(null)
+    expect(landingUniforms.uGlobalLandingStrength.value).toBe(0)
   })
 })

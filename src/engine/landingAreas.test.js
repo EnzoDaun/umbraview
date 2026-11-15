@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest'
 import { MIN_LANDING_WINDOW_HOURS } from './config.js'
 import { computeEphemeris } from './ephemeris.js'
 import { latLonToUnit, localFrame } from './geometry.js'
-import { GRID_DIRECTIONS, decodeGridHorizon, encodeGridHorizon, evaluateLandingGrid, gridHorizonOf } from './landingAreas.js'
+import {
+  GRID_DIRECTIONS, decodeGridHorizon, encodeGridHorizon, evaluateLandingGrid, globalGridPoints, globalGridVectors, gridHorizonOf,
+} from './landingAreas.js'
 import { computeSeries, findLandingWindows } from './series.js'
 
 const GRAU = Math.PI / 180
@@ -67,5 +69,36 @@ describe('quais pontos da grade têm janela de pouso no período (evaluateLandin
     expect(horizon.observerHeightM).toBe(2)
     expect(horizon.frame).toEqual(localFrame(pontos[2]))
     expect(horizon.elevationsRad[10] / GRAU).toBeCloseTo(2, 5)
+  })
+})
+
+describe('a grade da Lua inteira (globalGridPoints)', () => {
+  const pontos = globalGridPoints(2, -84)
+
+  it('tem faixas de 2° de latitude, com 180 pontos no equador e menos perto dos polos', () => {
+    const equador = pontos.filter((ponto) => ponto.lat === 1)
+    expect(equador).toHaveLength(180)
+    expect(equador[0].lon).toBeCloseTo(1, 12)
+    const perto = pontos.filter((ponto) => ponto.lat === 89)
+    expect(perto.length).toBeLessThan(6)
+    expect(perto.length).toBeGreaterThan(0)
+  })
+
+  it('deixa de fora a área do polo sul, que tem a grade própria', () => {
+    expect(Math.min(...pontos.map((ponto) => ponto.lat))).toBe(-83)
+    expect(Math.max(...pontos.map((ponto) => ponto.lat))).toBe(89)
+  })
+
+  it('o espaçamento em quilômetros é parecido em toda latitude: a área por ponto varia pouco', () => {
+    // a área de uma faixa é proporcional ao cosseno da latitude; dividida pelos pontos dela, dá a área de cada um
+    const areaPorPonto = (lat) => Math.cos((lat * Math.PI) / 180) / pontos.filter((ponto) => ponto.lat === lat).length
+    expect(areaPorPonto(61) / areaPorPonto(1)).toBeGreaterThan(0.9)
+    expect(areaPorPonto(61) / areaPorPonto(1)).toBeLessThan(1.1)
+  })
+
+  it('os vetores saem na mesma ordem, com tamanho 1', () => {
+    const vetores = globalGridVectors(pontos)
+    expect(vetores).toHaveLength(pontos.length * 3)
+    expect(Math.hypot(vetores[0], vetores[1], vetores[2])).toBeCloseTo(1, 12)
   })
 })

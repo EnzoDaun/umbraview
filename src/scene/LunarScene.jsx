@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react'
 import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
+import { MOON_RADIUS_M } from '../engine/geometry.js'
 import { useFarRelief } from '../hooks/useFarRelief.js'
 import { useLandingAreas } from '../hooks/useLandingAreas.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
@@ -131,11 +132,15 @@ const METERS_PER_KM = 1000
 function landingStatusText({ status, areas }, manifest) {
   if (status === 'error') return scene.landingError
   if (status === 'ready' && manifest) {
+    const count = (flags) => flags.reduce((sum, flag) => sum + flag, 0)
+    const { global } = areas
     return scene.landingReady({
-      found: areas.flags.reduce((sum, flag) => sum + flag, 0),
-      total: areas.flags.length,
+      found: count(areas.flags) + (global ? count(global.flags) : 0),
+      total: areas.flags.length + (global ? global.flags.length : 0),
       stepKm: areas.layout.stepM / METERS_PER_KM,
       limitDeg: Math.abs(manifest.areaMaxLatDeg),
+      // o passo da grade da Lua inteira, de graus para quilômetros no chão
+      globalStepKm: global ? Math.round((global.layout.stepDeg * Math.PI * MOON_RADIUS_M) / 180 / METERS_PER_KM) : null,
     })
   }
   return status === 'loading' ? scene.landingLoading : ''
@@ -249,8 +254,7 @@ export function LunarScene({
             {relief && <Relief relief={relief} color={moonColor} />}
           </group>
           {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
-          {/* só com o relevo: é nas malhas dele que o mapa é pintado */}
-          {relief && <LandingAreasLayer areas={landing.areas} color={token('--color-success')} />}
+          <LandingAreasLayer areas={landing.areas} color={token('--color-success')} />
           {site && <SiteMarker site={site} relief={relief} />}
           {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto; com
               um ponto escolhido, a câmera voa até ele */}

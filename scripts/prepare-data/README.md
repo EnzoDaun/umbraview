@@ -204,10 +204,11 @@ O endereço do HYG tem `media` no caminho, e não `raw`: o arquivo fica no Git L
 pelo `raw` chega só um ponteiro de 133 bytes. O `prepare_stars.py` confere o arquivo e para se ele
 não for o HYG 4.4 esperado.
 
-## 9. A grade do mapa das áreas de pouso
+## 9. As grades do mapa das áreas de pouso
 
-O mapa das áreas com janela de pouso usa o horizonte, já calculado, de uma grade de pontos
-(`public/data/landing-grid/`). Ele só precisa ser refeito se o relevo de `public/data/relief/` ou os
+O mapa das áreas com janela de pouso usa o horizonte, já calculado, de duas grades de pontos
+(`public/data/landing-grid/`): a do polo sul, de 5 km, com o relevo fino, e a da Lua inteira, de 2°,
+com o relevo de `public/data/relief/global/`. Elas só precisam ser refeitas se o relevo ou os
 parâmetros do horizonte (`src/engine/config.js`) mudarem. Não usa Python: roda com o Node do projeto.
 
 **Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
@@ -217,14 +218,16 @@ parâmetros do horizonte (`src/engine/config.js`) mudarem. Não usa Python: roda
 node scripts\prepare-data\prepare-landing-grid.mjs
 ```
 
-Leva uns 3 minutos e mostra o andamento a cada 500 pontos. Saída esperada, no fim, medida em
-15/11/2026:
+Leva uns 15 minutos (3 da grade do polo e o resto da grade da Lua inteira) e mostra o andamento.
+Saída esperada, no fim, medida em 15/11/2026:
 
 ```
 OK: 4152 pontos, 1.49 MB em public/data/landing-grid/polar.bin
 OK: em 14/11/2026, 1540 pontos têm janela de pouso (37.1%)
 OK: o mapa e as janelas com o horizonte inteiro concordam em 166 de 167 pontos da amostra
+OK: Lua inteira, 10284 pontos, 3.70 MB em public/data/landing-grid/global.bin
+OK: em 14/11/2026, 5105 pontos da Lua inteira têm janela de pouso (49.6%)
 ```
 
-A última linha é a conferência: o horizonte de cada ponto é guardado em passos de 0,2°, e um ponto
+A terceira linha é a conferência: o horizonte de cada ponto é guardado em passos de 0,2°, e um ponto
 no limite pode trocar de lado por causa do arredondamento.
