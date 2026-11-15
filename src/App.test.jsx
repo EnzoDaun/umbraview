@@ -104,6 +104,17 @@ describe('App, esqueleto da tela', () => {
     render(<App />)
     expect(within(screen.getByRole('contentinfo')).getByText(app.footer)).toBeInTheDocument()
   })
+
+  it('o rodapé marca o logo feito com IA e linka o código (card E19)', () => {
+    render(<App />)
+    const rodape = within(screen.getByRole('contentinfo'))
+    expect(rodape.getByText(app.credits.ai, { exact: false })).toBeInTheDocument()
+    expect(rodape.getByText(app.credits.data, { exact: false })).toBeInTheDocument()
+    expect(rodape.getByRole('link', { name: app.credits.source })).toHaveAttribute(
+      'href',
+      app.credits.sourceUrl,
+    )
+  })
 })
 
 describe('App, o ponto escolhido na cena vai para o painel (card E11)', () => {

@@ -11,4 +11,13 @@ export const app = {
     title: 'Landing site',
   },
   footer: 'Umbra Team · NASA Space Apps Challenge 2026',
+  // O guia de submissão de 2026 pede marca visível em toda imagem feita com IA, e o logo está na
+  // aba do navegador, onde não cabe marca legível: a marca fica aqui, na mesma página (card E19).
+  credits: {
+    data: 'Terrain: NASA LOLA',
+    source: 'Source code',
+    sourceUrl: 'https://github.com/EnzoDaun/umbraview',
+    ai: 'Logo AI-generated and code AI-assisted (Claude, Anthropic)',
+    separator: ' · ',
+  },
 }
