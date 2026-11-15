@@ -35,7 +35,9 @@ vi.mock('./StarField.jsx', () => ({ StarField: (props) => { ceu(props); return n
 const globo = vi.fn()
 const enquadramento = vi.fn()
 vi.mock('./MoonGlobe.jsx', () => ({ MoonGlobe: (props) => { globo(props); return null } }))
-vi.mock('./CameraRig.jsx', () => ({ CameraRig: (props) => { enquadramento(props); return null } }))
+// a câmera desta versão é uma peça só (o CameraControls do Drei, em CameraRig.jsx): é ela que
+// recebe os limites do zoom, o giro sozinho e o ponto escolhido
+vi.mock('./CameraRig.jsx', () => ({ CameraRig: (props) => { enquadramento(props); controles(props); return null } }))
 // o mapa das áreas de pouso roda num Worker, que o jsdom não tem: o teste dá o resultado pronto
 const mapa = vi.hoisted(() => ({ pedidos: [], resultado: { status: 'idle', areas: null } }))
 vi.mock('../hooks/useLandingAreas.js', () => ({
@@ -85,15 +87,15 @@ describe('LunarScene', () => {
     expect(far).toBeNull()
   })
 
-  it('a Lua fica enquadrada sozinha até a pessoa mexer na câmera ou escolher um ponto', () => {
+  it('a câmera recebe a direção do Sol, para a primeira vista, e o pedido de volta à Lua inteira', async () => {
     sistemaPede(false)
-    const { rerender } = render(<LunarScene dateUtc={DATA} />)
-    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(true)
-    rerender(<LunarScene dateUtc={DATA} site={{ lat: -89.475, lon: -137.44 }} />)
-    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(false)
-    rerender(<LunarScene dateUtc={DATA} />)
-    act(() => ultimosControles().onStart())
-    expect(enquadramento.mock.calls.at(-1)[0].fitting).toBe(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const { subsolar, homeSignal, insets } = enquadramento.mock.calls.at(-1)[0]
+    expect(subsolar).toMatchObject({ lat: expect.any(Number), lon: expect.any(Number) })
+    // o painel desta versão fica ao lado da cena: nada cobre a Lua
+    expect(insets).toEqual({ right: 0, bottom: 0 })
+    act(() => screen.getByRole('button', { name: scene.wholeMoon }).click())
+    expect(enquadramento.mock.calls.at(-1)[0].homeSignal).toBe(homeSignal + 1)
   })
 
   it('a câmera recebe o ponto escolhido, para voar até ele, e o pedido de menos movimento, para pular', () => {
@@ -159,7 +161,7 @@ describe('LunarScene', () => {
   it('com o pedido de menos movimento, não gira sozinha nem desliza depois de soltar o mouse', () => {
     sistemaPede(true)
     render(<LunarScene dateUtc={DATA} />)
-    expect(ultimosControles()).toMatchObject({ autoRotate: false, enableDamping: false })
+    expect(ultimosControles()).toMatchObject({ autoRotate: false, reducedMotion: true })
   })
 
   it('sem o pedido, gira devagar sozinha', () => {
@@ -178,7 +180,7 @@ describe('LunarScene', () => {
 
     // os controles chamam o onStart quando a pessoa aperta o botão esquerdo ou o do meio, usa a
     // roda ou toca na tela
-    const { onStart } = ultimosControles()
+    const { onUserStart: onStart } = ultimosControles()
     expect(onStart).toBeTypeOf('function')
     act(() => onStart())
     expect(ultimosControles()).toMatchObject({ autoRotate: false })
@@ -209,17 +211,17 @@ describe('LunarScene', () => {
   it('com o pedido de menos movimento, mexer na Lua não muda nada: ela já estava parada', () => {
     sistemaPede(true)
     render(<LunarScene dateUtc={DATA} />)
-    const { onStart } = ultimosControles()
+    const { onUserStart: onStart } = ultimosControles()
     expect(onStart).toBeTypeOf('function')
     act(() => onStart())
-    expect(ultimosControles()).toMatchObject({ autoRotate: false, enableDamping: false })
+    expect(ultimosControles()).toMatchObject({ autoRotate: false, reducedMotion: true })
   })
 
-  it('arrastar não tira a Lua do centro, e o zoom tem limite', () => {
+  it('o zoom tem limite', () => {
+    // o arrasto que tiraria a Lua do centro é desligado no próprio CameraRig (o botão direito)
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
     const props = ultimosControles()
-    expect(props.enablePan).toBe(false)
     expect(props.minDistance).toBeGreaterThan(1)
     expect(props.maxDistance).toBeGreaterThan(props.minDistance)
   })
@@ -232,7 +234,7 @@ describe('LunarScene', () => {
     expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('always')
 
     // parada, a cena ainda custava 6 ms por quadro, 144 vezes por segundo (medido no C4)
-    act(() => ultimosControles().onStart())
+    act(() => ultimosControles().onUserStart())
     expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('demand')
   })
 

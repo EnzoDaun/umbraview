@@ -8,7 +8,7 @@
  * contadas a partir do centro dela. O relevo está na altura real (reliefMesh.js diz o porquê). */
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Object3D } from 'three'
 
 import { scene } from '../data/scene.js'
@@ -18,9 +18,8 @@ import { useLandingAreas } from '../hooks/useLandingAreas.js'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js'
 import { useSubsolarPoint } from '../hooks/useSubsolarPoint.js'
 import { useTimedNotice } from '../hooks/useTimedNotice.js'
-import { AreaRing } from './AreaRing.jsx'
 import { CameraRig } from './CameraRig.jsx'
-import { latLonToScene } from './coordinates.js'
+import { CAMERA_FOV_DEG, heroDirection } from './framing.js'
 import { LandingAreasLayer } from './LandingAreasLayer.jsx'
 import { MoonGlobe } from './MoonGlobe.jsx'
 import { NearRelief } from './NearRelief.jsx'
@@ -33,39 +32,40 @@ import { StarField } from './StarField.jsx'
 import { SUN_DISTANCE, SUN_TARGET, sunLightPosition } from './sunLight.js'
 import './LunarScene.css'
 
-/* A câmera começa do lado do polo sul, que é onde o relevo fino e os locais conhecidos estão, mas
-   inclinada para o lado da Lua virado para a Terra: assim a primeira tela mostra a Lua inteira, com
-   os mares, e o polo embaixo. A distância daqui vale só até o primeiro quadro: o CameraRig acerta
-   a distância para a Lua caber na cena, qualquer que seja o formato da tela.
+/* A câmera é a do CameraRig.jsx (o CameraControls do Drei): ela enquadra a Lua inteira no formato
+   da tela, aproxima com a roda ou a pinça, e voa até o ponto escolhido. A direção de onde ela
+   nasce sai do Sol da data (framing.js: abaixo do equador e a oeste do Sol, para o polo sul ficar
+   embaixo e a linha entre o dia e a noite cruzar o disco). A distância daqui vale só até o
+   primeiro quadro: o CameraRig acerta a distância para a Lua caber na cena.
    A câmera nunca fica exatamente no eixo y, que é o "para cima" dos controles: ali a direção dela e
    o "para cima" ficam paralelos e a rotação fica indefinida. */
-const CAMERA_START = { latDeg: -52, lonDeg: 12, distance: 4.2 }
-const CAMERA_POSITION = latLonToScene(CAMERA_START.latDeg, CAMERA_START.lonDeg).map((v) => v * CAMERA_START.distance)
-
-/* Campo de visão estreito, de teleobjetiva: com o padrão do three (75°), a Lua de perto parece uma
-   bola deformada, e as bordas dela fogem. Com 35°, ela parece a Lua vista de longe. */
-const CAMERA_FOV = 35
+const CAMERA_START_DISTANCE = 6
 
 /* Com o relevo na altura real, as montanhas só aparecem de perto: 1.02 deixa a câmera descer a
-   uns 35 km do polo, e o pico mais alto do relevo fica a 7 km. O máximo cobre a distância em que a
-   Lua inteira cabe numa tela de celular em pé (framing.js): uns 8,5 raios. */
+   uns 35 km do polo, e o pico mais alto do relevo fica a 7 km. O máximo vai muito além da distância
+   em que a Lua inteira cabe na tela (uns 11 raios no celular em pé, framing.js). Até 90 raios a Lua
+   vai ficando pequena e o céu de estrelas enche em volta dela; dali em diante a câmera sai de
+   dentro do próprio céu, e a 3.000 raios as estrelas todas cabem num aglomerado pequeno, com a
+   Lua no meio (StarField.jsx e starPoints.js). O botão "Show the whole Moon" traz a câmera de
+   volta. */
 const MIN_DISTANCE = 1.02
-const MAX_DISTANCE = 12
+const MAX_DISTANCE = 3000
+
+/* O painel desta versão fica ao lado da cena, e não por cima dela. Só a faixa dos botões, embaixo,
+   fica por cima: sem medir, a câmera enquadra a Lua na cena inteira. */
+const NO_INSETS = Object.freeze({ right: 0, bottom: 0 })
 
 /* O plano mais perto que a câmera desenha. O padrão do three (0.1, ou 174 km) cortaria a
    superfície quando a câmera desce a 35 km dela. O far cobre a Lua inteira vista de longe (as
    estrelas não dependem dele: StarField.jsx). */
 const CAMERA_NEAR = 0.001
-const CAMERA_FAR = 30
+const CAMERA_FAR = 4000
 
 const SUN_INTENSITY = 2.5
 
 /* Fraco de propósito: só para o lado escuro não sumir no fundo. Forte, ele apagaria a sombra, que
    é o assunto do produto. */
 const AMBIENT_INTENSITY = 0.06
-
-// Devagar: é um convite a mexer, não uma animação para assistir.
-const AUTO_ROTATE_SPEED = 0.3
 
 /* A caixa da sombra, em volta do polo (sunLight.js). O relevo vai até uns 0,22 do polo para cada
    lado; 0,25 cobre ele visto de qualquer direção. Com 2048 pixels nesses 0,5, cada pixel da
@@ -91,8 +91,8 @@ const SHADOW_TYPE = 'percentage'
 /* Com a Lua parada, a cena só desenha quando algo muda. Desenhando a cada quadro da tela, ela
    parada custava os mesmos 6 ms por quadro de quando gira, 144 vezes por segundo numa tela de
    144 Hz, gastando bateria sem mudar nada (card C4). Pedem quadro sozinhos: os controles quando a
-   pessoa move a câmera, inclusive no deslize depois de soltar o mouse (o OrbitControls do Drei
-   chama o invalidate), e o React Three Fiber quando uma prop muda ou um objeto entra na cena (a
+   pessoa move a câmera ou ela voa até um ponto, inclusive no deslize depois de soltar o mouse (o
+   CameraControls do Drei chama o invalidate), e o React Three Fiber quando uma prop muda ou um objeto entra na cena (a
    luz de outra data, o relevo que chega, o marcador). O que mudar a cena por fora do React precisa
    pedir o quadro com invalidate().
    Enquanto ela gira sozinha, a cena desenha todo quadro: o passo do giro em cada quadro fica abaixo
@@ -172,6 +172,26 @@ export function LunarScene({
      avisa o onStart, e a lista de locais (card I2) nem passa pelos controles. Sem o !site, o
      marcador sairia andando com a Lua (card C10). */
   const autoRotate = !reducedMotion && !hasMoved && !site
+  // cada pedido de volta ao quadro com a Lua inteira soma um: a câmera reage à mudança do número
+  const [homeSignal, setHomeSignal] = useState(0)
+  /* Quanto a faixa dos botões cobre da parte de baixo da cena, em pixels: a câmera enquadra a Lua
+     no que sobra em cima dela. No celular os dois botões ficam um embaixo do outro e cobriam o
+     polo sul, que é o assunto do site (visto no navegador em 390 × 844). Sem ResizeObserver (o
+     navegador simulado dos testes), nada é medido, e a Lua é enquadrada na cena inteira. */
+  const controlsRef = useRef(null)
+  const [insets, setInsets] = useState(NO_INSETS)
+  useEffect(() => {
+    const element = controlsRef.current
+    if (!element || typeof ResizeObserver === 'undefined') return undefined
+    const observer = new ResizeObserver(([entry]) => {
+      const bottom = Math.round(entry.contentRect.height)
+      setInsets((current) => (current.bottom === bottom ? current : { right: 0, bottom }))
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+  // a câmera nasce na direção da primeira vista; a distância certa para a tela vem do CameraRig
+  const [cameraStart] = useState(() => heroDirection(subsolar).map((v) => v * CAMERA_START_DISTANCE))
 
   const sunPosition = useMemo(() => sunLightPosition(subsolar), [subsolar])
   /* O alvo da luz precisa estar na cena para o three saber onde ele fica; solto, ele conta como
@@ -199,12 +219,10 @@ export function LunarScene({
     onSelect(result.site)
   }
 
-  /* Os controles chamam isto quando a pessoa aperta o botão esquerdo ou o do meio, usa a roda ou
-     toca na tela, inclusive no clique que escolhe um ponto. Com o pan desligado, o botão direito e
-     o esquerdo com Ctrl, Shift ou Cmd não chegam aqui; o ponto que esse clique escolhe para o giro
-     pelo site, no autoRotate (card C10). O giro desligado não volta: voltar sozinho depois de um
-     tempo seria a Lua andando de novo enquanto a pessoa lê o ponto. */
-  function handleControlsStart() {
+  /* A câmera chama isto quando a pessoa aperta o botão do mouse, usa a roda ou toca na tela,
+     inclusive no clique que escolhe um ponto. O giro desligado não volta: voltar sozinho depois de
+     um tempo seria a Lua andando de novo enquanto a pessoa lê o ponto. */
+  function handleUserStart() {
     setHasMoved(true)
   }
 
@@ -222,7 +240,7 @@ export function LunarScene({
              O resto das opções do React Three Fiber continua igual. */
           gl={{ stencil: true, antialias: false }}
           shadows={SHADOW_TYPE}
-          camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV, near: CAMERA_NEAR, far: CAMERA_FAR }}
+          camera={{ position: cameraStart, fov: CAMERA_FOV_DEG, near: CAMERA_NEAR, far: CAMERA_FAR }}
         >
           {/* O fundo pintado pelo three, e não a cor da página por trás de um canvas transparente:
               as estrelas são semitransparentes, e sobre um canvas transparente a borda delas
@@ -253,27 +271,28 @@ export function LunarScene({
                 e a esfera lisa é aberta no polo; fora do grupo, o clique ali não acharia nada. */}
             {relief && <Relief relief={relief} color={moonColor} />}
           </group>
-          {relief && <AreaRing relief={relief} color={token('--color-text-muted')} />}
           <LandingAreasLayer areas={landing.areas} color={token('--color-success')} />
           {site && <SiteMarker site={site} relief={relief} />}
-          {/* o enquadramento automático vale até a pessoa mexer na câmera ou escolher um ponto; com
-              um ponto escolhido, a câmera voa até ele */}
-          <CameraRig fitting={!hasMoved && !site} site={site} reducedMotion={reducedMotion} />
-          <OrbitControls
-            enablePan={false}
+          {/* a câmera enquadra a Lua inteira, gira devagar até a pessoa mexer, voa até o ponto
+              escolhido e volta ao quadro amplo quando o botão pede */}
+          <CameraRig
+            subsolar={subsolar}
+            insets={insets}
+            site={site}
+            reducedMotion={reducedMotion}
+            autoRotate={autoRotate}
+            homeSignal={homeSignal}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            autoRotate={autoRotate}
-            autoRotateSpeed={AUTO_ROTATE_SPEED}
-            enableDamping={!reducedMotion}
-            onStart={handleControlsStart}
+            systemMaxDistance={MAX_DISTANCE}
+            onUserStart={handleUserStart}
           />
         </Canvas>
       </div>
       {/* O mapa das áreas de pouso: o botão liga e desliga, e a linha ao lado diz o que a conta
           achou. O aria-live faz o leitor de tela ler a linha quando ela muda, sem ser um segundo
           role="status" na cena: o do aviso do clique continua o único. */}
-      <div className="lunar-scene__landing">
+      <div className="lunar-scene__landing" ref={controlsRef}>
         <button
           className="lunar-scene__toggle"
           type="button"
@@ -281,6 +300,9 @@ export function LunarScene({
           onClick={onToggleLandingAreas}
         >
           {scene.landingToggle}
+        </button>
+        <button className="lunar-scene__toggle" type="button" onClick={() => setHomeSignal((count) => count + 1)}>
+          {scene.wholeMoon}
         </button>
         <p className="lunar-scene__landing-status" aria-live="polite">
           {landingStatusText(landing, manifest)}

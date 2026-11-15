@@ -12,6 +12,9 @@ export const scene = {
   // (areaMaxLatDeg), para o texto não ficar com um número velho se a área mudar.
   coarseTerrain: (limitDeg) =>
     `North of ${limitDeg}°S the horizon comes from coarser terrain: results there are approximate.`,
+  // O botão que leva a câmera de volta ao quadro com a Lua inteira, depois de a pessoa ter
+  // chegado perto ou voado até um ponto.
+  wholeMoon: 'Show the whole Moon',
   // O mapa das áreas com janela de pouso: o botão junto da cena e a linha que diz o que ele achou.
   landingToggle: 'Show landing areas',
   landingLoading: 'Finding the areas with a landing window…',
