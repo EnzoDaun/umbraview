@@ -1854,7 +1854,7 @@ novo.
 
 ### I8 · O nascer do Sol e a Terra no painel
 
-**Estado:** a fazer · **Depende de:** E18 (feito)
+**Estado:** feito em 15/11, PR #39 · **Depende de:** E18 (feito)
 
 **Para que serve.** Com o Sol escondido agora, o painel mostra o próximo pôr ("Next sunset"), que
 nesse caso é o pôr depois do próximo nascer (`nextSunset`, `src/engine/series.js`), mas não diz
