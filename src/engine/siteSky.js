@@ -17,7 +17,7 @@ import { HORIZON, MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from './config.js'
 import { computeEphemeris } from './ephemeris.js'
 import { latLonToUnit } from './geometry.js'
 import { computeHorizon } from './horizon.js'
-import { loadReliefLayers } from './reliefFiles.js'
+import { globalMetersPerPixel, isInsideReliefArea, loadGlobalReliefLayers, loadReliefLayers } from './reliefFiles.js'
 import { computeSeries } from './series.js'
 import { summarizeSky } from './summary.js'
 
@@ -42,24 +42,44 @@ function remember(drawer, key, load) {
 export function createSiteSky(readFile) {
   const reliefCache = new Map()
   const manifest = { entry: null }
+  const globalManifest = { entry: null }
   const horizon = { entry: null }
   let lastEphemeris = null
 
-  const readManifest = () =>
-    remember(manifest, 'manifest.json', async () => JSON.parse(new TextDecoder().decode(await readFile('manifest.json'))))
+  const readJson = async (path) => JSON.parse(new TextDecoder().decode(await readFile(path)))
+  const readManifest = () => remember(manifest, 'manifest.json', () => readJson('manifest.json'))
+  // o manifesto do relevo da Lua inteira só é lido quando alguém escolhe um ponto fora do polo
+  const readGlobalManifest = () => remember(globalManifest, 'global/manifest.json', () => readJson('global/manifest.json'))
 
   /* site: { lat, lon } em graus. startMs: o começo do período, em milissegundos UTC. Devolve o sky
-     de "O que a ponte entrega para a tela" (docs/backlog.md). Ponto fora da área com relevo é
-     recusado por loadReliefLayers antes de baixar qualquer ladrilho. */
+     de "O que a ponte entrega para a tela" (docs/backlog.md). Dentro da área do polo sul
+     (manifest.areaMaxLatDeg), o horizonte vem do relevo fino; fora dela, do relevo da Lua inteira,
+     bem mais grosso, e o resultado avisa (sky.terrain). */
   return async function siteSky({ lat, lon }, startMs) {
     const point = latLonToUnit(lat, lon)
     const manifestData = await readManifest()
+    const polar = isInsideReliefArea(manifestData, lat)
+    const globalData = polar ? null : await readGlobalManifest()
     const pointHorizon = await remember(horizon, `${lat} ${lon}`, async () =>
-      computeHorizon(await loadReliefLayers(manifestData, point, readFile, reliefCache), point, HORIZON),
+      computeHorizon(
+        polar
+          ? await loadReliefLayers(manifestData, point, readFile, reliefCache)
+          : await loadGlobalReliefLayers(globalData, point, readFile, reliefCache),
+        point,
+        HORIZON,
+      ),
     )
     if (lastEphemeris === null || lastEphemeris.startMs !== startMs) {
       lastEphemeris = computeEphemeris(startMs, COUNT, STEP_HOURS)
     }
-    return summarizeSky(computeSeries(pointHorizon, lastEphemeris), { minWindowHours: MIN_LANDING_WINDOW_HOURS })
+    return {
+      ...summarizeSky(computeSeries(pointHorizon, lastEphemeris), {
+        minWindowHours: MIN_LANDING_WINDOW_HOURS,
+        horizon: pointHorizon,
+      }),
+      terrain: polar
+        ? { coarse: false, metersPerPixel: manifestData.near.resolutionM }
+        : { coarse: true, metersPerPixel: globalMetersPerPixel(globalData) },
+    }
   }
 }

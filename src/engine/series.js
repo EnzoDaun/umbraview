@@ -89,6 +89,12 @@ const BODIES = {
   earth: { value: earthValue, visible: isEarthVisible },
 }
 
+/* kind: 'sun' ou 'earth'. Se o astro está à vista no instante i, pela regra de cima. Para quem
+   mostra hora a hora (a vista do chão, em summary.js) dizer o mesmo que o pôr e as janelas. */
+export function isVisibleAt(kind, series, i) {
+  return BODIES[kind].visible(series, i)
+}
+
 /* Hora (fracionária) entre i − 1 e i em que o valor cruza zero, em linha reta. */
 function crossing(value, series, i) {
   const a = value(series, i - 1)

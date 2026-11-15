@@ -13,6 +13,10 @@ export const panel = {
   earthNow: 'Earth now',
   visible: 'In view',
   hidden: 'Hidden by terrain',
+  // O astro inteiro abaixo do plano do horizonte: a noite, no caso do Sol; o lado oculto ou a
+  // libração, no caso da Terra. Mudar o ponto alguns quilômetros não resolve, e por isso o texto é
+  // outro que o de um morro na frente.
+  belowHorizon: 'Below the horizon',
   // De quando a quando valem os números "in this period" (card I6).
   period: 'Period',
   // Só com o Sol escondido agora: quando a luz volta (card I8).
@@ -28,6 +32,8 @@ export const panel = {
   nextEarthset: 'Next Earthset',
   noEarthset: "The Earth doesn't set in this period.",
   earthAlwaysHidden: 'The Earth stays behind the terrain for the whole period.',
+  // O lado oculto da Lua, ou um ponto em que a libração não traz a Terra acima do horizonte.
+  earthNeverRises: 'The Earth stays below the horizon for the whole period: no direct link to Earth from here.',
   earthInView: 'Earth in view in the period',
   landingWindows: 'Landing windows',
   noWindows: 'No landing window in this period.',
@@ -35,6 +41,11 @@ export const panel = {
   // sem o marcador, a pessoa leria aquela data como um nascer ou um pôr do Sol de verdade.
   alreadyOpen: '(already open)',
   continues: '(continues)',
+  // De qual relevo veio o horizonte do ponto, e com que detalhe (sky.terrain).
+  terrain: 'Terrain data',
+  terrainFine: (metersPerPixel) => `NASA LOLA, ${metersPerPixel} m per pixel.`,
+  terrainCoarse: (metersPerPixel) =>
+    `NASA LOLA, ${(metersPerPixel / 1000).toFixed(1)} km per pixel. Outside the south-pole area the horizon is approximate.`,
   // A lista de locais de pouso (card I2).
   siteListLabel: 'Known sites',
   siteListPlaceholder: 'Choose a site…',

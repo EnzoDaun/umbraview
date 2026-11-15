@@ -1,0 +1,13 @@
+{
+  "source": "LOLA, pelo CGI Moon Kit da NASA (SVS 4720): ldem_16_uint.tif; gerado por scripts/prepare-data/prepare_moon_global.py",
+  "pixelsPerDegree": 16,
+  "tileDegrees": 10,
+  "tilePx": 160,
+  "tileRows": 18,
+  "tileColumns": 36,
+  "rows": 2880,
+  "columns": 5760,
+  "heightScale": 1,
+  "minHeightM": -8982,
+  "maxHeightM": 10686
+}

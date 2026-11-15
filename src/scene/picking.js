@@ -16,13 +16,14 @@ export const CLICK_MAX_DRAG_PX = 4
 /* event: o evento do onClick do React Three Fiber; só usa o point (o ponto atingido, na cena) e o
    delta (quanto o mouse andou desde que foi apertado). manifest: o manifest.json do relevo, ou
    null enquanto ele não chegou.
-   Devolve { site: { lat, lon } } para escolher o ponto, { outside: true } para avisar que ele está
-   fora da área com relevo, ou null para não fazer nada. Sem o manifesto, a área não é conhecida, e
-   o motor também não teria como calcular o ponto: o clique espera ele chegar. */
+   Devolve { site: { lat, lon }, coarse } para escolher o ponto, ou null para não fazer nada. A Lua
+   inteira pode ser escolhida; coarse diz que o ponto fica fora da área do polo sul, onde o
+   horizonte vem do relevo da Lua inteira, bem mais grosso, e a cena avisa. Sem o manifesto, a área
+   não é conhecida, e o motor também não teria como calcular o ponto: o clique espera ele chegar. */
 export function readMoonClick({ point, delta }, manifest) {
   if (delta > CLICK_MAX_DRAG_PX || !manifest) return null
   const site = sceneToLatLon(point)
-  return isInsideReliefArea(manifest, site.lat) ? { site } : { outside: true }
+  return { site, coarse: !isInsideReliefArea(manifest, site.lat) }
 }
 
 /* A altura do relevo grosso (far.bin) no pixel onde o ponto cai, em metros acima do raio de

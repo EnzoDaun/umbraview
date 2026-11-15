@@ -4,9 +4,11 @@
  * USGS desenhou para cada uma (o comentário delas, mais abaixo, diz como). As fontes também estão
  * no CREDITS.md.
  *
- * Só entram os locais que o site calcula hoje, os que ficam dentro do relevo, até 84°S (card E2).
- * Das 9 regiões candidatas do Artemis III, Nobile Rim 2 e Peak near Cabeus B têm o centro ao norte
- * disso; elas e os outros 31 locais da planilha ficam de fora até o card E8 trazer o relevo deles.
+ * Na v2 o motor calcula a Lua inteira (contrato C4): fora do relevo do polo, que vai até 84°S, ele
+ * usa o relevo global, de 1,9 km por pixel, e o painel avisa que o resultado é menos preciso. Com
+ * isso entraram as duas regiões candidatas do Artemis III com o centro ao norte de 84°S, Nobile
+ * Rim 2 e Peak near Cabeus B. Os outros 31 locais da planilha continuam de fora: a coordenada de
+ * cada um ainda não foi conferida contra a fonte (card E8), e sem fonte a linha não entra.
  *
  * landedAtUtc é null nas regiões candidatas: é isso que separa os dois grupos da lista
  * (src/panel/SiteList.jsx). */
@@ -95,6 +97,29 @@ export const sites = [
     agency: 'NASA',
     lat: -85.4364,
     lon: 37.347,
+    landedAtUtc: null,
+    sourceUrl: 'https://doi.org/10.5066/P1MEQ6UK',
+  },
+  {
+    id: 'artemis-n2',
+    // O centro fica ao norte de 84°S, fora do relevo fino: o painel usa o relevo global (v2, C4).
+    name: 'Nobile Rim 2 (center)',
+    mission: 'Artemis III',
+    agency: 'NASA',
+    lat: -83.9541,
+    lon: 58.8215,
+    landedAtUtc: null,
+    sourceUrl: 'https://doi.org/10.5066/P1MEQ6UK',
+  },
+  {
+    id: 'artemis-cb',
+    // Também ao norte de 84°S, com o relevo global. O USGS escreve "Peak Near Cabeus B"; o nome
+    // daqui é o da NASA (NTRS 20250011660).
+    name: 'Peak near Cabeus B (center)',
+    mission: 'Artemis III',
+    agency: 'NASA',
+    lat: -83.6375,
+    lon: -68.7495,
     landedAtUtc: null,
     sourceUrl: 'https://doi.org/10.5066/P1MEQ6UK',
   },

@@ -29,6 +29,8 @@ import {
   RGBAFormat,
 } from 'three'
 
+import { applySouthColor } from './moonGlobe.js'
+
 // o valor que o fino grava nos pixels dele
 const FINE = 1
 
@@ -61,7 +63,8 @@ const LAYERS_IN_ORDER = [CENTER_LAYER, RING_LAYER, COARSE_LAYER].sort((a, b) => 
    para os ladrilhos do relevo fino. As normais dele estão no espaço do objeto, que é o da cena: a
    malha do ladrilho não tem posição nem giro próprios. */
 export function createLayerMaterial(layer, color, { normalMap = null } = {}) {
-  const material = new MeshStandardMaterial({ color, ...layer.material })
+  // a cor da imagem polar entra por cima da cor lisa quando a imagem chega (moonGlobe.js)
+  const material = applySouthColor(new MeshStandardMaterial({ color, ...layer.material }))
   if (normalMap) {
     material.normalMap = normalMap
     material.normalMapType = ObjectSpaceNormalMap
