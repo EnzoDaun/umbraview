@@ -1,6 +1,6 @@
 # UmbraView
 
-## In English
+## Overview
 
 UmbraView shows, for any site near the Moon's south pole and any date, when the Sun and the
 Earth are above that site's real horizon, built from NASA's LOLA terrain. It is the Umbra Team's
@@ -9,7 +9,7 @@ project for the *Lunar Landing Site Navigator* challenge of the NASA Space Apps 
 - **Live site:** [enzodaun.github.io/umbraview](https://enzodaun.github.io/umbraview/),
   published by GitHub Pages on every merge into `main`.
 - **Run it locally:** `npm install`, then `npm run dev`. The Node version and the commands are in
-  *Como rodar*, below. `npm run verify` runs lint, tests, build and the build check, the same as
+  *How to run*, below. `npm run verify` runs lint, tests, build and the build check, the same as
   the CI.
 - **Data:** NASA's LOLA polar elevation models, checked against NASA's average visibility maps
   and JPL's SPICE. Every data source, library and license is listed in
@@ -19,232 +19,235 @@ project for the *Lunar Landing Site Navigator* challenge of the NASA Space Apps 
   site footer. The statement is at the end of [docs/uso-de-ia.md](docs/uso-de-ia.md), in English.
 - **License:** MIT, for the code and the logo ([LICENSE](LICENSE)).
 
-The rest of this README and the project documentation are in Portuguese, the team's working
-language.
+---
+
+A site that shows, for a site on the Moon, when the Sun and the Earth are above the real
+horizon, with the terrain measured by NASA, and helps choose where and when to land.
+
+A project by the **Umbra Team** for the *Lunar Landing Site Navigator* challenge of the NASA Space
+Apps Challenge 2026 (14 and 15/11/2026).
+
+It is a static site: every calculation runs in the browser, with no server. Its address is in
+the Overview section, above.
+
+**Before opening your first PR, read [CONTRIBUTING.md](CONTRIBUTING.md).** It has the branch
+rule and the Claude rule, and neither of them is optional.
+
+First time in the project? Start with [`docs/primeiros-passos.md`](docs/primeiros-passos.md): it
+installs everything on Windows, from scratch.
 
 ---
 
-Site que mostra, para um ponto da Lua, quando o Sol e a Terra ficam acima do horizonte de
-verdade, com o relevo medido pela NASA, e ajuda a escolher onde e quando pousar.
+## What already exists
 
-Projeto da **Umbra Team** para o desafio *Lunar Landing Site Navigator* do NASA Space Apps
-Challenge 2026 (14 e 15/11/2026).
-
-É um site estático: toda conta roda no navegador, sem servidor. O endereço dele está na seção
-em inglês, acima.
-
-**Antes de abrir o primeiro PR, leia o [CONTRIBUTING.md](CONTRIBUTING.md).** Ele tem a regra
-de branch e a regra do Claude, e as duas não são opcionais.
-
-Primeira vez no projeto? Comece por [`docs/primeiros-passos.md`](docs/primeiros-passos.md): ele
-instala tudo no Windows, do zero.
-
----
-
-## O que já existe
-
-- A tela com as regiões do produto: cabeçalho; à esquerda, a cena da Lua e, embaixo dela, o céu
-  do ponto em desenho; à direita, o painel do ponto escolhido, com os controles e os números.
-- A Lua inteira na cena, com a cor e o relevo de verdade (NASA, *CGI Moon Kit*), enquadrada em
-  qualquer formato de tela, sobre o céu de estrelas do catálogo HYG, na posição em que elas estão
-  na data escolhida (`src/scene/MoonGlobe.jsx` e `StarField.jsx`).
-- O céu do ponto em desenho (`src/panel/SiteSky.jsx`): a vista do chão, com o contorno do relevo
-  em 360° e o caminho do Sol e da Terra no período, cheio onde aparecem e tracejado onde o relevo
-  esconde; e a linha do tempo do período, com o Sol, a Terra e as janelas de pouso, e um cursor que
-  marca a hora no gráfico e pode virar a data do cálculo. Os números vêm do `sky.groundView`.
-- A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
-  (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
-  da data e a sombra das montanhas (card C2). De perto, onde a máquina aguenta, o relevo fino (dos
-  dados de 80 m) cobre a tela, com um vértice a cada 400 m no meio dela e a cada 800 m em volta, e
-  a luz dos 80 m em toda parte: as crateras pequenas aparecem (card C6). Um clique perto do polo
-  escolhe um ponto e põe um marcador nele (card C3), e o painel da direita mostra o céu desse
-  ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
-  período e as janelas de pouso.
-- O mapa das áreas com janela de pouso (o botão "Show landing areas", junto da cena): pinta sobre
-  a Lua os lugares que têm janela de pouso no período da data escolhida, pela mesma regra da lista
-  do painel. Até 84°S, com uma grade de 5 km e o relevo fino; no resto da Lua, com uma grade de 2°
-  (61 km) e o relevo da Lua inteira. Os horizontes das duas grades são calculados antes, por
-  `scripts/prepare-data/prepare-landing-grid.mjs`, e a conta de cada data roda num Worker
-  (`src/engine/landingAreas.js`).
-- A vista do sistema (o seletor "Earth, Moon and Sun", em cima da cena): a Terra, a Lua na órbita
-  dela e a direção do Sol, com as posições, os eixos e a libração do motor (`src/engine/system.js`),
-  fora de escala, e um relógio próprio que anda pelo período sem mudar a data do cálculo.
-- No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
-  (card I2): o pouso do IM-2 e o centro de 7 das 9 regiões candidatas do Artemis III (card E16).
-  Também no painel, a data e a hora em UTC, que começam na hora em que a página abriu (card
-  I4). Os dois mudam a cena e o painel juntos (card E14).
-- O motor de cálculo (`src/engine/`): o horizonte de um ponto, o Sol e a Terra hora a hora, o
-  próximo pôr do Sol e as janelas de pouso, conferido contra o SPICE do JPL e o pyproj.
-- A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
-  `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
-  `useSiteSky` e entrega o resultado ao painel.
-- A Lua inteira pode ser escolhida, pelo clique: dentro de 84°S o horizonte vem do relevo fino do
-  polo; fora, do relevo da Lua inteira (`public/data/relief/global/`, 1,9 km por pixel), e o painel
-  avisa que o resultado é aproximado. O painel separa "escondido pelo relevo" de "abaixo do
-  horizonte" (a noite, o lado oculto, a libração).
-- O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
-  `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
+- The screen with the product's regions: header; on the left, the Moon scene and, below it, the
+  site's sky as a drawing; on the right, the panel for the chosen site, with the controls and the
+  numbers.
+- The whole Moon in the scene, with its real color and terrain (NASA, *CGI Moon Kit*), framed in
+  any screen shape, over the sky of stars from the HYG catalog, in the position they are in on the
+  chosen date (`src/scene/MoonGlobe.jsx` and `StarField.jsx`).
+- The site's sky as a drawing (`src/panel/SiteSky.jsx`): the view from the ground, with the terrain
+  outline in 360° and the path of the Sun and the Earth over the period, solid where they appear
+  and dashed where the terrain hides them; and the timeline of the period, with the Sun, the Earth
+  and the landing windows, and a cursor that marks the hour on the chart and can become the
+  calculation date. The numbers come from `sky.groundView`.
+- The 3D Moon in the scene region (`src/scene/`), which rotates with the mouse and zooms with the
+  wheel (card C1). Near the south pole, it shows the real terrain, at its real height, with the
+  Sun's light for the date and the shadow of the mountains (card C2). Up close, where the machine
+  can handle it, the fine terrain (from the 80 m data) covers the screen, with one vertex every
+  400 m in the middle of it and every 800 m around it, and the 80 m lighting everywhere: the small
+  craters show up (card C6). A click near the pole chooses a site and puts a marker on it (card
+  C3), and the panel on the right shows that site's sky on the same date (cards I1 and E11): the
+  Sun and the Earth now, the next sunset, the light over the period and the landing windows.
+- The map of areas with a landing window (the "Show landing areas" button, next to the scene): it
+  paints over the Moon the places that have a landing window in the period of the chosen date, by
+  the same rule as the panel's list. Down to 84°S, with a 5 km grid and the fine terrain; on the
+  rest of the Moon, with a 2° grid (61 km) and the whole-Moon terrain. The horizons of both grids
+  are computed beforehand, by `scripts/prepare-data/prepare-landing-grid.mjs`, and the calculation
+  for each date runs in a Worker (`src/engine/landingAreas.js`).
+- The system view (the "Earth, Moon and Sun" selector, above the scene): the Earth, the Moon in
+  its orbit and the direction of the Sun, with the positions, axes and libration from the engine
+  (`src/engine/system.js`), not to scale, and its own clock that moves through the period without
+  changing the calculation date.
+- In the panel, the list of landing sites, which also chooses the site, including by keyboard
+  alone (card I2): the IM-2 landing and the center of 7 of the 9 Artemis III candidate regions
+  (card E16). Also in the panel, the date and time in UTC, which start at the time the page was
+  opened (card I4). Both change the scene and the panel together (card E14).
+- The calculation engine (`src/engine/`): a site's horizon, the Sun and the Earth hour by hour,
+  the next sunset and the landing windows, checked against JPL's SPICE and pyproj.
+- The bridge between the engine and the screen (`src/hooks/`): `useSiteSky` delivers the sky of
+  the chosen site, and `useSubsolarPoint`, the direction of the Sun. The scene uses
+  `useSubsolarPoint`; `App.jsx` calls `useSiteSky` and hands the result to the panel.
+- Any point on the whole Moon can be chosen, by clicking: inside 84°S the horizon comes from the
+  pole's fine terrain; outside, from the whole-Moon terrain (`public/data/relief/global/`, 1.9 km
+  per pixel), and the panel warns that the result is approximate. The panel separates "hidden by
+  the terrain" from "below the horizon" (night, the far side, libration).
+- The south pole terrain down to 84°S (`public/data/relief/`), cropped from NASA's files by
+  `scripts/prepare-data/`, and the comparison of the engine's horizon with NASA's (numbers in card
   E1).
-- Os tokens de cor, espaço, tipo e movimento (`src/styles/tokens.css`), com o contraste de
-  cada par de cor conferido por teste.
-- As travas que impedem o Claude de fazer commit ou de assinar um (CONTRIBUTING.md, seção 4).
-- O `verify`, que roda lint, testes, build e a conferência do build, e o CI, que roda o mesmo
-  `verify` em todo PR.
+- The color, spacing, type and motion tokens (`src/styles/tokens.css`), with the contrast of
+  each color pair checked by a test.
+- The safeguards that stop Claude from making a commit or signing one (CONTRIBUTING.md, section
+  4).
+- `verify`, which runs lint, tests, build and the build check, and the CI, which runs the same
+  `verify` on every PR.
 
-O que falta, quem faz e como cada peça se encaixa estão no [backlog](docs/backlog.md).
+What is missing, who does it and how each piece fits together are in the
+[backlog](docs/backlog.md).
 
 ---
 
-## Como rodar
+## How to run
 
-Precisa do Node 24.15 ou mais novo e do Git for Windows. O passo a passo para instalar os dois
-está em [`docs/primeiros-passos.md`](docs/primeiros-passos.md).
+You need Node 24.15 or newer and Git for Windows. The step-by-step guide to install both is in
+[`docs/primeiros-passos.md`](docs/primeiros-passos.md).
 
-**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+**Machine: yours · Shell: Windows PowerShell · folder: repository root.**
 
 ```powershell
-# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+# PASTE INTO WINDOWS POWERSHELL, NOT GIT BASH
 npm install; if ($LASTEXITCODE -eq 0) { npm run dev }
 ```
 
-- `npm install` baixa as dependências e liga o gancho de commit deste clone. No meio da saída
-  tem que aparecer `ganchos: core.hooksPath = .githooks (...)`. Se aparecer `esta pasta não é
-  um repositório git`, você está numa cópia sem git (um zip, por exemplo): o site roda, mas o
-  gancho fica desligado. Dois avisos do npm aparecem e podem ser ignorados
-  ([`docs/primeiros-passos.md`](docs/primeiros-passos.md), passo 6).
-- `npm run dev` sobe o site em `http://localhost:5173`. Ele fica rodando; para parar, `Ctrl+C`.
+- `npm install` downloads the dependencies and turns on this clone's commit hook. In the middle of
+  the output you should see `ganchos: core.hooksPath = .githooks (...)`. If you see `esta pasta não
+  é um repositório git`, you are in a copy without git (a zip, for example): the site runs, but the
+  hook stays off. Two npm warnings appear and can be ignored
+  ([`docs/primeiros-passos.md`](docs/primeiros-passos.md), step 6).
+- `npm run dev` starts the site at `http://localhost:5173`. It keeps running; to stop it, `Ctrl+C`.
 
-| Comando | O que faz |
+| Command | What it does |
 |---|---|
-| `npm run dev` | Sobe o site em modo de desenvolvimento, recarregando a cada arquivo salvo. |
-| `npm run test` | Roda os testes uma vez. |
-| `npm run lint` | Confere o código. Warning conta como erro (`--max-warnings 0`). |
-| `npm run build` | Gera o site final em `dist/`. |
-| `npm run verify` | Lint, testes, build e a conferência do build, nessa ordem. É o que o CI roda. |
+| `npm run dev` | Starts the site in development mode, reloading on every saved file. |
+| `npm run test` | Runs the tests once. |
+| `npm run lint` | Checks the code. A warning counts as an error (`--max-warnings 0`). |
+| `npm run build` | Generates the final site in `dist/`. |
+| `npm run verify` | Lint, tests, build and the build check, in that order. It is what the CI runs. |
 
 ---
 
-## Onde procurar cada coisa
+## Where to find each thing
 
-| Pergunta | Onde |
+| Question | Where |
 |---|---|
-| Como trabalhar no repositório (branch, commit, PR, Claude) | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| O que eu faço agora | [`docs/backlog.md`](docs/backlog.md), procure o seu nome |
-| Por que uma biblioteca está numa versão antiga | "Versões fixas", abaixo |
-| De onde vem cada dado e cada biblioteca | [`CREDITS.md`](CREDITS.md) |
-| Como o projeto declara o uso de IA (o Space Apps exige) | [`docs/uso-de-ia.md`](docs/uso-de-ia.md) |
-| O que o Claude da equipe sabe sobre o projeto | [`CLAUDE.md`](CLAUDE.md) |
+| How to work in the repository (branch, commit, PR, Claude) | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| What do I do now | [`docs/backlog.md`](docs/backlog.md), look for your name |
+| Why a library is on an old version | "Pinned versions", below |
+| Where each piece of data and each library comes from | [`CREDITS.md`](CREDITS.md) |
+| How the project declares its use of AI (Space Apps requires it) | [`docs/uso-de-ia.md`](docs/uso-de-ia.md) |
+| What the team's Claude knows about the project | [`CLAUDE.md`](CLAUDE.md) |
 
 ---
 
-## Três regras que valem para qualquer tela
+## Three rules for every screen
 
-**Conteúdo não fica dentro do componente.** Título, rótulo, texto de estado vazio e nome de
-botão ficam em `src/data/`, e o componente importa. O texto que a pessoa vê é em inglês, porque
-o projeto é julgado em inglês; comentário e teste continuam em português. O teste
-`src/noHardcodedText.test.js` reprova texto solto num `.jsx` de `src/`, dizendo o arquivo e a
-linha.
+**Content does not live inside the component.** Title, label, empty-state text and button name
+live in `src/data/`, and the component imports them. The text the person sees is in English,
+because the project is judged in English; comments and tests stay in Portuguese. The test
+`src/noHardcodedText.test.js` fails loose text in a `.jsx` in `src/`, giving the file and the
+line.
 
-**Cor, espaço e duração vêm do token.** Nunca `#e9b450`, `16px` ou `200ms` dentro do
-componente: use `var(--color-accent)`, `var(--space-4)`, `var(--duration-fast)`. Os tokens moram
-em `src/styles/tokens.css`. Cor nova entra lá, com o par de contraste dela no
+**Color, spacing and duration come from the token.** Never `#e9b450`, `16px` or `200ms` inside
+the component: use `var(--color-accent)`, `var(--space-4)`, `var(--duration-fast)`. The tokens
+live in `src/styles/tokens.css`. A new color goes in there, with its contrast pair in
 `src/styles/tokens.test.js`.
 
-**A tela não calcula astronomia.** Posição do Sol e da Terra, horizonte, porcentagem de luz e
-janela de pouso saem do motor, em `src/engine/`, que é JavaScript puro, sem React, testado
-contra os valores da NASA. A tela recebe o número pronto por um hook de `src/hooks/`. Se você
-precisou fazer uma conta dessas num componente, o número está faltando no motor: fale com o
-Enzo em vez de calcular ali.
+**The screen does not calculate astronomy.** The position of the Sun and the Earth, the horizon,
+the percentage of light and the landing window come from the engine, in `src/engine/`, which is
+plain JavaScript, with no React, tested against NASA's values. The screen receives the finished
+number through a hook in `src/hooks/`. If you needed to do one of these calculations in a
+component, the number is missing from the engine: talk to Enzo instead of calculating it there.
 
-## Nenhum dado inventado
+## No made-up data
 
-Coordenada de local de pouso, data de missão, número de comparação e nome de cratera saem de
-uma fonte, e a fonte fica escrita (no próprio arquivo de `src/data/` e no
-[`CREDITS.md`](CREDITS.md)). Os juízes leem o site como resultado: um valor de rascunho
-publicado vira afirmação falsa com o nome da equipe.
+Landing site coordinates, mission dates, comparison numbers and crater names come from a source,
+and the source is written down (in the `src/data/` file itself and in
+[`CREDITS.md`](CREDITS.md)). The judges read the site as a result: a draft value that gets
+published becomes a false statement with the team's name on it.
 
-Enquanto a fonte não chega, escreva `TODO_PREENCHER` no lugar do valor. O
-`scripts/check-build.mjs` roda a cada `verify` e reprova o build que tiver esse marcador,
-dizendo em qual arquivo ele está.
+Until the source arrives, write `TODO_PREENCHER` in place of the value.
+`scripts/check-build.mjs` runs on every `verify` and fails any build that has this marker, saying
+which file it is in.
 
-## Acessibilidade
+## Accessibility
 
-- O lint inclui o `eslint-plugin-jsx-a11y`: imagem sem `alt`, botão sem nome e clique em
-  elemento que não recebe teclado reprovam o `verify`.
-- Todo controle funciona pelo teclado e mostra o foco (`:focus-visible` com o
-  `--focus-ring`, em `src/styles/global.css`).
-- Movimento respeita `prefers-reduced-motion`: com a opção ligada no sistema, a cena 3D não
-  anima a câmera sozinha e as transições somem. O `global.css` já desliga as transições; quem
-  anima a cena confere a preferência no próprio componente.
-- Sem essa opção, a Lua gira devagar sozinha só até a pessoa arrastar ou usar a roda nela, ou até
-  um ponto ser escolhido, e não volta a girar (cards C5 e C10): a WCAG 2.2.2 pede um jeito de parar
-  o que se move sozinho.
+- The lint includes `eslint-plugin-jsx-a11y`: an image without `alt`, a button without a name and
+  a click on an element that does not receive the keyboard fail `verify`.
+- Every control works with the keyboard and shows focus (`:focus-visible` with
+  `--focus-ring`, in `src/styles/global.css`).
+- Motion respects `prefers-reduced-motion`: with the option turned on in the system, the 3D scene
+  does not animate the camera on its own and the transitions go away. `global.css` already turns
+  off the transitions; whoever animates the scene checks the preference in the component itself.
+- Without that option, the Moon rotates slowly on its own only until the person drags it or uses
+  the wheel on it, or until a site is chosen, and it does not start rotating again (cards C5 and
+  C10): WCAG 2.2.2 asks for a way to stop what moves on its own.
 
-## Testes
+## Tests
 
-Os testes moram ao lado do arquivo que testam, com o mesmo nome e `.test` antes da extensão, e
-rodam com o Vitest e o Testing Library. Três coisas sobre eles:
+The tests live next to the file they test, with the same name and `.test` before the extension,
+and run with Vitest and Testing Library. Three things about them:
 
-- **A suíte roda no fuso de Tóquio, de propósito** (`vite.config.js`, `test.env`). O app mostra
-  horário em UTC, que é a referência das missões. Um formatador que esquecesse o
-  `timeZone: 'UTC'` passaria no CI, que roda em UTC, e erraria no computador de quem usa.
-- **O bloco "Estrutura" abaixo é conferido por teste** (`src/readmeStructure.test.js`): arquivo
-  novo em `src/` fora do bloco, ou arquivo do bloco que não existe mais, reprova o `verify`.
-- **Os ganchos de git rodam pelo `sh`** (`scripts/hooks.test.js`). No Windows, o `sh` vem com o
-  Git for Windows; se o terminal não achar o `sh`, esses casos são pulados e o motivo aparece na
-  saída. No CI eles sempre rodam.
+- **The suite runs in the Tokyo time zone, on purpose** (`vite.config.js`, `test.env`). The app
+  shows times in UTC, which is the reference for missions. A formatter that forgot
+  `timeZone: 'UTC'` would pass in the CI, which runs in UTC, and be wrong on the user's computer.
+- **The "Structure" block below is checked by a test** (`src/readmeStructure.test.js`): a new
+  file in `src/` missing from the block, or a file in the block that no longer exists, fails
+  `verify`.
+- **The git hooks run through `sh`** (`scripts/hooks.test.js`). On Windows, `sh` comes with Git
+  for Windows; if the terminal cannot find `sh`, these cases are skipped and the reason shows up
+  in the output. In the CI they always run.
 
-## Versões fixas
+## Pinned versions
 
-Toda versão no `package.json` é exata, sem `^`: todo mundo instala exatamente o mesmo, e
-atualizar é uma decisão, não um efeito colateral do `npm install`. Atualizar uma dependência é
-um PR próprio, com o `verify` passando e o OK do Enzo.
+Every version in `package.json` is exact, without `^`: everyone installs exactly the same thing,
+and updating is a decision, not a side effect of `npm install`. Updating a dependency is its own
+PR, with `verify` passing and Enzo's OK.
 
-Três versões não sobem sem conferir antes, porque quebram outra peça:
+Three versions do not go up without checking first, because they break another piece:
 
-| O quê | Fica em | Por quê |
+| What | Stays at | Why |
 |---|---|---|
-| `react` e `react-dom` | 19.3 (abaixo da 19.4) | O `@react-three/fiber` 9.8.2 aceita React `>=19 <19.4`. |
-| `eslint` e `@eslint/js` | 9 | O `eslint-plugin-jsx-a11y` 6.10.2, que confere acessibilidade, aceita ESLint só até o 9. |
-| Node | 24.15 ou mais novo | Na linha 24, o jsdom 30, usado nos testes, exige pelo menos a 24.15. |
+| `react` and `react-dom` | 19.3 (below 19.4) | `@react-three/fiber` 9.8.2 accepts React `>=19 <19.4`. |
+| `eslint` and `@eslint/js` | 9 | `eslint-plugin-jsx-a11y` 6.10.2, which checks accessibility, accepts ESLint only up to 9. |
+| Node | 24.15 or newer | On the 24 line, jsdom 30, used in the tests, requires at least 24.15. |
 
-## Se der conflito no package-lock.json
+## If package-lock.json has a conflict
 
-Acontece quando duas pessoas adicionam dependência em branches paralelas. **Não resolva na
-mão**: o arquivo tem milhares de linhas encadeadas, e um merge manual corrompe a árvore de
-dependências de um jeito que só aparece dias depois.
+It happens when two people add a dependency in parallel branches. **Do not resolve it by
+hand**: the file has thousands of interlinked lines, and a manual merge corrupts the dependency
+tree in a way that only shows up days later.
 
-**Máquina: a sua, no Git Bash, na raiz do repositório.**
+**Machine: yours, in Git Bash, at the repository root.**
 
 ```bash
 git checkout --theirs package-lock.json && npm install && git add package-lock.json
 ```
 
-Isso fica com a versão da `develop` e regenera o lock a partir do `package.json` já mesclado.
-Depois, termine o merge como o Git pedir e rode o `npm run verify` antes do push.
+This keeps the `develop` version and regenerates the lock from the already merged
+`package.json`. Then, finish the merge as Git asks and run `npm run verify` before the push.
 
-## Estrutura
+## Structure
 
 ```
 umbraview/
 ├── .claude/
 │   ├── hooks/
-│   │   └── block-git-write.sh       recusa git de escrita dentro do Claude Code
-│   └── settings.json                configuração do Claude Code da equipe
+│   │   └── block-git-write.sh       refuses write git commands inside Claude Code
+│   └── settings.json                the team's Claude Code configuration
 │
 ├── .githooks/
-│   └── commit-msg                   recusa commit assinado pelo Claude
+│   └── commit-msg                   refuses commits signed by Claude
 │
 ├── .github/
 │   ├── workflows/
-│   │   ├── pages.yml                publica o site no GitHub Pages
-│   │   └── verify.yml               o verify e a conferência de assinatura em todo PR
+│   │   ├── pages.yml                publishes the site to GitHub Pages
+│   │   └── verify.yml               the verify and the signature check on every PR
 │   └── pull_request_template.md
 │
-├── brand/                           o kit do logo da equipe e do projeto, em vetor (card V2)
-│   ├── favicon/                     os ícones de aba e de celular, de onde saem os de public/
-│   ├── svg/                         a fonte de toda versão do logo; o PNG sai daqui quando precisa
-│   └── LEIA-ME.txt                  as cores, a fonte e onde usar cada versão
+├── brand/                           the team's and the project's logo kit, in vector (card V2)
+│   ├── favicon/                     the tab and phone icons, the source of the ones in public/
+│   ├── svg/                         the source of every version of the logo; the PNG comes from here when needed
+│   └── LEIA-ME.txt                  the colors, the font and where to use each version
 │
 ├── docs/
 │   ├── backlog.md
@@ -253,31 +256,31 @@ umbraview/
 │
 ├── public/
 │   ├── data/
-│   │   ├── earth/                   a imagem da Terra da vista do sistema, do Blue Marble da NASA
-│   │   ├── landing-grid/            o horizonte de uma grade de pontos, para o mapa das áreas de pouso
-│   │   ├── moon/                    a cor e o relevo do globo da Lua inteira, da NASA, gerados pelo script
-│   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
-│   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
-│   ├── brand/                       o logo do cabeçalho e o símbolo do rodapé, copiados de brand/svg/
-│   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
+│   │   ├── earth/                   the Earth image for the system view, from NASA's Blue Marble
+│   │   ├── landing-grid/            the horizon of a grid of points, for the landing areas map
+│   │   ├── moon/                    the color and terrain of the whole-Moon globe, from NASA, generated by the script
+│   │   ├── relief/                  the south pole terrain the site uses, generated by the script (card E2)
+│   │   └── stars/                   the stars of the scene's sky, from the HYG catalog, with their license
+│   ├── brand/                       the header logo and the footer symbol, copied from brand/svg/
+│   ├── apple-touch-icon.png         the site icon, copied from brand/favicon/ (card V2)
 │   ├── favicon.ico
 │   └── favicon.svg
 │
 ├── scripts/
-│   ├── prepare-data/                recorta o relevo da NASA para o site e compara com a NASA (card E2)
-│   │   ├── README.md                de onde baixar os arquivos e como rodar
-│   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
-│   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
-│   │   ├── nasa_reference.py        gera o nasa-reference.json
-│   │   ├── prepare-landing-grid.mjs gera public/data/landing-grid/, com o motor e o relevo do site
-│   │   ├── prepare_earth.py         gera public/data/earth/, do Blue Marble da NASA
-│   │   ├── prepare_moon_global.py   gera public/data/moon/ e o relevo da Lua inteira, do CGI Moon Kit da NASA
-│   │   ├── prepare_relief.py        gera public/data/relief/
-│   │   ├── prepare_stars.py         gera public/data/stars/, do catálogo HYG
+│   ├── prepare-data/                crops NASA's terrain for the site and compares it with NASA (card E2)
+│   │   ├── README.md                where to download the files and how to run
+│   │   ├── compare-nasa.mjs         our Sun and our Earth against NASA's maps
+│   │   ├── nasa-reference.json      NASA's values at the comparison points
+│   │   ├── nasa_reference.py        generates nasa-reference.json
+│   │   ├── prepare-landing-grid.mjs  generates public/data/landing-grid/, with the site's engine and terrain
+│   │   ├── prepare_earth.py         generates public/data/earth/, from NASA's Blue Marble
+│   │   ├── prepare_moon_global.py   generates public/data/moon/ and the whole-Moon terrain, from NASA's CGI Moon Kit
+│   │   ├── prepare_relief.py        generates public/data/relief/
+│   │   ├── prepare_stars.py         generates public/data/stars/, from the HYG catalog
 │   │   ├── requirements.txt
-│   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
-│   ├── references/                  referências de fora para os testes do motor e da lista de locais
-│   │   ├── artemis-regions.geojson  o contorno das regiões candidatas do Artemis III, do USGS (card E16)
+│   │   └── window-lengths.mjs       how long the landing windows last, to choose the minimum
+│   ├── references/                  external references for the tests of the engine and of the site list
+│   │   ├── artemis-regions.geojson  the outline of the Artemis III candidate regions, from the USGS (card E16)
 │   │   ├── polar_reference.py
 │   │   ├── requirements.txt
 │   │   └── spice_reference.py
@@ -288,92 +291,92 @@ umbraview/
 │
 ├── src/
 │   ├── data/
-│   │   ├── about.js                 o texto que explica o produto: o problema, o que o site faz e como começar
-│   │   ├── app.js                   textos da tela principal
-│   │   ├── panel.js                 textos do painel do ponto (card I1)
-│   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
-│   │   ├── siteSky.js               textos da vista do chão e da linha do tempo
-│   │   ├── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
-│   │   └── systemView.js            textos da vista do sistema (a Terra, a Lua e o Sol)
-│   ├── engine/                      o motor de cálculo (card E1)
+│   │   ├── about.js                 the text that explains the product: the problem, what the site does and how to start
+│   │   ├── app.js                   main screen texts
+│   │   ├── panel.js                 site panel texts (card I1)
+│   │   ├── scene.js                 3D scene texts (cards C1 to C3)
+│   │   ├── siteSky.js               ground view and timeline texts
+│   │   ├── sites.js                 the landing sites in the list, with the source of each one (card I2)
+│   │   └── systemView.js            system view texts (the Earth, the Moon and the Sun)
+│   ├── engine/                      the calculation engine (card E1)
 │   │   ├── fixtures/
-│   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
-│   │   │   ├── reliefSamples.json   alturas lidas dos arquivos da NASA, para o teste do relevo do site
-│   │   │   └── spiceReference.json  Sol e Terra segundo o SPICE, para o teste das posições
-│   │   ├── config.js                os parâmetros do motor, com o motivo de cada um
-│   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
-│   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
-│   │   ├── horizon.js               o horizonte de um ponto, direção por direção
-│   │   ├── landingAreas.js          quais pontos de uma grade têm janela de pouso no período de uma data
-│   │   ├── landingGridFiles.js      os arquivos da grade de pouso, e a máscara do mapa para a cena
-│   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
-│   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
-│   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
-│   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
-│   │   ├── summary.js               o resultado no formato que a tela espera
-│   │   ├── starCatalog.js           as estrelas do stars.bin: direção, magnitude e cor pelo B−V
-│   │   ├── system.js                a Terra, a Lua e o Sol num instante: posições, eixos, órbita e libração
-│   │   └── systemState.js           o giro do céu de estrelas para o referencial fixo da Lua
-│   ├── hooks/                       a ponte entre o motor e a tela (card E3)
-│   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
-│   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
-│   │   ├── useLandingAreas.js       o mapa das áreas com janela de pouso na data, calculado num Worker
-│   │   ├── useNearTiles.js          os ladrilhos do relevo fino em volta da câmera (card C6)
-│   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
-│   │   ├── useSkyRotation.js        o giro do céu de estrelas para a cena, na data
-│   │   ├── useStarCatalog.js        as estrelas do céu da cena, lidas uma vez por página
-│   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
-│   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
-│   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
+│   │   │   ├── polarReference.json  x/y position from pyproj, for the projection test
+│   │   │   ├── reliefSamples.json   heights read from NASA's files, for the site's terrain test
+│   │   │   └── spiceReference.json  Sun and Earth according to SPICE, for the positions test
+│   │   ├── config.js                the engine parameters, with the reason for each one
+│   │   ├── ephemeris.js             the position of the Sun and the Earth seen from the Moon, hour by hour
+│   │   ├── geometry.js              coordinates, south polar projection and east/north/up
+│   │   ├── horizon.js               the horizon of a point, direction by direction
+│   │   ├── landingAreas.js          which points of a grid have a landing window in the period of a date
+│   │   ├── landingGridFiles.js      the landing grid files, and the map mask for the scene
+│   │   ├── relief.js                the terrain height at a point: polar, cylindrical or tiled grid
+│   │   ├── reliefFiles.js           the site's terrain files become the horizon layers
+│   │   ├── series.js                Sun and Earth hour by hour, sunset and landing windows
+│   │   ├── siteSky.js               the sky of a point over the screen's period, with the site's terrain
+│   │   ├── summary.js               the result in the format the screen expects
+│   │   ├── starCatalog.js           the stars from stars.bin: direction, magnitude and color from B−V
+│   │   ├── system.js                the Earth, the Moon and the Sun at an instant: positions, axes, orbit and libration
+│   │   └── systemState.js           the rotation of the star sky into the Moon's fixed reference frame
+│   ├── hooks/                       the bridge between the engine and the screen (card E3)
+│   │   ├── usePrefersReducedMotion.js  whether the person asked the system for less animation
+│   │   ├── useFarRelief.js          the pole's coarse terrain, for the scene mesh (card C2)
+│   │   ├── useLandingAreas.js       the map of areas with a landing window on the date, computed in a Worker
+│   │   ├── useNearTiles.js          the fine terrain tiles around the camera (card C6)
+│   │   ├── useSiteSky.js            the sky of the chosen site, with the calculation status
+│   │   ├── useSkyRotation.js        the rotation of the star sky for the scene, on the date
+│   │   ├── useStarCatalog.js        the stars of the scene's sky, read once per page
+│   │   ├── useSubsolarPoint.js      where the Sun is directly overhead on the date, for the scene's light
+│   │   └── useTimedNotice.js        a short notice that goes away on its own (card C3)
+│   ├── panel/                       the site panel: the numbers and the choice of site and date (cards I1, I2 and I4)
 │   │   ├── About.css
-│   │   ├── About.jsx                o bloco que explica o produto, no fim do painel
+│   │   ├── About.jsx                the block that explains the product, at the end of the panel
 │   │   ├── DateTimeControl.css
-│   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
+│   │   ├── DateTimeControl.jsx      the date and time of the calculation, in UTC (card I4)
 │   │   ├── GroundView.css
-│   │   ├── GroundView.jsx           a vista do chão: o relevo em 360° e o caminho do Sol e da Terra por cima
+│   │   ├── GroundView.jsx           the ground view: the terrain in 360° and the path of the Sun and the Earth on top
 │   │   ├── SiteList.css
-│   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
+│   │   ├── SiteList.jsx             the list of landing sites, separating landings from candidate regions (card I2)
 │   │   ├── SitePanel.css
-│   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
+│   │   ├── SitePanel.jsx            the site's numbers, one text for each useSiteSky status
 │   │   ├── SiteSky.css
-│   │   ├── SiteSky.jsx              o céu do ponto em desenho: a vista do chão e a linha do tempo, ligadas pela hora
+│   │   ├── SiteSky.jsx              the site's sky as a drawing: the ground view and the timeline, linked by the hour
 │   │   ├── Timeline.css
-│   │   ├── Timeline.jsx             a linha do tempo do período: Sol, Terra e janelas de pouso, com o cursor da hora
-│   │   ├── format.js                graus, porcentagem e data em UTC, em texto para o painel
-│   │   └── skyChart.js              as contas de desenho da vista do chão e da linha do tempo
-│   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
-│   │   ├── CameraRig.jsx            a câmera: enquadra a Lua inteira, aproxima com a roda ou a pinça, voa até o ponto e volta
-│   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre a Lua
+│   │   ├── Timeline.jsx             the period's timeline: Sun, Earth and landing windows, with the hour cursor
+│   │   ├── format.js                degrees, percentage and UTC date, as text for the panel
+│   │   └── skyChart.js              the drawing math for the ground view and the timeline
+│   ├── scene/                       the 3D Moon (cards C1 to C3, C6 and C8)
+│   │   ├── CameraRig.jsx            the camera: frames the whole Moon, zooms with the wheel or a pinch, flies to the site and back
+│   │   ├── LandingAreasLayer.jsx    the map of areas with a landing window, painted over the Moon
 │   │   ├── LunarScene.css
-│   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
-│   │   ├── MoonGlobe.jsx            a esfera da Lua inteira, com a cor e o relevo de verdade
-│   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
-│   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
-│   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
-│   │   ├── StarField.jsx            o céu de estrelas de verdade, na posição da data
+│   │   ├── LunarScene.jsx           the Moon, the Sun's light for the date and the camera that rotates with the mouse
+│   │   ├── MoonGlobe.jsx            the whole-Moon sphere, with its real color and terrain
+│   │   ├── NearRelief.jsx           the close-up fine terrain, only where the machine can handle it (card C6)
+│   │   ├── ReliefCap.jsx            the south pole terrain in the scene, with shadows (card C2)
+│   │   ├── SiteMarker.jsx           the marker of the chosen site (card C3)
+│   │   ├── StarField.jsx            the real star sky, in the position for the date
 │   │   ├── SystemView.css
-│   │   ├── SystemView.jsx           a vista do sistema: a Terra, a Lua na órbita e o Sol, com relógio próprio
-│   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
-│   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
-│   │   ├── EarthHaze.jsx            o véu azul da Terra na vista do sistema: clareia só o lado do dia
-│   │   ├── SunBody.jsx              o Sol da vista do sistema em 3D: o disco mais escuro na borda e o halo
-│   │   ├── ZoomControls.jsx         a câmera da vista do sistema: gira e aproxima deslizando, como a da cena da Lua
-│   │   ├── additiveLight.js         a mistura das luzes que se somam ao fundo: as estrelas e o brilho do Sol
-│   │   ├── earthImage.js            a imagem da Terra da vista do sistema, lida uma vez por página
-│   │   ├── framing.js               a distância da câmera para a Lua caber na cena, e os ângulos do voo até o ponto
-│   │   ├── moonGlobe.js             onde cada ponto da Lua cai nas imagens, e a cor do polo nas malhas do relevo
-│   │   ├── moonImages.js            as imagens da Lua, lidas uma vez por página
-│   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
-│   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
-│   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
-│   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
-│   │   ├── starPoints.js            o tamanho e o brilho de cada estrela na tela, pela magnitude
-│   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
+│   │   ├── SystemView.jsx           the system view: the Earth, the Moon in its orbit and the Sun, with its own clock
+│   │   ├── coordinates.js           Moon point to scene point and back: the axis convention
+│   │   ├── frameBudget.js           whether the machine can handle the fine terrain: the time between frames (card C6)
+│   │   ├── EarthHaze.jsx            the Earth's blue haze in the system view: it lightens only the day side
+│   │   ├── SunBody.jsx              the 3D Sun of the system view: the disk darker at the edge, and the halo
+│   │   ├── ZoomControls.jsx         the system view camera: rotates and zooms by sliding, like the Moon scene's
+│   │   ├── additiveLight.js         the blending of lights that add onto the background: the stars and the Sun's glow
+│   │   ├── earthImage.js            the Earth image for the system view, read once per page
+│   │   ├── framing.js               the camera distance for the Moon to fit in the scene, and the angles of the flight to the site
+│   │   ├── moonGlobe.js             where each point of the Moon falls on the images, and the pole color on the terrain meshes
+│   │   ├── moonImages.js            the Moon images, read once per page
+│   │   ├── nearTiles.js             which fine terrain tiles the scene draws, and their mesh (card C6)
+│   │   ├── picking.js               the click on the Moon and where the marker goes (card C3)
+│   │   ├── reliefLayers.js          which one shows on top between the fine and the coarse terrain: the stencil (card C6)
+│   │   ├── reliefMesh.js            the terrain mesh, at real height, from far.bin
+│   │   ├── starPoints.js            the size and brightness of each star on screen, by magnitude
+│   │   └── sunLight.js              where the Sun's light is, and why its target is the pole
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
 │   ├── workers/
-│   │   └── landingAreas.worker.js   a conta do mapa das áreas de pouso, fora da linha principal da página
+│   │   └── landingAreas.worker.js   the landing areas map calculation, off the page's main thread
 │   ├── App.css
 │   ├── App.jsx
 │   ├── main.jsx
@@ -395,20 +398,23 @@ umbraview/
 └── vite.config.js
 ```
 
-### Organização
+### Organization
 
-- `src/engine/`: o cálculo. JavaScript puro, sem React e sem DOM, para rodar igual no teste, no
-  navegador e num script. Recebe coordenada e data, devolve número.
-- `src/hooks/`: a ponte entre o motor e a tela. Um hook chama o motor, guarda o resultado e diz
-  à tela se está calculando, se deu certo ou se falhou.
-- `src/data/`: o texto da tela e os dados pequenos com fonte (a lista de locais de pouso, por
-  exemplo). Um arquivo por região da tela.
-- `src/styles/`: os tokens e o estilo global. O estilo de cada componente fica num `.css` ao
-  lado dele.
-- `src/components/`: ainda não existe. Nasce no primeiro trecho de tela que se repete em dois
-  lugares, e não antes.
-- `scripts/`: o que roda fora do navegador: a instalação do gancho, a conferência do build, a
-  preparação dos dados do relevo e as referências dos testes do motor e da lista de locais.
-- `.claude/` e `.githooks/`: as travas do Claude e do commit (CONTRIBUTING.md, seção 4).
-- Dado bruto da NASA não entra no repositório (`.gitignore`, pasta `data-raw/`): o site usa só
-  os recortes pequenos que `scripts/prepare-data/` gera (card E2).
+- `src/engine/`: the calculation. Plain JavaScript, with no React and no DOM, so it runs the same
+  in the test, in the browser and in a script. It receives a coordinate and a date, and returns a
+  number.
+- `src/hooks/`: the bridge between the engine and the screen. A hook calls the engine, stores the
+  result and tells the screen whether it is calculating, whether it worked or whether it failed.
+- `src/data/`: the screen text and the small sourced data (the list of landing sites, for
+  example). One file per screen region.
+- `src/styles/`: the tokens and the global style. Each component's style lives in a `.css` next
+  to it.
+- `src/components/`: does not exist yet. It is born with the first piece of screen that repeats
+  in two places, and not before.
+- `scripts/`: what runs outside the browser: the hook installation, the build check, the
+  preparation of the terrain data and the references for the tests of the engine and of the site
+  list.
+- `.claude/` and `.githooks/`: the safeguards for Claude and for commits (CONTRIBUTING.md,
+  section 4).
+- Raw NASA data does not go into the repository (`.gitignore`, `data-raw/` folder): the site
+  uses only the small crops that `scripts/prepare-data/` generates (card E2).

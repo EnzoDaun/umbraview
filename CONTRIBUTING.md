@@ -1,101 +1,102 @@
-# Como trabalhar neste repositório
+# How to work in this repository
 
-Leia esta página inteira antes do primeiro commit. Ela é curta de propósito.
+Read this whole page before your first commit. It is short on purpose.
 
 ---
 
-## 1. A regra das branches
+## 1. The branch rule
 
-O repositório tem duas branches permanentes:
+The repository has two permanent branches:
 
-| Branch | O que é |
+| Branch | What it is |
 |---|---|
-| `main` | O que está no ar e o que vai para os juízes. Só recebe código já validado na `develop`. |
-| `develop` | Onde o trabalho de todo mundo se junta e é testado. É a branch padrão do repositório. |
+| `main` | What is live and what goes to the judges. It only receives code already validated on `develop`. |
+| `develop` | Where everyone's work comes together and gets tested. It is the repository's default branch. |
 
-**Ninguém envia código direto para a `main` nem para a `develop`.** Código entra nas duas só
-por Pull Request.
+**Nobody pushes code directly to `main` or to `develop`.** Code gets into either of them only
+through a Pull Request.
 
-Todo trabalho nasce numa branch própria, a partir da `develop`, e volta para ela:
+All work starts on its own branch, created from `develop`, and goes back to it:
 
 ```
 develop  ──►  feat/nome-da-tarefa  ──►  Pull Request para develop
 ```
 
-E o caminho até a `main` é só um:
+And there is only one path to `main`:
 
 ```
 develop validada  ──►  Pull Request para main  ──►  Enzo mergeia
 ```
 
-Seis frases que resumem tudo:
+Six sentences that sum it all up:
 
-1. **Sua branch volta para a `develop`.** Nunca para a `main`.
-2. **O Enzo revisa os PRs do Marco, do Miguel e do Rechierli; o Marco revisa os do Enzo.** Não
-   faça merge do próprio PR.
-3. **Quem mergeia na `main` é o Enzo, e só ele.** Se você está prestes a digitar
-   `git push origin main`, pare: o comando está errado.
-4. **Sempre `git pull origin develop`** ao criar a branch e de novo antes do `push`. É o que
-   evita conflito e mantém a sua base atualizada.
-5. **Não apague branch nenhuma**, nem depois do merge. O GitHub oferece um botão
-   *Delete branch* na tela do PR: não use.
-6. **Um card, um PR.** O PR entrega o card inteiro, em commits atômicos, e a descrição explica
-   cada um. Se o card depende de algo que ainda não existe, divida o card em dois, e não o PR:
-   antes de começar, ou assim que perceber a dependência, e sempre antes de abrir o PR. Um card
-   entregue em dois PRs fica marcado como feito sem estar.
+1. **Your branch goes back to `develop`.** Never to `main`.
+2. **Enzo reviews the PRs from Marco, Miguel and Rechierli; Marco reviews Enzo's.** Do not
+   merge your own PR.
+3. **The one who merges into `main` is Enzo, and only him.** If you are about to type
+   `git push origin main`, stop: the command is wrong.
+4. **Always `git pull origin develop`** when creating the branch and again before the `push`. That
+   is what avoids conflicts and keeps your base up to date.
+5. **Do not delete any branch**, not even after the merge. GitHub offers a *Delete branch*
+   button on the PR screen: do not use it.
+6. **One card, one PR.** The PR delivers the whole card, in atomic commits, and the description
+   explains each one. If the card depends on something that does not exist yet, split the card in
+   two, not the PR: before starting, or as soon as you notice the dependency, and always before
+   opening the PR. A card delivered in two PRs gets marked as done without being done.
 
-A `main` e a `develop` são protegidas no GitHub. Para quem não é administrador do repositório,
-elas só mudam por PR com uma aprovação e com as duas verificações do CI verdes, e o GitHub
-recusa o push direto, o force push e apagar a branch. As regras acima continuam valendo, porque
-a proteção não confere a branch de destino do seu PR nem quem faz o merge na `main`.
+`main` and `develop` are protected on GitHub. For anyone who is not a repository administrator,
+they only change through a PR with one approval and with both CI checks green, and GitHub
+rejects direct pushes, force pushes and deleting the branch. The rules above still apply,
+because the protection does not check your PR's target branch nor who merges into `main`.
 
-### Começando uma tarefa
+### Starting a task
 
-**Máquina: a sua, no Git Bash, na raiz do repositório.**
+**Machine: yours, in Git Bash, at the repository root.**
 
 ```bash
 git checkout develop && git pull origin develop && git checkout -b feat/painel-do-ponto
 ```
 
-- `git checkout develop` vai para a `develop`.
-- `git pull origin develop` traz o que os outros já mergearam. Tem que terminar sem `CONFLICT`.
-- `git checkout -b feat/painel-do-ponto` cria a sua branch a partir dali e já entra nela. A
-  saída esperada é `Switched to a new branch 'feat/painel-do-ponto'`.
+- `git checkout develop` switches to `develop`.
+- `git pull origin develop` brings in what the others have already merged. It must finish
+  without `CONFLICT`.
+- `git checkout -b feat/painel-do-ponto` creates your branch from there and switches to it. The
+  expected output is `Switched to a new branch 'feat/painel-do-ponto'`.
 
-Nome da branch: `feat/` para funcionalidade nova, `fix/` para correção, `docs/` para
-documentação. Depois da barra, o assunto em minúsculas separado por hífen. Use o nome do card
-quando ajudar: `feat/i1-painel-do-ponto`.
+Branch name: `feat/` for a new feature, `fix/` for a fix, `docs/` for documentation. After the
+slash, the subject in lowercase separated by hyphens. Use the card name when it helps:
+`feat/i1-painel-do-ponto`.
 
-### Terminando uma tarefa
+### Finishing a task
 
-Rode o `npm run verify` antes (seção 3). Depois:
+Run `npm run verify` first (section 3). Then:
 
-**Máquina: a sua, no Git Bash, na raiz do repositório.**
+**Machine: yours, in Git Bash, at the repository root.**
 
 ```bash
 git add -A && git status && git commit -m "adiciona painel do ponto com os estados vazios" && git pull origin develop && git push -u origin feat/painel-do-ponto
 ```
 
-- `git add -A` prepara tudo o que mudou. `git status` mostra a lista: confira que não entrou
-  arquivo que não é seu nem nada da seção 5.
-- `git commit -m "..."` grava o commit. O gancho `commit-msg` confere a mensagem (seção 4).
-- `git pull origin develop` traz o que entrou na `develop` enquanto você trabalhava. Se ele
-  apontar conflito, resolva **antes** do push: nunca empurre um merge pela metade.
-- `git push -u origin feat/...` manda a sua branch para o GitHub. A saída termina com o link
-  para abrir o Pull Request.
+- `git add -A` stages everything that changed. `git status` shows the list: check that no file
+  that is not yours got in, nor anything from section 5.
+- `git commit -m "..."` records the commit. The `commit-msg` hook checks the message (section 4).
+- `git pull origin develop` brings in what reached `develop` while you were working. If it
+  reports a conflict, resolve it **before** the push: never push a half-done merge.
+- `git push -u origin feat/...` sends your branch to GitHub. The output ends with the link to
+  open the Pull Request.
 
-Depois abra o Pull Request pelo GitHub e **confira a branch de destino**: `develop`.
+Then open the Pull Request on GitHub and **check the target branch**: `develop`.
 
 ---
 
-## 2. Mensagem de commit
+## 2. Commit message
 
-Uma linha, em português, no presente do indicativo, dizendo **o que o commit faz**.
-Sem prefixo e sem emoji.
+One line, in Portuguese, in the present tense (indicative), saying **what the commit does**.
+No prefix and no emoji.
 
-A linha precisa ser específica o bastante para que ninguém tenha que abrir o diff para saber o
-que mudou. Corpo só quando houver algo que a linha não cabe explicar: o porquê de uma decisão,
-um efeito colateral, uma limitação conhecida.
+The line must be specific enough that nobody has to open the diff to know what changed. Add a
+body only when there is something the line has no room to explain: the reason for a decision, a
+side effect, a known limitation.
 
 ```
 adiciona painel do ponto com os estados vazios
@@ -103,7 +104,7 @@ corrige o horário do pôr do Sol quando o ponto fica na sombra o dia inteiro
 move a lista de locais de pouso para src/data
 ```
 
-Não serve:
+Not acceptable:
 
 ```
 ajustes
@@ -112,113 +113,113 @@ atualiza arquivos
 wip
 ```
 
-**A mensagem não leva assinatura do Claude.** Nada de `Co-Authored-By: Claude`, de
-`Claude-Session:` nem de `Generated with Claude Code`. O commit é de quem roda o comando
-(seção 4).
+**The message does not carry Claude's signature.** No `Co-Authored-By: Claude`, no
+`Claude-Session:` and no `Generated with Claude Code`. The commit belongs to whoever runs the
+command (section 4).
 
-Um commit por etapa. Se você mudou duas coisas sem relação, são dois commits. Ao planejar,
-recorte as etapas por arquivo: duas etapas no mesmo arquivo fazem o `git add` levar as duas
-para o mesmo commit.
+One commit per step. If you changed two unrelated things, that is two commits. When planning,
+split the steps by file: two steps in the same file make `git add` take both into the same
+commit.
 
 ---
 
-## 3. Antes de abrir o PR
+## 3. Before opening the PR
 
-**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+**Machine: yours · Shell: Windows PowerShell · folder: repository root.**
 
 ```powershell
-# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+# PASTE INTO WINDOWS POWERSHELL, NOT GIT BASH
 npm run verify
 ```
 
-`verify` é lint, testes, build e a conferência do build, nessa ordem. A última linha da saída,
-quando passa, é `OK: nenhum TODO_PREENCHER no build.` Warning de lint conta como erro, teste que
-falha para tudo, e a conferência reprova se um `TODO_PREENCHER` chegar ao build. Se o comando
-falhar, o PR não está pronto.
+`verify` is lint, tests, build and the build check, in that order. The last line of the output,
+when it passes, is `OK: nenhum TODO_PREENCHER no build.` A lint warning counts as an error, a
+failing test stops everything, and the check fails if a `TODO_PREENCHER` reaches the build. If the
+command fails, the PR is not ready.
 
-O CI roda o mesmo `verify` em todo PR, mais a conferência de assinatura do Claude. PR com o CI
-vermelho não é revisado.
+CI runs the same `verify` on every PR, plus the Claude signature check. A PR with red CI is not
+reviewed.
 
-Preencha o modelo do PR, que o GitHub abre sozinho. Ele é escrito na primeira pessoa
-("mudei", "testei"), porque quem responde pelo PR é você.
+Fill in the PR template, which GitHub opens automatically. It is written in the first person
+("I changed", "I tested"), because you are the one accountable for the PR.
 
 ---
 
-## 4. O Claude no projeto
+## 4. Claude in the project
 
-A equipe inteira usa o Claude, e ele é bem-vindo para ler, explicar, planejar, escrever código
-e testes e preparar comandos. **Uma coisa ele não faz: commit.** Nem commit, nem push, nem
-merge, nem reset, nem rebase, nem apagar branch, nem abrir PR. Quem roda esses comandos é você,
-depois de ler o que vai rodar.
+The whole team uses Claude, and it is welcome to read, explain, plan, write code and tests, and
+prepare commands. **One thing it does not do: commit.** No commit, no push, no merge, no reset,
+no rebase, no deleting branches, no opening PRs. You are the one who runs these commands, after
+reading what you are about to run.
 
-Por quê:
+Why:
 
-- O histórico é da equipe. Quem faz o commit responde por ele, e um commit assinado pelo Claude
-  no repositório público diz aos juízes outra coisa.
-- O Space Apps pede que a submissão descreva como a IA foi usada. Essa descrição está em
-  [`docs/uso-de-ia.md`](docs/uso-de-ia.md), escrita uma vez pela equipe, e não em linha de
-  assinatura espalhada pelos commits.
-- Commit publicado não se apaga sem reescrever a branch de todo mundo.
+- The history belongs to the team. Whoever makes the commit is accountable for it, and a commit
+  signed by Claude in the public repository tells the judges something else.
+- Space Apps asks that the submission describe how AI was used. That description is in
+  [`docs/uso-de-ia.md`](docs/uso-de-ia.md), written once by the team, and not in signature lines
+  scattered across the commits.
+- A published commit cannot be deleted without rewriting everyone's branch.
 
-Quatro travas garantem isso, e cada uma cobre um buraco da outra:
+Four safeguards ensure this, and each one covers a gap in another:
 
-| Trava | Onde age | O que faz | Limite |
+| Safeguard | Where it acts | What it does | Limit |
 |---|---|---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Todo Claude que abre o repositório, inclusive na nuvem | Diz a regra e como entregar o comando | É instrução, não barreira |
-| [`.claude/settings.json`](.claude/settings.json) | O Claude Code no seu computador | Desliga a assinatura, nega os comandos e roda o `block-git-write.sh` antes de todo comando de terminal | Não vale nas sessões do Claude Code na nuvem; no Windows, precisa do Git for Windows |
-| [`.githooks/commit-msg`](.githooks/commit-msg) | Todo commit feito no seu clone | Recusa a mensagem com assinatura do Claude | Só existe depois do `npm install`; `--no-verify` pula |
-| CI ([`.github/workflows/verify.yml`](.github/workflows/verify.yml)) | Todo PR | Reprova o PR com commit ou descrição assinados pelo Claude | Avisa depois do push; com a proteção da `main` e da `develop`, o PR reprovado não entra |
+| [`CLAUDE.md`](CLAUDE.md) | Every Claude that opens the repository, including in the cloud | States the rule and how to hand over the command | It is an instruction, not a barrier |
+| [`.claude/settings.json`](.claude/settings.json) | Claude Code on your computer | Turns off the signature, denies the commands and runs `block-git-write.sh` before every terminal command | Does not apply to Claude Code sessions in the cloud; on Windows, it needs Git for Windows |
+| [`.githooks/commit-msg`](.githooks/commit-msg) | Every commit made in your clone | Rejects a message with Claude's signature | Only exists after `npm install`; `--no-verify` skips it |
+| CI ([`.github/workflows/verify.yml`](.github/workflows/verify.yml)) | Every PR | Fails the PR if a commit or the description is signed by Claude | Warns after the push; with the protection on `main` and `develop`, the failed PR does not get in |
 
-### Se uma trava disparar
+### If a safeguard fires
 
-**O Claude Code respondeu `Bloqueado pela politica do repositorio`.** Está certo. Peça a ele o
-comando completo, leia, e rode você mesmo no Git Bash.
+**Claude Code answered `Bloqueado pela politica do repositorio`.** That is correct. Ask it for
+the complete command, read it, and run it yourself in Git Bash.
 
-**O commit voltou com `commit-msg: a mensagem contem atribuicao ao Claude`.** O commit não
-aconteceu. Rode o `git commit -m "..."` de novo só com a sua linha, sem as linhas de
-assinatura. Não use `--no-verify`: o CI reprova do mesmo jeito, depois do push.
+**The commit came back with `commit-msg: a mensagem contem atribuicao ao Claude`.** The commit
+did not happen. Run `git commit -m "..."` again with only your line, without the signature
+lines. Do not use `--no-verify`: CI fails it just the same, after the push.
 
-**O CI reprovou com `Commits with Claude attribution`.** Um commit da sua branch tem a
-assinatura. Chame o Enzo antes de mexer: limpar commit já enviado reescreve a branch, e esse
-comando é dele.
-
----
-
-## 5. Coisas que nunca entram num commit
-
-**Segredo.** Token, chave, senha. O `.gitignore` já barra `.env`; o site é estático e não
-precisa de nenhum.
-
-**Dado bruto da NASA.** Os arquivos LOLA têm 189 e 219 MB, e o GitHub recusa arquivo acima de
-100 MiB. Eles e os mapas de iluminação ficam na pasta `data-raw/`, que o `.gitignore` barra. O
-site usa só os recortes pequenos que `scripts/prepare-data/` gera (card E2).
-
-**Dado sem fonte.** Coordenada, data, número de comparação: com a fonte escrita, ou com
-`TODO_PREENCHER` até ela chegar (README, "Nenhum dado inventado").
-
-**Marca da NASA.** O logo redondo da NASA (o *meatball*), o logotipo e o selo só podem ser usados
-com autorização dela, nem no site, nem no vídeo, nem no README. Escrever "feito para o NASA
-Space Apps Challenge 2026" e "usa dados da NASA (LOLA)" pode.
-
-**Conteúdo de terceiro sem licença.** Imagem, música, fonte e código de outra pessoa entram só
-com licença que permita, e com o crédito no [`CREDITS.md`](CREDITS.md). O Space Apps exige que
-toda fonte externa seja citada.
+**CI failed with `Commits with Claude attribution`.** A commit on your branch has the signature.
+Call Enzo before touching anything: cleaning up an already pushed commit rewrites the branch, and
+that command is his.
 
 ---
 
-## 6. Uso de IA
+## 5. Things that never go into a commit
 
-O uso de IA no projeto está descrito uma vez, em [`docs/uso-de-ia.md`](docs/uso-de-ia.md), e é
-esse texto que vai para a submissão. Não se registra cada uso. Se a IA for usada para algo que o
-texto não cobre (gerar imagem, música ou vídeo, por exemplo), avise o Enzo, para o texto
-continuar verdadeiro.
+**Secrets.** Tokens, keys, passwords. `.gitignore` already blocks `.env`; the site is static and
+does not need any.
+
+**Raw NASA data.** The LOLA files are 189 and 219 MB, and GitHub rejects files above 100 MiB.
+They and the illumination maps stay in the `data-raw/` folder, which `.gitignore` blocks. The
+site uses only the small cutouts that `scripts/prepare-data/` generates (card E2).
+
+**Data without a source.** Coordinates, dates, comparison numbers: with the source written down,
+or with `TODO_PREENCHER` until it arrives (README, "No made-up data").
+
+**NASA branding.** The round NASA logo (the *meatball*), the logotype and the seal may only be
+used with NASA's authorization, not on the site, not in the video, not in the README. Writing
+"made for the NASA Space Apps Challenge 2026" and "uses NASA data (LOLA)" is fine.
+
+**Third-party content without a license.** Someone else's images, music, fonts and code only get
+in with a license that allows it, and with the credit in [`CREDITS.md`](CREDITS.md). Space Apps
+requires every external source to be cited.
 
 ---
 
-## 7. Onde perguntar
+## 6. Use of AI
 
-Dúvida sobre o que fazer agora: [`docs/backlog.md`](docs/backlog.md), procure o seu nome.
-Dúvida sobre como rodar: o [README](README.md) e o [`docs/primeiros-passos.md`](docs/primeiros-passos.md).
-Dúvida sobre por que uma biblioteca está numa versão antiga: o [README](README.md), "Versões fixas".
-Dúvida que não está em nenhum deles: pergunte ao Enzo antes de decidir sozinho.
-Decisão tomada no escuro custa mais caro de desfazer do que uma pergunta.
+The use of AI in the project is described once, in [`docs/uso-de-ia.md`](docs/uso-de-ia.md), and
+that text is what goes into the submission. Each individual use is not logged. If AI is used for
+something the text does not cover (generating images, music or video, for example), tell Enzo,
+so the text stays true.
+
+---
+
+## 7. Where to ask
+
+Question about what to do now: [`docs/backlog.md`](docs/backlog.md), look for your name.
+Question about how to run it: the [README](README.md) and [`docs/primeiros-passos.md`](docs/primeiros-passos.md).
+Question about why a library is on an old version: the [README](README.md), "Pinned versions".
+Question that is not in any of them: ask Enzo before deciding on your own.
+A decision made in the dark costs more to undo than a question.

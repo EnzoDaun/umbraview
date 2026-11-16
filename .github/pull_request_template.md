@@ -1,31 +1,31 @@
-<!-- Escreva na primeira pessoa: quem responde por este PR é você. -->
+<!-- Write in the first person: you are the one accountable for this PR. -->
 
-## O que mudei
+## What I changed
 
-<!-- Uma ou duas frases sobre o que a pessoa vai ver ou o que passa a funcionar. -->
+<!-- One or two sentences about what people will see or what starts working. -->
 
-Card do backlog:
+Backlog card:
 
-## Como testei
+## How I tested
 
-<!-- O comando que rodei e as últimas linhas da saída. Saída vazia não é prova. -->
+<!-- The command I ran and the last lines of the output. Empty output is not proof. -->
 
 ```
 npm run verify
 
 ```
 
-<!-- Mexeu na tela? Diga também o que conferi no navegador (e em qual). -->
+<!-- Touched the screen? Also say what I checked in the browser (and in which one). -->
 
-## O que ficou de fora
+## What I left out
 
-<!-- O que eu sei que falta, e em qual card isso fica. "Nada" também é resposta. -->
+<!-- What I know is missing, and which card it goes into. "Nothing" is also an answer. -->
 
-## Conferi
+## I checked
 
-- [ ] A branch de destino é a `develop` (ou a `main`, se este é o PR do Enzo trazendo a `develop`).
-- [ ] Rodei `npm run verify` e ele terminou com `OK: nenhum TODO_PREENCHER no build.`
-- [ ] Texto de tela só em `src/data/`; cor, espaço e duração só pelos tokens.
-- [ ] Todo dado novo tem fonte, ou `TODO_PREENCHER`, e a fonte está no `CREDITS.md`.
-- [ ] Nenhum commit e nenhuma linha desta descrição têm assinatura do Claude.
-- [ ] Atualizei o README (bloco "Estrutura") e o `docs/backlog.md`, se este PR muda o que está neles.
+- [ ] The target branch is `develop` (or `main`, if this is Enzo's PR bringing in `develop`).
+- [ ] I ran `npm run verify` and it ended with `OK: nenhum TODO_PREENCHER no build.`
+- [ ] Screen text only in `src/data/`; color, spacing and duration only through the tokens.
+- [ ] All new data has a source, or `TODO_PREENCHER`, and the source is in `CREDITS.md`.
+- [ ] No commit and no line of this description has Claude's signature.
+- [ ] I updated the README ("Structure" block) and `docs/backlog.md`, if this PR changes what is in them.
