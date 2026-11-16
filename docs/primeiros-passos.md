@@ -1,136 +1,136 @@
-# Primeiros passos no Windows
+# First steps on Windows
 
-Do computador sem nada até o site rodando e o `verify` passando. Faça na ordem: cada passo
-confere o anterior.
+From a computer with nothing installed to the site running and `verify` passing. Do it in order:
+each step checks the previous one.
 
-**Não vai programar (Mateus B.)?** Este guia não é para você, e você não precisa do
-GitHub. As suas tarefas chegam pelo Enzo, num PDF tirado do [backlog](backlog.md), e as entregas
-vão para a pasta compartilhada da equipe.
+**Not going to code (Mateus B.)?** This guide is not for you, and you do not need GitHub. Your
+tasks come from Enzo, in a PDF taken from the [backlog](backlog.md), and your deliverables go to
+the team's shared folder.
 
-> O que já foi conferido: o `npm install` e o `npm run verify` deste repositório, no Windows
-> com o Node 24.18, em 29/10/2026. Os passos de instalação do Git e do Node seguem o instalador
-> de cada um e não foram refeitos do zero. Se algum passo der uma saída diferente da descrita,
-> pare e mande a saída inteira para o Enzo.
+> What has been verified: `npm install` and `npm run verify` for this repository, on Windows
+> with Node 24.18, on 29/10/2026. The Git and Node installation steps follow each one's installer
+> and were not redone from scratch. If any step gives output different from what is described,
+> stop and send the full output to Enzo.
 
 ## 1. Git for Windows
 
-Baixe em [git-scm.com/downloads/win](https://git-scm.com/downloads/win) e instale com as opções
-padrão. Ele traz o **Git Bash**, o terminal onde todo comando `git` deste projeto roda.
+Download it from [git-scm.com/downloads/win](https://git-scm.com/downloads/win) and install it with
+the default options. It includes **Git Bash**, the terminal where every `git` command in this
+project runs.
 
-Abra o Git Bash (menu Iniciar, "Git Bash"):
+Open Git Bash (Start menu, "Git Bash"):
 
-**Máquina: a sua, no Git Bash, em qualquer pasta.**
+**Machine: yours, in Git Bash, in any folder.**
 
 ```bash
 git --version
 ```
 
-Saída esperada: `git version 2.` seguido de mais números e `.windows.`. Sem isso, o Git não
-instalou: refaça antes de seguir.
+Expected output: `git version 2.` followed by more numbers and `.windows.`. Without that, Git did
+not install: redo it before moving on.
 
 ## 2. Node 24
 
-Baixe o Node **24** (LTS) em [nodejs.org](https://nodejs.org) e instale com as opções padrão. O
-Node 26 também virou LTS em 28/10/2026, e o site pode oferecer ele primeiro: o projeto usa o 24,
-o mesmo do CI (não conferi como o site apresenta as duas versões hoje).
+Download Node **24** (LTS) from [nodejs.org](https://nodejs.org) and install it with the default
+options. Node 26 also became LTS on 28/10/2026, and the site may offer it first: the project uses
+24, the same as CI (not verified how the site presents the two versions today).
 
-Abra o **Windows PowerShell** (menu Iniciar, "PowerShell"):
+Open **Windows PowerShell** (Start menu, "PowerShell"):
 
-**Máquina: a sua · Shell: Windows PowerShell · em qualquer pasta.**
+**Machine: yours · Shell: Windows PowerShell · in any folder.**
 
 ```powershell
-# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+# PASTE INTO WINDOWS POWERSHELL, NOT GIT BASH
 node --version; if ($LASTEXITCODE -eq 0) { npm --version }
 ```
 
-Saída esperada: `v24.15.0` ou um `v24` mais novo, e embaixo a versão do npm. Um `v24` abaixo
-de `24.15` não serve: o jsdom, usado nos testes, exige pelo menos essa.
+Expected output: `v24.15.0` or a newer `v24`, and below it the npm version. A `v24` below `24.15`
+will not do: jsdom, used in the tests, requires at least that one.
 
-## 3. Seu nome nos commits
+## 3. Your name on commits
 
-**Máquina: a sua, no Git Bash, em qualquer pasta.**
+**Machine: yours, in Git Bash, in any folder.**
 
 ```bash
 git config --global user.name "Seu Nome" && git config --global user.email "o-email-da-sua-conta-do-github" && git config --global --get user.name && git config --global --get user.email
 ```
 
-Troque o nome e o e-mail antes de colar. Os dois últimos comandos mostram o que ficou gravado: a
-saída são duas linhas, o seu nome e o seu e-mail.
+Replace the name and the e-mail before pasting. The last two commands show what was saved: the
+output is two lines, your name and your e-mail.
 
-## 4. Convite do GitHub
+## 4. GitHub invitation
 
-O Enzo convida você para o repositório. O convite chega no e-mail da sua conta do GitHub:
-aceite antes do próximo passo, senão o `git clone` responde `Repository not found`.
+Enzo invites you to the repository. The invitation arrives at your GitHub account's e-mail: accept
+it before the next step, otherwise `git clone` answers `Repository not found`.
 
-## 5. Baixar o repositório
+## 5. Download the repository
 
-**Máquina: a sua, no Git Bash, em qualquer pasta.**
+**Machine: yours, in Git Bash, in any folder.**
 
 ```bash
 mkdir -p ~/Documents/GitHub && cd ~/Documents/GitHub && git clone https://github.com/EnzoDaun/umbraview.git && cd umbraview && git status
 ```
 
-- `mkdir -p` cria a pasta `Documents\GitHub` se ela não existir; `cd` entra nela.
-- `git clone` baixa o repositório. Na primeira vez, o Git abre o navegador para você entrar na
-  sua conta do GitHub: entre e volte ao terminal.
-- `git status` tem que dizer `On branch develop` e `nothing to commit, working tree clean`.
+- `mkdir -p` creates the `Documents\GitHub` folder if it does not exist; `cd` enters it.
+- `git clone` downloads the repository. The first time, Git opens the browser for you to sign in
+  to your GitHub account: sign in and come back to the terminal.
+- `git status` must say `On branch develop` and `nothing to commit, working tree clean`.
 
-## 6. Instalar e conferir
+## 6. Install and check
 
-**Máquina: a sua · Shell: Windows PowerShell · em qualquer pasta.**
+**Machine: yours · Shell: Windows PowerShell · in any folder.**
 
 ```powershell
-# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+# PASTE INTO WINDOWS POWERSHELL, NOT GIT BASH
 Set-Location $HOME\Documents\GitHub\umbraview; if ($?) { npm install; if ($LASTEXITCODE -eq 0) { npm run verify } }
 ```
 
-- `Set-Location` entra na pasta do repositório. Se ela não existir, para aí.
-- `npm install` baixa as dependências. No meio da saída tem que aparecer
-  `ganchos: core.hooksPath = .githooks (o commit-msg recusa coautoria do Claude)`, e o fim
-  traz `found 0 vulnerabilities`.
-- `npm run verify` roda lint, testes, build e a conferência. A última linha tem que ser
+- `Set-Location` enters the repository folder. If it does not exist, it stops there.
+- `npm install` downloads the dependencies. In the middle of the output this must appear:
+  `ganchos: core.hooksPath = .githooks (o commit-msg recusa coautoria do Claude)`, and the end
+  shows `found 0 vulnerabilities`.
+- `npm run verify` runs lint, tests, build and the check. The last line must be
   `OK: nenhum TODO_PREENCHER no build.`
 
-Dois avisos do npm aparecem no `npm install` e podem ser ignorados (os números de versão podem
-ser outros na sua máquina):
+Two npm warnings show up during `npm install` and can be ignored (the version numbers may be
+different on your machine):
 
 ```
 npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
 npm notice New major version of npm available! 11.16.0 -> 12.2.1
 ```
 
-O `verify` passa com os dois (conferido no Windows em 29/10/2026). Não atualize nada por causa
-deles: o ESLint fica no 9 de propósito (README, "Versões fixas"), e atualizar o npm deixa o seu
-computador diferente do da equipe e do CI. Para atualizar qualquer coisa, fale com o Enzo antes.
+`verify` passes with both (verified on Windows on 29/10/2026). Do not update anything because of
+them: ESLint stays on 9 on purpose (README, "Pinned versions"), and updating npm makes your
+computer different from the team's and from CI. To update anything, talk to Enzo first.
 
-Se o `verify` reprovar num computador recém-instalado, o problema não é seu: mande a saída
-inteira para o Enzo.
+If `verify` fails on a freshly set-up computer, the problem is not yours: send the full output to
+Enzo.
 
-## 7. Ver o site
+## 7. See the site
 
-**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+**Machine: yours · Shell: Windows PowerShell · folder: repository root.**
 
 ```powershell
-# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+# PASTE INTO WINDOWS POWERSHELL, NOT GIT BASH
 npm run dev
 ```
 
-Abra `http://localhost:5173` no navegador. O comando fica rodando e recarrega a página a cada
-arquivo salvo; para parar, `Ctrl+C` no PowerShell.
+Open `http://localhost:5173` in the browser. The command keeps running and reloads the page every
+time a file is saved; to stop it, `Ctrl+C` in PowerShell.
 
-## 8. O Claude neste projeto
+## 8. Claude in this project
 
-Antes de usar, leia a seção 4 do [CONTRIBUTING.md](../CONTRIBUTING.md): o Claude não faz commit.
+Before using it, read section 4 of [CONTRIBUTING.md](../CONTRIBUTING.md): Claude does not commit.
 
-- **Claude Code**, aberto na pasta do repositório: ele lê o `CLAUDE.md` e o
-  `.claude/settings.json` sozinho. O gancho que bloqueia o git roda pelo Git Bash, por isso o
-  passo 1 é obrigatório também para isso. Para conferir: peça a ele para fazer um commit; ele tem
-  que recusar.
-- **Chat do claude.ai**: ele não lê o repositório sozinho. Crie um projeto no claude.ai e
-  adicione como conhecimento o `CLAUDE.md`, o `README.md`, o `CONTRIBUTING.md` e o
-  `docs/backlog.md`. Quando um deles mudar no repositório, troque o arquivo no projeto.
+- **Claude Code**, opened in the repository folder: it reads `CLAUDE.md` and
+  `.claude/settings.json` on its own. The hook that blocks git runs through Git Bash, so step 1
+  is required for this too. To check: ask it to make a commit; it must refuse.
+- **claude.ai chat**: it does not read the repository on its own. Create a project on claude.ai
+  and add `CLAUDE.md`, `README.md`, `CONTRIBUTING.md` and `docs/backlog.md` as knowledge. When
+  one of them changes in the repository, replace the file in the project.
 
-## 9. Pegar o primeiro card
+## 9. Take your first card
 
-Procure o seu nome no [backlog](backlog.md) e siga "Começando uma tarefa" no
+Look for your name in the [backlog](backlog.md) and follow "Starting a task" in
 [CONTRIBUTING.md](../CONTRIBUTING.md).

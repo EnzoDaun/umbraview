@@ -1,4 +1,4 @@
-/* O bloco "## Estrutura" do README tem que bater com o que existe em src/.
+/* O bloco "## Structure" do README tem que bater com o que existe em src/.
  *
  * O README é por onde quem chega começa. Arquivo que existe e não está lá não é encontrado;
  * arquivo que está lá e não existe mais manda procurar o que sumiu. Os testes (*.test.*)
@@ -13,11 +13,11 @@ const RAIZ = process.cwd()
 
 function blocoEstrutura() {
   const readme = readFileSync(join(RAIZ, 'README.md'), 'utf8')
-  const secao = readme.split(/^## Estrutura\s*$/m)[1]
-  if (!secao) throw new Error('o README não tem a seção "## Estrutura"')
+  const secao = readme.split(/^## Structure\s*$/m)[1]
+  if (!secao) throw new Error('o README não tem a seção "## Structure"')
   /* \r?\n: com core.autocrlf=true, o Git do Windows entrega o README com CRLF. */
   const bloco = secao.match(/```\r?\n([\s\S]*?)```/)
-  if (!bloco) throw new Error('a seção "## Estrutura" não tem um bloco de código')
+  if (!bloco) throw new Error('a seção "## Structure" não tem um bloco de código')
   return bloco[1]
 }
 
@@ -44,7 +44,7 @@ function arquivos(pasta, ignorar = []) {
 
 const EH_TESTE = /\.test\.(js|jsx)$/
 
-describe('README, bloco "## Estrutura"', () => {
+describe('README, bloco "## Structure"', () => {
   it('todo arquivo de src/ (menos os testes) aparece no bloco', () => {
     const nomes = nomesDoBloco()
     const faltando = arquivos(join(RAIZ, 'src'))

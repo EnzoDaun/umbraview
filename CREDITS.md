@@ -1,73 +1,73 @@
-# Créditos e licenças
+# Credits and licenses
 
-O Space Apps pede que toda fonte externa usada no projeto seja citada, com a licença dela.
-Esta página é a lista. Entrou dado, imagem, fonte de letra, música ou biblioteca nova: entra
-uma linha aqui, no mesmo PR. O card P2 do [backlog](docs/backlog.md) confere e completa a lista
-antes da submissão.
+Space Apps asks that every external source used in the project be cited, with its license.
+This page is the list. New data, image, font, music or library came in: a line goes here, in the
+same PR. Card P2 of the [backlog](docs/backlog.md) checks and completes the list before the
+submission.
 
-O código do UmbraView e o logo da equipe e do projeto são da Umbra Team, sob a licença MIT
+The UmbraView code and the team and project logo belong to Umbra Team, under the MIT license
 ([`LICENSE`](LICENSE)).
 
-## Dados
+## Data
 
-| Dado | Para quê | Fonte | Condição de uso |
+| Data | What for | Source | Terms of use |
 |---|---|---|---|
-| Relevo do polo sul da Lua, 80 m e 240 m por pixel (LOLA, `LDEM_80S_80MPP_ADJ` e `LDEM_60S_240MPP_ADJ`) | Horizonte de cada ponto perto do polo. Os recortes de `public/data/relief/` saem destes dois arquivos; o relevo grosso, de 960 m por pixel, é a média de 4 × 4 pixels do de 240 m | NASA GSFC, Barker et al. 2023, [pgda.gsfc.nasa.gov/products/90](https://pgda.gsfc.nasa.gov/products/90) | a conferir (card P2) |
-| Relevo da Lua inteira (LOLA GDR) | Horizonte fora do polo | NASA PDS, [imbrium.mit.edu/DATA/LOLA_GDR](https://imbrium.mit.edu/DATA/LOLA_GDR) | a conferir (card P2) |
-| Local de pouso do IM-2 (Athena): latitude, longitude e hora do pouso | A lista de locais (`src/data/sites.js`, card I2) | Coordenada: LROC, [lroc.im-ldi.com/images/1408](https://lroc.im-ldi.com/images/1408) (página de 10/03/2025). Hora, aproximada ("approximately 11:30 a.m. CST"): NASA, [blog da missão de 06/03/2025](https://www.nasa.gov/blogs/missions/2025/03/06/intuitive-machines-mission-lands-near-south-pole-carrying-nasa-science). Dados conferidos pelo Enzo (card P1) | a conferir (card P2) |
-| Contorno das 9 regiões candidatas ao pouso do Artemis III (`A3_9regions-lonlat-simplified`, copiado em `scripts/references/artemis-regions.geojson`) e os nomes delas | O centro de cada região na lista de locais (`src/data/sites.js`, card E16) | Contorno: USGS, McClernan 2024, *Down Selected Artemis III Candidate Landing Site Navigational Grids*, [doi.org/10.5066/P1MEQ6UK](https://doi.org/10.5066/P1MEQ6UK); o USGS tirou as regiões do [LROC QuickMap](https://quickmap.lroc.asu.edu/). Nomes: NASA, George et al., *Artemis III Site Selection Update: Downselection From Thirteen to Nine Candidate Regions*, [NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660) (conferido em 12/11/2026) | contorno: CC0 1.0 Universal, pela [página do data release no USGS](https://www.usgs.gov/data/down-selected-artemis-iii-candidate-landing-site-navigational-grids) (lida em 13/11/2026) |
-| Mapas de visibilidade média do Sol e da Terra, polo sul (`AVGVISIB_85S_060M` e `AVGVISIB_65S_240M`) | Comparação do nosso cálculo com o da NASA (`scripts/prepare-data/nasa-reference.json`) | NASA GSFC, Mazarico et al. 2011, [pgda.gsfc.nasa.gov/products/69](https://pgda.gsfc.nasa.gov/products/69) | a conferir (card P2) |
-| Mês sideral (27,32 dias) e mês sinódico (29,53 dias) da Lua | Os textos que explicam o dia lunar e a rotação da Lua (`src/data/siteSky.js`, `src/data/systemView.js`) e a volta da órbita na vista do sistema (`src/engine/system.js`) | NASA NSSDC, *Moon Fact Sheet*, [nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html) (lido em 15/11/2026) | Dado público da NASA |
-| Cor e relevo da Lua inteira (*CGI Moon Kit*: `lroc_color_16bit_srgb_4k.tif` e `ldem_16_uint.tif`, de 1/16 de grau por pixel) | O globo da Lua na cena (`public/data/moon/`) e o relevo de fora do polo sul para o horizonte (`public/data/relief/global/`) | NASA's Scientific Visualization Studio, [svs.gsfc.nasa.gov/4720](https://svs.gsfc.nasa.gov/4720), com dados do LRO (câmera LROC e altímetro LOLA); baixado em 15/11/2026 | Domínio público, pela [página de ajuda do SVS](https://svs.gsfc.nasa.gov/help/) ("All of our content is in the public domain"); crédito pedido: *NASA's Scientific Visualization Studio* |
-| Imagem da Terra inteira, *Blue Marble* (`bluemarble-2048.png`, 2048 × 1024) | A Terra da vista do sistema (`public/data/earth/color.jpg`, gerada por `scripts/prepare-data/prepare_earth.py`) | NASA/Goddard Space Flight Center Scientific Visualization Studio, *Blue Marble - A Seamless Image Mosaic of the Earth (WMS)*, [svs.gsfc.nasa.gov/2915](https://svs.gsfc.nasa.gov/2915); os dados do Blue Marble são de Reto Stockli (NASA/GSFC); baixado em 15/11/2026 | Domínio público, pela [página de ajuda do SVS](https://svs.gsfc.nasa.gov/help/); crédito pedido na página: *NASA/Goddard Space Flight Center Scientific Visualization Studio* |
-| Duração do ano sideral da Terra (365,256 dias) | A volta da linha da órbita da Terra na vista do sistema (`SIDEREAL_YEAR_DAYS`, em `src/engine/system.js`) | NASA NSSDCA, *Earth Fact Sheet*, D. R. Williams, atualizada em 15/11/2024, [nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html) (lida em 15/11/2026) | a conferir (card P2) |
-| Estrelas até a magnitude 6,5: direção, magnitude e índice de cor (HYG 4.4, `hyg_v44.csv.gz`; o recorte está em `public/data/stars/stars.bin`) | O céu de estrelas da cena, na posição real da data | David Nash, *HYG Stellar database*, [codeberg.org/astronexus/hyg](https://codeberg.org/astronexus/hyg) (baixado em 15/11/2026) | CC BY-SA 4.0. O `stars.bin` é um recorte do HYG e continua sob a CC BY-SA 4.0 (`public/data/stars/LICENSE.txt`); o resto do repositório é MIT |
+| South pole terrain of the Moon, 80 m and 240 m per pixel (LOLA, `LDEM_80S_80MPP_ADJ` and `LDEM_60S_240MPP_ADJ`) | Horizon of each site near the pole. The cutouts in `public/data/relief/` come from these two files; the coarse terrain, at 960 m per pixel, is the average of 4 × 4 pixels of the 240 m one | NASA GSFC, Barker et al. 2023, [pgda.gsfc.nasa.gov/products/90](https://pgda.gsfc.nasa.gov/products/90) | to be checked (card P2) |
+| Terrain of the whole Moon (LOLA GDR) | Horizon outside the pole | NASA PDS, [imbrium.mit.edu/DATA/LOLA_GDR](https://imbrium.mit.edu/DATA/LOLA_GDR) | to be checked (card P2) |
+| IM-2 (Athena) landing site: latitude, longitude and landing time | The list of sites (`src/data/sites.js`, card I2) | Coordinate: LROC, [lroc.im-ldi.com/images/1408](https://lroc.im-ldi.com/images/1408) (page dated 10/03/2025). Time, approximate ("approximately 11:30 a.m. CST"): NASA, [mission blog of 06/03/2025](https://www.nasa.gov/blogs/missions/2025/03/06/intuitive-machines-mission-lands-near-south-pole-carrying-nasa-science). Data verified by Enzo (card P1) | to be checked (card P2) |
+| Outline of the 9 candidate landing regions for Artemis III (`A3_9regions-lonlat-simplified`, copied to `scripts/references/artemis-regions.geojson`) and their names | The center of each region in the list of sites (`src/data/sites.js`, card E16) | Outline: USGS, McClernan 2024, *Down Selected Artemis III Candidate Landing Site Navigational Grids*, [doi.org/10.5066/P1MEQ6UK](https://doi.org/10.5066/P1MEQ6UK); USGS took the regions from [LROC QuickMap](https://quickmap.lroc.asu.edu/). Names: NASA, George et al., *Artemis III Site Selection Update: Downselection From Thirteen to Nine Candidate Regions*, [NTRS 20250011660](https://ntrs.nasa.gov/citations/20250011660) (verified on 12/11/2026) | outline: CC0 1.0 Universal, per the [data release page at USGS](https://www.usgs.gov/data/down-selected-artemis-iii-candidate-landing-site-navigational-grids) (read on 13/11/2026) |
+| Average visibility maps of the Sun and the Earth, south pole (`AVGVISIB_85S_060M` and `AVGVISIB_65S_240M`) | Comparison of our calculation with NASA's (`scripts/prepare-data/nasa-reference.json`) | NASA GSFC, Mazarico et al. 2011, [pgda.gsfc.nasa.gov/products/69](https://pgda.gsfc.nasa.gov/products/69) | to be checked (card P2) |
+| Sidereal month (27.32 days) and synodic month (29.53 days) of the Moon | The texts that explain the lunar day and the Moon's rotation (`src/data/siteSky.js`, `src/data/systemView.js`) and the orbit loop in the system view (`src/engine/system.js`) | NASA NSSDC, *Moon Fact Sheet*, [nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html) (read on 15/11/2026) | NASA public data |
+| Color and terrain of the whole Moon (*CGI Moon Kit*: `lroc_color_16bit_srgb_4k.tif` and `ldem_16_uint.tif`, at 1/16 of a degree per pixel) | The Moon globe in the scene (`public/data/moon/`) and the terrain outside the south pole for the horizon (`public/data/relief/global/`) | NASA's Scientific Visualization Studio, [svs.gsfc.nasa.gov/4720](https://svs.gsfc.nasa.gov/4720), with LRO data (LROC camera and LOLA altimeter); downloaded on 15/11/2026 | Public domain, per the [SVS help page](https://svs.gsfc.nasa.gov/help/) ("All of our content is in the public domain"); requested credit: *NASA's Scientific Visualization Studio* |
+| Image of the whole Earth, *Blue Marble* (`bluemarble-2048.png`, 2048 × 1024) | The Earth in the system view (`public/data/earth/color.jpg`, generated by `scripts/prepare-data/prepare_earth.py`) | NASA/Goddard Space Flight Center Scientific Visualization Studio, *Blue Marble - A Seamless Image Mosaic of the Earth (WMS)*, [svs.gsfc.nasa.gov/2915](https://svs.gsfc.nasa.gov/2915); the Blue Marble data is by Reto Stockli (NASA/GSFC); downloaded on 15/11/2026 | Public domain, per the [SVS help page](https://svs.gsfc.nasa.gov/help/); credit requested on the page: *NASA/Goddard Space Flight Center Scientific Visualization Studio* |
+| Length of the Earth's sidereal year (365.256 days) | The loop of the Earth's orbit line in the system view (`SIDEREAL_YEAR_DAYS`, in `src/engine/system.js`) | NASA NSSDCA, *Earth Fact Sheet*, D. R. Williams, updated on 15/11/2024, [nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html) (read on 15/11/2026) | to be checked (card P2) |
+| Stars up to magnitude 6.5: direction, magnitude and color index (HYG 4.4, `hyg_v44.csv.gz`; the cutout is in `public/data/stars/stars.bin`) | The starry sky of the scene, in the real position for the date | David Nash, *HYG Stellar database*, [codeberg.org/astronexus/hyg](https://codeberg.org/astronexus/hyg) (downloaded on 15/11/2026) | CC BY-SA 4.0. `stars.bin` is a cutout of HYG and remains under CC BY-SA 4.0 (`public/data/stars/LICENSE.txt`); the rest of the repository is MIT |
 
-Os arquivos brutos ficam fora do repositório (`.gitignore`, `data-raw/`). O que o site usa são
-recortes gerados a partir deles por `scripts/prepare-data/` (card E2).
+The raw files stay outside the repository (`.gitignore`, `data-raw/`). What the site uses are
+cutouts generated from them by `scripts/prepare-data/` (card E2).
 
-Este material inclui dados fornecidos pela NASA. Nenhuma conclusão apresentada aqui representa
-necessariamente a visão da NASA, e o projeto não é endossado por ela.
+This material includes data provided by NASA. No conclusion presented here necessarily represents
+NASA's view, and the project is not endorsed by NASA.
 
-## Bibliotecas que vão para o site
+## Libraries that go into the site
 
-Versões fixas no [`package.json`](package.json). Licença conferida no `package.json` de cada uma
-em `node_modules`, em 29/10/2026.
+Versions pinned in [`package.json`](package.json). License checked in each one's `package.json`
+in `node_modules`, on 29/10/2026.
 
-| Biblioteca | Versão | Para quê | Licença |
+| Library | Version | What for | License |
 |---|---|---|---|
-| [React](https://github.com/react/react) e React DOM | 19.3.1 | A tela | MIT |
-| [three.js](https://github.com/mrdoob/three.js) | 0.186.1 | A cena 3D | MIT |
-| [React Three Fiber](https://github.com/pmndrs/react-three-fiber) | 9.8.2 | three.js dentro do React | MIT |
-| [Drei](https://github.com/pmndrs/drei) | 10.7.9 | Peças prontas para a cena | MIT |
-| [Astronomy Engine](https://github.com/cosinekitty/astronomy) | 2.1.19 | Posição do Sol e da Terra vistos da Lua | MIT |
+| [React](https://github.com/react/react) and React DOM | 19.3.1 | The screen | MIT |
+| [three.js](https://github.com/mrdoob/three.js) | 0.186.1 | The 3D scene | MIT |
+| [React Three Fiber](https://github.com/pmndrs/react-three-fiber) | 9.8.2 | three.js inside React | MIT |
+| [Drei](https://github.com/pmndrs/drei) | 10.7.9 | Ready-made pieces for the scene | MIT |
+| [Astronomy Engine](https://github.com/cosinekitty/astronomy) | 2.1.19 | Position of the Sun and the Earth as seen from the Moon | MIT |
 
-As ferramentas de desenvolvimento (Vite, Vitest, ESLint, Testing Library, jsdom) não vão para o
-site publicado; as licenças delas estão no `package-lock.json` e em `node_modules`.
+The development tools (Vite, Vitest, ESLint, Testing Library, jsdom) do not go into the published
+site; their licenses are in `package-lock.json` and in `node_modules`.
 
-## Ferramentas e referências que não vão para o site
+## Tools and references that do not go into the site
 
-Rodam fora do navegador, ou só embasam uma escolha: preparam os recortes do relevo
-(`scripts/prepare-data/`), conferem o motor (`src/engine/`) contra fontes de fora
-(`scripts/references/`) e justificam a área do relevo (card E2).
+They run outside the browser, or only support a choice: they prepare the terrain cutouts
+(`scripts/prepare-data/`), check the engine (`src/engine/`) against outside sources
+(`scripts/references/`) and justify the terrain area (card E2).
 
-| O quê | Para quê | Fonte | Licença ou condição de uso |
+| What | What for | Source | License or terms of use |
 |---|---|---|---|
-| Bases do SPICE: `naif0012.tls`, `pck00011.tpc`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf` e `de440s.bsp` | Posição do Sol e da Terra de referência (`spiceReference.json`) | NAIF/JPL, [naif.jpl.nasa.gov/pub/naif/generic_kernels](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/) (links conferidos em 29/10/2026) | a conferir (card P2) |
-| [SpiceyPy](https://github.com/AndrewAnnex/SpiceyPy) 8.3.0 | Roda o SPICE no Python | pacote do PyPI | MIT |
-| [pyproj](https://github.com/pyproj4/pyproj) 3.8.0 | Projeção polar de referência (`polarReference.json`) | pacote do PyPI | MIT |
-| [NumPy](https://numpy.org) 2.5.4 | Contas dos scripts de Python | pacote do PyPI | BSD-3-Clause, com partes 0BSD, MIT, Zlib e CC0-1.0 |
-| [rasterio](https://github.com/rasterio/rasterio) 1.5.2 | Lê os arquivos da NASA nos scripts de `scripts/prepare-data/` | pacote do PyPI | BSD-3-Clause |
-| Comunicado da NASA com as 13 regiões candidatas ao pouso do Artemis III (RELEASE 22-089, 19/08/2022) | Justifica a área do relevo até 84°S (card E2 e `scripts/prepare-data/prepare_relief.py`) | NASA, [NASA Identifies Candidate Regions for Landing Next Americans on Moon](https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-Moon/) (link conferido em 04/11/2026) | a conferir (card P2) |
+| SPICE kernels: `naif0012.tls`, `pck00011.tpc`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf` and `de440s.bsp` | Reference position of the Sun and the Earth (`spiceReference.json`) | NAIF/JPL, [naif.jpl.nasa.gov/pub/naif/generic_kernels](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/) (links verified on 29/10/2026) | to be checked (card P2) |
+| [SpiceyPy](https://github.com/AndrewAnnex/SpiceyPy) 8.3.0 | Runs SPICE in Python | PyPI package | MIT |
+| [pyproj](https://github.com/pyproj4/pyproj) 3.8.0 | Reference polar projection (`polarReference.json`) | PyPI package | MIT |
+| [NumPy](https://numpy.org) 2.5.4 | Math in the Python scripts | PyPI package | BSD-3-Clause, with parts 0BSD, MIT, Zlib and CC0-1.0 |
+| [rasterio](https://github.com/rasterio/rasterio) 1.5.2 | Reads the NASA files in the scripts in `scripts/prepare-data/` | PyPI package | BSD-3-Clause |
+| NASA news release with the 13 candidate landing regions for Artemis III (RELEASE 22-089, 19/08/2022) | Justifies the terrain area down to 84°S (card E2 and `scripts/prepare-data/prepare_relief.py`) | NASA, [NASA Identifies Candidate Regions for Landing Next Americans on Moon](https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-Moon/) (link verified on 04/11/2026) | to be checked (card P2) |
 
-Licenças lidas nos metadados de cada pacote instalado, em 29/10/2026.
+Licenses read from the metadata of each installed package, on 29/10/2026.
 
-## Imagem, música e fonte de letra
+## Image, music and font
 
-A fonte do texto do site: Fira Sans, pelo pacote
-[`@fontsource/fira-sans`](https://www.npmjs.com/package/@fontsource/fira-sans) 5.3.0, licença
-OFL-1.1 (conferida no npm e no `package.json` do pacote em `node_modules`, em 11/11/2026). O
-vídeo entra aqui quando for escolhido (card V3).
+The site's text font: Fira Sans, through the package
+[`@fontsource/fira-sans`](https://www.npmjs.com/package/@fontsource/fira-sans) 5.3.0, license
+OFL-1.1 (verified on npm and in the package's `package.json` in `node_modules`, on 11/11/2026).
+The video goes here once it is chosen (card V3).
 
-O logo da Umbra Team e do UmbraView (`brand/`, e o ícone do site em `public/`) foi feito pela
-equipe com o Claude Design, da Anthropic, em 14/11/2026, e aprovado pelo Enzo (card V2).
+The Umbra Team and UmbraView logo (`brand/`, and the site icon in `public/`) was made by the team
+with Claude Design, by Anthropic, on 14/11/2026, and approved by Enzo (card V2).

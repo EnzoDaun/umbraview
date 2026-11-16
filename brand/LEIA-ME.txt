@@ -1,31 +1,31 @@
-UMBRA TEAM / UMBRAVIEW - kit de identidade
+UMBRA TEAM / UMBRAVIEW - identity kit
 
-Cores
-  Preto (fundo)       #050608
-  Branco (luz, texto) #f4f5f7
-  Azul-marinho (umbra)#10266a
-  Cinza (TEAM, fios)  #a0a6b4
+Colors
+  Black (background)  #050608
+  White (light, text) #f4f5f7
+  Navy blue (umbra)   #10266a
+  Gray (TEAM, lines)  #a0a6b4
 
-Tipografia
-  Fira Sans. UMBRΛ em Medium (500), TEAM em Regular (400), VIEW em Light (300).
-  Nos SVG e PNG o texto já está convertido em curvas; não é preciso instalar a fonte.
-  O "Λ" é a letra grega lambda maiúscula (U+039B).
+Typography
+  Fira Sans. UMBRΛ in Medium (500), TEAM in Regular (400), VIEW in Light (300).
+  In the SVG and PNG files the text is already converted to curves; there is no need to install the font.
+  The "Λ" is the Greek capital letter lambda (U+039B).
 
-Arquivos
-  svg/  vetores, fundo transparente; é daqui que sai qualquer PNG, quando a submissão pedir um
-  favicon/  favicon.ico (16, 32, 48), PNG avulsos, favicon.svg, apple-touch-icon-180.png
+Files
+  svg/  vectors, transparent background; any PNG comes from here, when the submission asks for one
+  favicon/  favicon.ico (16, 32, 48), standalone PNGs, favicon.svg, apple-touch-icon-180.png
 
-  umbra-simbolo            símbolo sozinho (com escala de elevação)
-  umbra-team-vertical      lockup principal, símbolo em cima
-  umbra-team-horizontal    lockup com símbolo à esquerda
-  umbraview-horizontal     lockup do produto
-  umbraview-cabecalho      versão compacta para o cabeçalho do site (símbolo simplificado)
-  ...-mono-branco          uma cor, para vídeo e fundos escuros
-  ...-mono-preto           uma cor, para fundos claros
+  umbra-simbolo            symbol alone (with elevation scale)
+  umbra-team-vertical      main lockup, symbol on top
+  umbra-team-horizontal    lockup with symbol on the left
+  umbraview-horizontal     product lockup
+  umbraview-cabecalho      compact version for the site header (simplified symbol)
+  ...-mono-branco          one color, for video and dark backgrounds
+  ...-mono-preto           one color, for light backgrounds
 
-Uso
-  O site usa duas destas versões, copiadas para public/brand/: umbraview-cabecalho (no cabeçalho)
-  e umbra-simbolo-mono-branco (no rodapé). Só o que está em public/ é servido.
-  As versões em cores e mono-branco foram feitas para fundo escuro (ideal: #050608).
-  Abaixo de ~64 px de altura do símbolo, use o favicon ou o umbraview-cabecalho: a escala e o horizonte fino somem.
-  Em 16 px o favicon não tem a linha do horizonte, de propósito.
+Usage
+  The site uses two of these versions, copied to public/brand/: umbraview-cabecalho (in the header)
+  and umbra-simbolo-mono-branco (in the footer). Only what is in public/ is served.
+  The color and mono-branco versions were made for a dark background (ideal: #050608).
+  Below ~64 px of symbol height, use the favicon or umbraview-cabecalho: the scale and the thin horizon disappear.
+  At 16 px the favicon has no horizon line, on purpose.
