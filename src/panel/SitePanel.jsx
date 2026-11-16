@@ -89,29 +89,35 @@ function PanelBody({ status, sky }) {
         <span className="site-panel__number">{formatPercent(sky.earthFraction)}</span>
         <Meter fraction={sky.earthFraction} />
       </Row>
-      <Row label={panel.landingWindows} kind="wide">
+      {/* a resposta do app: o que a pessoa veio procurar fica com destaque próprio, na cor das
+          janelas de pouso da linha do tempo e do mapa de áreas */}
+      <Row label={panel.landingWindows} kind="wide" landing>
         {sky.landingWindows.length === 0 ? (
-          panel.noWindows
+          <span className="site-panel__no-window">{panel.noWindows}</span>
         ) : (
           <ul className="site-panel__windows">
             {sky.landingWindows.map((landingWindow) => (
-              <li key={landingWindow.startUtc.getTime()}>
+              <li key={landingWindow.startUtc.getTime()} className="site-panel__window">
                 {/* na frente, para correr o olho pela lista atrás da janela mais longa; o "≥" na
                     cortada pelo período, porque a janela dura mais do que a parte dentro dele */}
                 <span className="site-panel__number site-panel__duration">
                   {(landingWindow.startsBeforePeriod || landingWindow.endsAfterPeriod) && '≥ '}
                   {formatDuration(landingWindow.durationHours)}
                 </span>
-                {' · '}
-                <span className="site-panel__number site-panel__date">
-                  {formatUtc(landingWindow.startUtc)}
+                {/* o separador some na tela, onde a duração fica em cima e as datas embaixo, mas
+                    continua no texto, para o leitor de tela e para quem copia a linha */}
+                <span className="site-panel__window-sep">{' · '}</span>
+                <span className="site-panel__window-dates">
+                  <span className="site-panel__number site-panel__date">
+                    {formatUtc(landingWindow.startUtc)}
+                  </span>
+                  {landingWindow.startsBeforePeriod && ` ${panel.alreadyOpen}`}
+                  {' – '}
+                  <span className="site-panel__number site-panel__date">
+                    {formatUtc(landingWindow.endUtc)}
+                  </span>
+                  {landingWindow.endsAfterPeriod && ` ${panel.continues}`}
                 </span>
-                {landingWindow.startsBeforePeriod && ` ${panel.alreadyOpen}`}
-                {' – '}
-                <span className="site-panel__number site-panel__date">
-                  {formatUtc(landingWindow.endUtc)}
-                </span>
-                {landingWindow.endsAfterPeriod && ` ${panel.continues}`}
               </li>
             ))}
           </ul>
@@ -133,10 +139,12 @@ function stateText({ visible, belowHorizon }) {
 }
 
 /* kind: 'sun' e 'earth' põem a linha na coluna do astro, lado a lado (SitePanel.css); 'wide' ocupa
-   as duas. now: as duas linhas do instante escolhido, com mais destaque que as do período. */
-function Row({ label, kind, now = false, children }) {
+   as duas. now: as duas linhas do instante escolhido, com mais destaque que as do período. landing: a
+   linha das janelas de pouso, com o destaque verde (SitePanel.css). */
+function Row({ label, kind, now = false, landing = false, children }) {
+  const modifiers = `${now ? ' site-panel__row--now' : ''}${landing ? ' site-panel__row--landing' : ''}`
   return (
-    <div className={`site-panel__row site-panel__row--${kind}${now ? ' site-panel__row--now' : ''}`}>
+    <div className={`site-panel__row site-panel__row--${kind}${modifiers}`}>
       <dt className="site-panel__label">{label}</dt>
       <dd className="site-panel__value">{children}</dd>
     </div>
