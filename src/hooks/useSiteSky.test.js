@@ -75,17 +75,23 @@ describe('useSiteSky: o céu do ponto escolhido, para a tela', () => {
     },
   )
 
-  /* A tela recebe só o status; o motivo vai para o console, para quem depura saber se foi ponto
-     fora da área, arquivo que não chegou ou outra coisa. */
+  /* A tela recebe só o status; o motivo vai para o console, para quem depura saber se foi um
+     arquivo que não chegou ou outra coisa. */
   it(
-    'ponto fora da área com relevo fica em error, sem céu, e o motivo aparece no console',
+    'relevo que não chega fica em error, sem céu, e o motivo aparece no console',
     async () => {
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-      const { result } = renderSiteSky({ site: { lat: -80, lon: 0 }, date: NOV_14 }, createSiteSky(diskReader().readFile))
+      const { readFile } = diskReader()
+      // um ponto fora do polo, com o relevo da Lua inteira fora do ar
+      const semRelevoGlobal = async (path) => {
+        if (path.startsWith('global/')) throw new Error('o relevo da Lua inteira não chegou')
+        return readFile(path)
+      }
+      const { result } = renderSiteSky({ site: { lat: -80, lon: 0 }, date: NOV_14 }, createSiteSky(semRelevoGlobal))
       await waitFor(() => expect(result.current).toEqual({ status: 'error', sky: null }), WAIT)
       expect(consoleError).toHaveBeenCalledWith(
         'useSiteSky: a conta do céu falhou',
-        expect.objectContaining({ message: 'o ponto está fora da área com relevo' }),
+        expect.objectContaining({ message: 'o relevo da Lua inteira não chegou' }),
       )
     },
   )

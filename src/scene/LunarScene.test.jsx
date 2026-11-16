@@ -10,6 +10,7 @@ import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { scene } from '../data/scene.js'
+import { MIN_LANDING_WINDOW_HOURS, PERIOD_DAYS } from '../engine/config.js'
 import { MOON_RADIUS_M } from '../engine/geometry.js'
 import { LunarScene } from './LunarScene.jsx'
 
@@ -28,6 +29,22 @@ vi.mock('@react-three/drei', () => ({
 }))
 // o relevo é baixado da página, e o jsdom não serve arquivo; a leitura tem teste próprio
 vi.mock('../hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
+// o céu de estrelas desenha com WebGL, que o jsdom não tem; as contas dele têm teste próprio
+const ceu = vi.fn()
+vi.mock('./StarField.jsx', () => ({ StarField: (props) => { ceu(props); return null } }))
+// a esfera com as imagens e o enquadramento da câmera também são do WebGL; as contas têm teste próprio
+const globo = vi.fn()
+const enquadramento = vi.fn()
+vi.mock('./MoonGlobe.jsx', () => ({ MoonGlobe: (props) => { globo(props); return null } }))
+// a câmera desta versão é uma peça só (o CameraControls do Drei, em CameraRig.jsx): é ela que
+// recebe os limites do zoom, o giro sozinho e o ponto escolhido
+vi.mock('./CameraRig.jsx', () => ({ CameraRig: (props) => { enquadramento(props); controles(props); return null } }))
+// o mapa das áreas de pouso roda num Worker, que o jsdom não tem: o teste dá o resultado pronto
+const mapa = vi.hoisted(() => ({ pedidos: [], resultado: { status: 'idle', areas: null } }))
+vi.mock('../hooks/useLandingAreas.js', () => ({
+  useLandingAreas: (dateUtc, enabled) => { mapa.pedidos.push({ dateUtc, enabled }); return enabled ? mapa.resultado : { status: 'idle', areas: null } },
+}))
+vi.mock('./LandingAreasLayer.jsx', () => ({ LandingAreasLayer: () => null }))
 
 const DATA = new Date('2026-11-14T00:00:00Z')
 const NEXT_DAY = new Date('2026-11-15T00:00:00Z')
@@ -55,6 +72,104 @@ describe('LunarScene', () => {
     vi.useRealTimers()
   })
 
+  it('o céu de estrelas recebe a mesma data da luz, para a Terra e o Sol ficarem entre as estrelas certas', () => {
+    sistemaPede(false)
+    const { rerender } = render(<LunarScene dateUtc={DATA} />)
+    expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(DATA)
+    rerender(<LunarScene dateUtc={NEXT_DAY} />)
+    expect(ceu.mock.calls.at(-1)[0].dateUtc).toBe(NEXT_DAY)
+  })
+
+  it('sem o relevo do polo, a esfera da Lua vai inteira, sem buraco', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const { thetaLength, far } = globo.mock.calls.at(-1)[0]
+    expect(thetaLength).toBe(Math.PI)
+    expect(far).toBeNull()
+  })
+
+  it('a câmera recebe a direção do Sol, para a primeira vista, e o pedido de volta à Lua inteira', async () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const { subsolar, homeSignal, insets } = enquadramento.mock.calls.at(-1)[0]
+    expect(subsolar).toMatchObject({ lat: expect.any(Number), lon: expect.any(Number) })
+    // o painel desta versão fica ao lado da cena: nada cobre a Lua
+    expect(insets).toEqual({ right: 0, bottom: 0 })
+    act(() => screen.getByRole('button', { name: scene.wholeMoon }).click())
+    expect(enquadramento.mock.calls.at(-1)[0].homeSignal).toBe(homeSignal + 1)
+  })
+
+  /* O botão tem o quadradinho de ligado e desligado, como o do mapa: ele acende quando a Lua
+     inteira está no quadro e apaga quando a pessoa chega perto ou voa até um ponto. Antes, nunca
+     acendia, e parecia quebrado. Quem sabe onde a câmera está é o CameraRig, que avisa a cena. */
+  it('o botão da Lua inteira acende com a Lua inteira no quadro e apaga quando a câmera chega perto', async () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const botao = screen.getByRole('button', { name: scene.wholeMoon })
+    expect(botao).toHaveAttribute('aria-pressed', 'true')
+    act(() => enquadramento.mock.calls.at(-1)[0].onWideChange(false))
+    expect(botao).toHaveAttribute('aria-pressed', 'false')
+    act(() => enquadramento.mock.calls.at(-1)[0].onWideChange(true))
+    expect(botao).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('a câmera recebe o ponto escolhido, para voar até ele, e o pedido de menos movimento, para pular', () => {
+    sistemaPede(true)
+    const ponto = { lat: -89.475, lon: -137.44 }
+    render(<LunarScene dateUtc={DATA} site={ponto} />)
+    const { site, reducedMotion } = enquadramento.mock.calls.at(-1)[0]
+    expect(site).toBe(ponto)
+    expect(reducedMotion).toBe(true)
+  })
+
+  it('a câmera começa numa distância dentro dos limites do zoom e fora do eixo dos controles', () => {
+    sistemaPede(false)
+    render(<LunarScene dateUtc={DATA} />)
+    const [x, y, z] = canvas.mock.calls.at(-1)[0].camera.position
+    const distancia = Math.hypot(x, y, z)
+    expect(distancia).toBeGreaterThan(ultimosControles().minDistance)
+    expect(distancia).toBeLessThan(ultimosControles().maxDistance)
+    // no eixo y, a rotação da câmera fica indefinida
+    expect(Math.hypot(x, z)).toBeGreaterThan(0.1)
+  })
+
+  it('o botão do mapa das áreas de pouso diz se está ligado e avisa o App ao ser apertado', () => {
+    sistemaPede(false)
+    const aoApertar = vi.fn()
+    const { rerender } = render(<LunarScene dateUtc={DATA} onToggleLandingAreas={aoApertar} />)
+    const botao = screen.getByRole('button', { name: scene.landingToggle })
+    expect(botao).toHaveAttribute('aria-pressed', 'false')
+    // desligado, a conta do mapa nem é pedida
+    expect(mapa.pedidos.at(-1)).toEqual({ dateUtc: DATA, enabled: false })
+    act(() => botao.click())
+    expect(aoApertar).toHaveBeenCalledTimes(1)
+    rerender(<LunarScene dateUtc={DATA} showLandingAreas onToggleLandingAreas={aoApertar} />)
+    expect(screen.getByRole('button', { name: scene.landingToggle })).toHaveAttribute('aria-pressed', 'true')
+    expect(mapa.pedidos.at(-1)).toEqual({ dateUtc: DATA, enabled: true })
+  })
+
+  it('com o mapa ligado, a linha ao lado do botão diz que está calculando, ou que a conta falhou', () => {
+    sistemaPede(false)
+    mapa.resultado = { status: 'loading', areas: null }
+    const { rerender } = render(<LunarScene dateUtc={DATA} showLandingAreas />)
+    // a linha diz o que é uma janela de pouso, com os números da regra do motor, e não só "calculando"
+    const calculando = scene.landingLoading({ periodDays: PERIOD_DAYS, minHours: MIN_LANDING_WINDOW_HOURS })
+    expect(calculando).toContain(`${PERIOD_DAYS} days`)
+    expect(calculando).toContain(`${MIN_LANDING_WINDOW_HOURS} hours`)
+    expect(calculando).toContain('the Sun and the Earth above the horizon')
+    expect(screen.getByText(calculando)).toBeInTheDocument()
+    mapa.resultado = { status: 'error', areas: null }
+    rerender(<LunarScene dateUtc={NEXT_DAY} showLandingAreas />)
+    expect(screen.getByText(scene.landingError)).toBeInTheDocument()
+    const pronto = scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: 61, minHours: 24 })
+    expect(pronto).toContain('61 km on the rest of the Moon')
+    // o resultado diz o que o verde quer dizer
+    expect(pronto).toContain('Green areas')
+    expect(pronto).toContain('24 hours')
+    expect(scene.landingReady({ found: 3, total: 9, stepKm: 5, limitDeg: 84, globalStepKm: null, minHours: 24 })).not.toContain('rest of the Moon')
+    mapa.resultado = { status: 'idle', areas: null }
+  })
+
   it('tem o nome acessível que vem de src/data/scene.js', () => {
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
@@ -70,7 +185,7 @@ describe('LunarScene', () => {
   it('com o pedido de menos movimento, não gira sozinha nem desliza depois de soltar o mouse', () => {
     sistemaPede(true)
     render(<LunarScene dateUtc={DATA} />)
-    expect(ultimosControles()).toMatchObject({ autoRotate: false, enableDamping: false })
+    expect(ultimosControles()).toMatchObject({ autoRotate: false, reducedMotion: true })
   })
 
   it('sem o pedido, gira devagar sozinha', () => {
@@ -89,7 +204,7 @@ describe('LunarScene', () => {
 
     // os controles chamam o onStart quando a pessoa aperta o botão esquerdo ou o do meio, usa a
     // roda ou toca na tela
-    const { onStart } = ultimosControles()
+    const { onUserStart: onStart } = ultimosControles()
     expect(onStart).toBeTypeOf('function')
     act(() => onStart())
     expect(ultimosControles()).toMatchObject({ autoRotate: false })
@@ -120,17 +235,17 @@ describe('LunarScene', () => {
   it('com o pedido de menos movimento, mexer na Lua não muda nada: ela já estava parada', () => {
     sistemaPede(true)
     render(<LunarScene dateUtc={DATA} />)
-    const { onStart } = ultimosControles()
+    const { onUserStart: onStart } = ultimosControles()
     expect(onStart).toBeTypeOf('function')
     act(() => onStart())
-    expect(ultimosControles()).toMatchObject({ autoRotate: false, enableDamping: false })
+    expect(ultimosControles()).toMatchObject({ autoRotate: false, reducedMotion: true })
   })
 
-  it('arrastar não tira a Lua do centro, e o zoom tem limite', () => {
+  it('o zoom tem limite', () => {
+    // o arrasto que tiraria a Lua do centro é desligado no próprio CameraRig (o botão direito)
     sistemaPede(false)
     render(<LunarScene dateUtc={DATA} />)
     const props = ultimosControles()
-    expect(props.enablePan).toBe(false)
     expect(props.minDistance).toBeGreaterThan(1)
     expect(props.maxDistance).toBeGreaterThan(props.minDistance)
   })
@@ -143,7 +258,7 @@ describe('LunarScene', () => {
     expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('always')
 
     // parada, a cena ainda custava 6 ms por quadro, 144 vezes por segundo (medido no C4)
-    act(() => ultimosControles().onStart())
+    act(() => ultimosControles().onUserStart())
     expect(canvas.mock.calls.at(-1)[0].frameloop).toBe('demand')
   })
 

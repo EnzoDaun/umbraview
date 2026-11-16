@@ -11,10 +11,13 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.jsx'
+import { about } from './data/about.js'
 import { app } from './data/app.js'
 import { panel } from './data/panel.js'
 import { scene } from './data/scene.js'
 import { sites } from './data/sites.js'
+import { systemView } from './data/systemView.js'
+import { MIN_LANDING_WINDOW_HOURS } from './engine/config.js'
 import { createSiteSky } from './engine/siteSky.js'
 import { SitePanel } from './panel/SitePanel.jsx'
 
@@ -25,6 +28,16 @@ vi.mock('@react-three/fiber', () => ({
 // o Html é o marcador do ponto escolhido (card C3), que aparece quando o teste escolhe um ponto
 vi.mock('@react-three/drei', () => ({ OrbitControls: () => null, Html: ({ children }) => <div>{children}</div> }))
 vi.mock('./hooks/useFarRelief.js', () => ({ useFarRelief: () => null }))
+// o céu de estrelas desenha com WebGL, que o jsdom não tem; as contas dele têm teste próprio
+vi.mock('./scene/StarField.jsx', () => ({ StarField: () => null }))
+vi.mock('./scene/MoonGlobe.jsx', () => ({ MoonGlobe: () => null }))
+vi.mock('./scene/CameraRig.jsx', () => ({ CameraRig: () => null }))
+vi.mock('./scene/LandingAreasLayer.jsx', () => ({ LandingAreasLayer: () => null }))
+// a vista do sistema desenha com WebGL; o teste confere só que o App entrega a data e a troca de vista
+const vistaDoSistema = vi.hoisted(() => ({ props: null }))
+vi.mock('./scene/SystemView.jsx', () => ({
+  SystemView: (props) => { vistaDoSistema.props = props; return <div data-testid="vista-do-sistema" /> },
+}))
 
 /* A cena de verdade, com o onSelect e a data que o App entrega a ela guardados aqui: o teste
    escolhe o ponto pelo onSelect, como faz o clique na Lua (card C3), e confere a data da luz. O
@@ -85,6 +98,34 @@ describe('App, esqueleto da tela', () => {
     render(<App />)
     const cabecalho = screen.getByRole('banner')
     expect(within(cabecalho).getByRole('heading', { level: 1, name: app.name })).toBeInTheDocument()
+  })
+
+  /* O título principal é o logo do projeto (card V2), e não o nome escrito: quem não vê a imagem
+     ouve o nome pelo alt, e o título continua sendo um h1 só. O símbolo da equipe no rodapé é
+     decorativo, porque o nome dela já está escrito ao lado. */
+  it('o logo do projeto é o título principal, e o símbolo da equipe no rodapé é decorativo', () => {
+    render(<App />)
+    const titulo = within(screen.getByRole('banner')).getByRole('heading', { level: 1 })
+    const logo = within(titulo).getByRole('img', { name: app.name })
+    expect(logo).toHaveAttribute('src', expect.stringContaining('.svg'))
+    const rodape = screen.getByRole('contentinfo')
+    expect(within(rodape).queryByRole('img')).not.toBeInTheDocument()
+    expect(rodape.querySelector('img')).toHaveAttribute('alt', '')
+  })
+
+  /* O bloco que explica o produto (o problema, o que o site faz e como começar) fica no fim do
+     painel e nasce aberto: quem chega sem contexto precisa dele antes de clicar em qualquer coisa.
+     A duração mínima da janela de pouso vem do motor, e não escrita à mão no texto. */
+  it('o painel explica o que a pessoa está vendo, com a regra da janela vinda do motor', () => {
+    render(<App />)
+    const painel = screen.getByRole('region', { name: app.panel.title })
+    expect(within(painel).getByText(about.title)).toBeInTheDocument()
+    for (const bloco of about.blocks) {
+      expect(within(painel).getByRole('heading', { level: 3, name: bloco.heading })).toBeInTheDocument()
+    }
+    const comecar = about.blocks.at(-1)
+    expect(within(painel).getByText(comecar.body(MIN_LANDING_WINDOW_HOURS))).toBeInTheDocument()
+    expect(painel.querySelector('details')).toHaveAttribute('open')
   })
 
   it('tem a região da cena e a do painel, cada uma com nome acessível', () => {
@@ -196,5 +237,32 @@ describe('App, a lista de locais e a data ligadas ao painel e à cena (card E14)
     // o ponto clicado não é um local da lista: ela mostraria "Athena" com o painel em outro ponto
     act(() => sceneProps.onSelect(TOP_1))
     expect(list).toHaveDisplayValue(panel.siteListPlaceholder)
+  })
+})
+
+describe('App, a troca entre a Lua e a vista do sistema', () => {
+  it('começa na Lua; o seletor troca para a Terra, a Lua e o Sol, com a mesma data, e volta', () => {
+    render(<App />)
+    const lua = screen.getByRole('button', { name: systemView.viewMoon })
+    const sistema = screen.getByRole('button', { name: systemView.viewSystem })
+    expect(lua).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByTestId('vista-do-sistema')).not.toBeInTheDocument()
+
+    fireEvent.click(sistema)
+    expect(sistema).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByTestId('vista-do-sistema')).toBeInTheDocument()
+    expect(screen.queryByTestId('canvas')).not.toBeInTheDocument()
+    expect(vistaDoSistema.props.dateUtc).toBe(sceneProps.dateUtc)
+
+    fireEvent.click(lua)
+    expect(screen.getByTestId('canvas')).toBeInTheDocument()
+  })
+
+  it('o "Set as date" da vista do sistema muda a data do cálculo', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: systemView.viewSystem }))
+    const nova = new Date('2026-12-01T00:00:00Z')
+    act(() => vistaDoSistema.props.onDateChange(nova))
+    expect(vistaDoSistema.props.dateUtc).toBe(nova)
   })
 })

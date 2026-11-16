@@ -42,8 +42,9 @@ export function computeEphemeris(startMs, count, stepHours) {
 
 /* Do referencial equatorial para o fixo da Lua: M = Rz(W) · Rx(90° − dec) · Rz(90° + ra), com a
    ascensão reta (ra, em horas) e a declinação (dec) do polo norte da Lua e o ângulo de rotação
-   (spin = W) do modelo da IAU. */
-function moonFixedRotation({ ra, dec, spin }) {
+   (spin = W) do modelo da IAU. Exportada para quem gira outra coisa junto com a Lua: o céu de
+   estrelas da cena usa o mesmo giro, para a Terra aparecer entre as estrelas certas. */
+export function moonFixedRotation({ ra, dec, spin }) {
   const a1 = Math.PI / 2 + ra * 15 * DEG
   const a2 = Math.PI / 2 - dec * DEG
   const w = spin * DEG
@@ -57,4 +58,12 @@ function moonFixedRotation({ ra, dec, spin }) {
     const z2 = -s2 * y1 + c2 * z
     return [c3 * x1 + s3 * y2, -s3 * x1 + c3 * y2, z2]
   }
+}
+
+/* O giro do referencial equatorial (J2000, o dos catálogos de estrelas e do astronomy-engine) para
+   o fixo da Lua, num instante (milissegundos UTC). Devolve a função (x, y, z) => [x, y, z]. Visto da
+   Lua, o céu inteiro dá uma volta a cada mês sideral (27,32 dias), porque a Lua gira no mesmo
+   tempo em que dá a volta na Terra. */
+export function moonFixedFrameAt(dateMs) {
+  return moonFixedRotation(RotationAxis(Body.Moon, MakeTime(new Date(dateMs))))
 }

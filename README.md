@@ -43,8 +43,15 @@ instala tudo no Windows, do zero.
 
 ## O que já existe
 
-- A tela com as três regiões que o produto vai ter: cabeçalho, a cena da Lua (esquerda, maior)
-  e o painel do ponto escolhido (direita).
+- A tela com as regiões do produto: cabeçalho; à esquerda, a cena da Lua e, embaixo dela, o céu
+  do ponto em desenho; à direita, o painel do ponto escolhido, com os controles e os números.
+- A Lua inteira na cena, com a cor e o relevo de verdade (NASA, *CGI Moon Kit*), enquadrada em
+  qualquer formato de tela, sobre o céu de estrelas do catálogo HYG, na posição em que elas estão
+  na data escolhida (`src/scene/MoonGlobe.jsx` e `StarField.jsx`).
+- O céu do ponto em desenho (`src/panel/SiteSky.jsx`): a vista do chão, com o contorno do relevo
+  em 360° e o caminho do Sol e da Terra no período, cheio onde aparecem e tracejado onde o relevo
+  esconde; e a linha do tempo do período, com o Sol, a Terra e as janelas de pouso, e um cursor que
+  marca a hora no gráfico e pode virar a data do cálculo. Os números vêm do `sky.groundView`.
 - A Lua em 3D na região da cena (`src/scene/`), que gira com o mouse e aproxima com a roda
   (card C1). Perto do polo sul, ela mostra o relevo de verdade, na altura real, com a luz do Sol
   da data e a sombra das montanhas (card C2). De perto, onde a máquina aguenta, o relevo fino (dos
@@ -53,6 +60,15 @@ instala tudo no Windows, do zero.
   escolhe um ponto e põe um marcador nele (card C3), e o painel da direita mostra o céu desse
   ponto na mesma data (cards I1 e E11): o Sol e a Terra agora, o próximo pôr do Sol, a luz no
   período e as janelas de pouso.
+- O mapa das áreas com janela de pouso (o botão "Show landing areas", junto da cena): pinta sobre
+  a Lua os lugares que têm janela de pouso no período da data escolhida, pela mesma regra da lista
+  do painel. Até 84°S, com uma grade de 5 km e o relevo fino; no resto da Lua, com uma grade de 2°
+  (61 km) e o relevo da Lua inteira. Os horizontes das duas grades são calculados antes, por
+  `scripts/prepare-data/prepare-landing-grid.mjs`, e a conta de cada data roda num Worker
+  (`src/engine/landingAreas.js`).
+- A vista do sistema (o seletor "Earth, Moon and Sun", em cima da cena): a Terra, a Lua na órbita
+  dela e a direção do Sol, com as posições, os eixos e a libração do motor (`src/engine/system.js`),
+  fora de escala, e um relógio próprio que anda pelo período sem mudar a data do cálculo.
 - No painel, a lista de locais de pouso, que também escolhe o ponto, inclusive só pelo teclado
   (card I2): o pouso do IM-2 e o centro de 7 das 9 regiões candidatas do Artemis III (card E16).
   Também no painel, a data e a hora em UTC, que começam na hora em que a página abriu (card
@@ -62,6 +78,10 @@ instala tudo no Windows, do zero.
 - A ponte entre o motor e a tela (`src/hooks/`): `useSiteSky` entrega o céu do ponto escolhido, e
   `useSubsolarPoint`, a direção do Sol. A cena usa o `useSubsolarPoint`; o `App.jsx` chama o
   `useSiteSky` e entrega o resultado ao painel.
+- A Lua inteira pode ser escolhida, pelo clique: dentro de 84°S o horizonte vem do relevo fino do
+  polo; fora, do relevo da Lua inteira (`public/data/relief/global/`, 1,9 km por pixel), e o painel
+  avisa que o resultado é aproximado. O painel separa "escondido pelo relevo" de "abaixo do
+  horizonte" (a noite, o lado oculto, a libração).
 - O relevo do polo sul até 84°S (`public/data/relief/`), recortado dos arquivos da NASA por
   `scripts/prepare-data/`, e a comparação do horizonte do motor com o da NASA (números no card
   E1).
@@ -221,10 +241,9 @@ umbraview/
 │   │   └── verify.yml               o verify e a conferência de assinatura em todo PR
 │   └── pull_request_template.md
 │
-├── brand/                           o kit do logo da equipe e do projeto, em SVG e PNG (card V2)
+├── brand/                           o kit do logo da equipe e do projeto, em vetor (card V2)
 │   ├── favicon/                     os ícones de aba e de celular, de onde saem os de public/
-│   ├── png/
-│   ├── svg/
+│   ├── svg/                         a fonte de toda versão do logo; o PNG sai daqui quando precisa
 │   └── LEIA-ME.txt                  as cores, a fonte e onde usar cada versão
 │
 ├── docs/
@@ -234,7 +253,12 @@ umbraview/
 │
 ├── public/
 │   ├── data/
-│   │   └── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   ├── earth/                   a imagem da Terra da vista do sistema, do Blue Marble da NASA
+│   │   ├── landing-grid/            o horizonte de uma grade de pontos, para o mapa das áreas de pouso
+│   │   ├── moon/                    a cor e o relevo do globo da Lua inteira, da NASA, gerados pelo script
+│   │   ├── relief/                  o relevo do polo sul que o site usa, gerado pelo script (card E2)
+│   │   └── stars/                   as estrelas do céu da cena, do catálogo HYG, com a licença delas
+│   ├── brand/                       o logo do cabeçalho e o símbolo do rodapé, copiados de brand/svg/
 │   ├── apple-touch-icon.png         o ícone do site, copiado de brand/favicon/ (card V2)
 │   ├── favicon.ico
 │   └── favicon.svg
@@ -245,7 +269,11 @@ umbraview/
 │   │   ├── compare-nasa.mjs         o nosso Sol e a nossa Terra contra os mapas da NASA
 │   │   ├── nasa-reference.json      os valores da NASA nos pontos de comparação
 │   │   ├── nasa_reference.py        gera o nasa-reference.json
+│   │   ├── prepare-landing-grid.mjs gera public/data/landing-grid/, com o motor e o relevo do site
+│   │   ├── prepare_earth.py         gera public/data/earth/, do Blue Marble da NASA
+│   │   ├── prepare_moon_global.py   gera public/data/moon/ e o relevo da Lua inteira, do CGI Moon Kit da NASA
 │   │   ├── prepare_relief.py        gera public/data/relief/
+│   │   ├── prepare_stars.py         gera public/data/stars/, do catálogo HYG
 │   │   ├── requirements.txt
 │   │   └── window-lengths.mjs       quanto duram as janelas de pouso, para escolher o mínimo
 │   ├── references/                  referências de fora para os testes do motor e da lista de locais
@@ -260,10 +288,13 @@ umbraview/
 │
 ├── src/
 │   ├── data/
+│   │   ├── about.js                 o texto que explica o produto: o problema, o que o site faz e como começar
 │   │   ├── app.js                   textos da tela principal
 │   │   ├── panel.js                 textos do painel do ponto (card I1)
 │   │   ├── scene.js                 textos da cena 3D (cards C1 a C3)
-│   │   └── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
+│   │   ├── siteSky.js               textos da vista do chão e da linha do tempo
+│   │   ├── sites.js                 os locais de pouso da lista, com a fonte de cada um (card I2)
+│   │   └── systemView.js            textos da vista do sistema (a Terra, a Lua e o Sol)
 │   ├── engine/                      o motor de cálculo (card E1)
 │   │   ├── fixtures/
 │   │   │   ├── polarReference.json  posição x/y do pyproj, para o teste da projeção
@@ -273,44 +304,76 @@ umbraview/
 │   │   ├── ephemeris.js             a posição do Sol e da Terra vistos da Lua, hora a hora
 │   │   ├── geometry.js              coordenadas, projeção polar sul e leste/norte/cima
 │   │   ├── horizon.js               o horizonte de um ponto, direção por direção
+│   │   ├── landingAreas.js          quais pontos de uma grade têm janela de pouso no período de uma data
+│   │   ├── landingGridFiles.js      os arquivos da grade de pouso, e a máscara do mapa para a cena
 │   │   ├── relief.js                a altura do relevo num ponto: grade polar, cilíndrica ou em ladrilhos
 │   │   ├── reliefFiles.js           os arquivos de relevo do site viram as camadas do horizonte
 │   │   ├── series.js                Sol e Terra hora a hora, pôr do Sol e janelas de pouso
 │   │   ├── siteSky.js               o céu de um ponto no período da tela, com o relevo do site
-│   │   └── summary.js               o resultado no formato que a tela espera
+│   │   ├── summary.js               o resultado no formato que a tela espera
+│   │   ├── starCatalog.js           as estrelas do stars.bin: direção, magnitude e cor pelo B−V
+│   │   ├── system.js                a Terra, a Lua e o Sol num instante: posições, eixos, órbita e libração
+│   │   └── systemState.js           o giro do céu de estrelas para o referencial fixo da Lua
 │   ├── hooks/                       a ponte entre o motor e a tela (card E3)
 │   │   ├── usePrefersReducedMotion.js  se a pessoa pediu ao sistema menos animação
 │   │   ├── useFarRelief.js          o relevo grosso do polo, para a malha da cena (card C2)
+│   │   ├── useLandingAreas.js       o mapa das áreas com janela de pouso na data, calculado num Worker
 │   │   ├── useNearTiles.js          os ladrilhos do relevo fino em volta da câmera (card C6)
 │   │   ├── useSiteSky.js            o céu do ponto escolhido, com o status da conta
+│   │   ├── useSkyRotation.js        o giro do céu de estrelas para a cena, na data
+│   │   ├── useStarCatalog.js        as estrelas do céu da cena, lidas uma vez por página
 │   │   ├── useSubsolarPoint.js      onde o Sol está a pino na data, para a luz da cena
 │   │   └── useTimedNotice.js        um aviso curto que some sozinho (card C3)
 │   ├── panel/                       o painel do ponto: os números e a escolha do local e da data (cards I1, I2 e I4)
+│   │   ├── About.css
+│   │   ├── About.jsx                o bloco que explica o produto, no fim do painel
 │   │   ├── DateTimeControl.css
 │   │   ├── DateTimeControl.jsx      a data e a hora do cálculo, em UTC (card I4)
+│   │   ├── GroundView.css
+│   │   ├── GroundView.jsx           a vista do chão: o relevo em 360° e o caminho do Sol e da Terra por cima
 │   │   ├── SiteList.css
 │   │   ├── SiteList.jsx             a lista de locais de pouso, separando pousos de regiões candidatas (card I2)
 │   │   ├── SitePanel.css
 │   │   ├── SitePanel.jsx            os números do ponto, um texto para cada status do useSiteSky
-│   │   └── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   ├── SiteSky.css
+│   │   ├── SiteSky.jsx              o céu do ponto em desenho: a vista do chão e a linha do tempo, ligadas pela hora
+│   │   ├── Timeline.css
+│   │   ├── Timeline.jsx             a linha do tempo do período: Sol, Terra e janelas de pouso, com o cursor da hora
+│   │   ├── format.js                graus, porcentagem e data em UTC, em texto para o painel
+│   │   └── skyChart.js              as contas de desenho da vista do chão e da linha do tempo
 │   ├── scene/                       a Lua em 3D (cards C1 a C3, C6 e C8)
-│   │   ├── AreaRing.jsx             o anel em 84°S, até onde dá para escolher um ponto (card C8)
+│   │   ├── CameraRig.jsx            a câmera: enquadra a Lua inteira, aproxima com a roda ou a pinça, voa até o ponto e volta
+│   │   ├── LandingAreasLayer.jsx    o mapa das áreas com janela de pouso, pintado sobre a Lua
 │   │   ├── LunarScene.css
 │   │   ├── LunarScene.jsx           a Lua, a luz do Sol da data e a câmera que gira com o mouse
+│   │   ├── MoonGlobe.jsx            a esfera da Lua inteira, com a cor e o relevo de verdade
 │   │   ├── NearRelief.jsx           o relevo fino de perto, só onde a máquina aguenta (card C6)
 │   │   ├── ReliefCap.jsx            o relevo do polo sul na cena, com sombra (card C2)
 │   │   ├── SiteMarker.jsx           o marcador do ponto escolhido (card C3)
-│   │   ├── areaRing.js              os pontos do anel, na altura do relevo (card C8)
+│   │   ├── StarField.jsx            o céu de estrelas de verdade, na posição da data
+│   │   ├── SystemView.css
+│   │   ├── SystemView.jsx           a vista do sistema: a Terra, a Lua na órbita e o Sol, com relógio próprio
 │   │   ├── coordinates.js           ponto da Lua para ponto da cena e de volta: a convenção dos eixos
 │   │   ├── frameBudget.js           se a máquina aguenta o relevo fino: o tempo entre quadros (card C6)
+│   │   ├── EarthHaze.jsx            o véu azul da Terra na vista do sistema: clareia só o lado do dia
+│   │   ├── SunBody.jsx              o Sol da vista do sistema em 3D: o disco mais escuro na borda e o halo
+│   │   ├── ZoomControls.jsx         a câmera da vista do sistema: gira e aproxima deslizando, como a da cena da Lua
+│   │   ├── additiveLight.js         a mistura das luzes que se somam ao fundo: as estrelas e o brilho do Sol
+│   │   ├── earthImage.js            a imagem da Terra da vista do sistema, lida uma vez por página
+│   │   ├── framing.js               a distância da câmera para a Lua caber na cena, e os ângulos do voo até o ponto
+│   │   ├── moonGlobe.js             onde cada ponto da Lua cai nas imagens, e a cor do polo nas malhas do relevo
+│   │   ├── moonImages.js            as imagens da Lua, lidas uma vez por página
 │   │   ├── nearTiles.js             quais ladrilhos do relevo fino a cena desenha, e a malha deles (card C6)
 │   │   ├── picking.js               o clique na Lua e onde fica o marcador (card C3)
 │   │   ├── reliefLayers.js          quem aparece por cima entre o relevo fino e o grosso: o estêncil (card C6)
 │   │   ├── reliefMesh.js            a malha do relevo, na altura real, a partir do far.bin
+│   │   ├── starPoints.js            o tamanho e o brilho de cada estrela na tela, pela magnitude
 │   │   └── sunLight.js              onde fica a luz do Sol, e por que o alvo dela é o polo
 │   ├── styles/
 │   │   ├── global.css
 │   │   └── tokens.css
+│   ├── workers/
+│   │   └── landingAreas.worker.js   a conta do mapa das áreas de pouso, fora da linha principal da página
 │   ├── App.css
 │   ├── App.jsx
 │   ├── main.jsx

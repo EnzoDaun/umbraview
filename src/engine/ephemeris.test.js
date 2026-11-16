@@ -1,7 +1,8 @@
 // @vitest-environment node
+import { GeoMoon, MakeTime } from 'astronomy-engine'
 import { describe, expect, it } from 'vitest'
 
-import { computeEphemeris } from './ephemeris.js'
+import { computeEphemeris, moonFixedFrameAt } from './ephemeris.js'
 import reference from './fixtures/spiceReference.json'
 import { MOON_RADIUS_M, latLonToUnit, localFrame } from './geometry.js'
 
@@ -72,5 +73,35 @@ describe('posição do Sol e da Terra vistos da Lua', () => {
     }
     // e o Sol anda: em 34 horas a direção dele no céu da Lua muda
     expect(Math.abs(serie.sunDirection[3 * i] - serie.sunDirection[0])).toBeGreaterThan(1e-3)
+  })
+})
+
+describe('giro do céu para o referencial fixo da Lua (moonFixedFrameAt)', () => {
+  const quando = Date.UTC(2026, 10, 15, 12)
+
+  it('leva a direção da Terra, no referencial equatorial, à mesma direção que o computeEphemeris dá', () => {
+    const girar = moonFixedFrameAt(quando)
+    const lua = GeoMoon(MakeTime(new Date(quando)))
+    const terra = girar(-lua.x, -lua.y, -lua.z)
+    const tamanho = Math.sqrt(dot(terra, terra))
+    const { earthPositionKm } = computeEphemeris(quando, 1, 1)
+    const esperado = Array.from(earthPositionKm)
+    const tamanhoEsperado = Math.sqrt(dot(esperado, esperado))
+    for (let i = 0; i < 3; i++) expect(terra[i] / tamanho).toBeCloseTo(esperado[i] / tamanhoEsperado, 12)
+  })
+
+  it('é um giro: não muda o tamanho do vetor', () => {
+    const girado = moonFixedFrameAt(quando)(0.3, -0.5, 0.8)
+    expect(Math.sqrt(dot(girado, girado))).toBeCloseTo(Math.sqrt(0.09 + 0.25 + 0.64), 12)
+  })
+
+  it('o céu dá a volta com o mês sideral: 27,32 dias depois, uma estrela volta quase ao mesmo lugar', () => {
+    const estrela = [0.6, 0.64, 0.48]
+    const antes = moonFixedFrameAt(quando)(...estrela)
+    const meioMes = moonFixedFrameAt(quando + 13.66 * 24 * HORA)(...estrela)
+    const mesInteiro = moonFixedFrameAt(quando + 27.32 * 24 * HORA)(...estrela)
+    const angulo = (a, b) => Math.acos(Math.min(1, dot(a, b))) * GRAU
+    expect(angulo(antes, meioMes)).toBeGreaterThan(90)
+    expect(angulo(antes, mesInteiro)).toBeLessThan(5)
   })
 })

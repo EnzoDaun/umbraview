@@ -29,20 +29,24 @@ function smallRelief(height) {
 }
 
 describe('readMoonClick', () => {
-  it('dentro da área, escolhe o ponto clicado', () => {
-    const { site } = readMoonClick(clickAt(-89.475, -137.44), manifest)
+  it('dentro da área do polo, escolhe o ponto clicado, com o relevo fino', () => {
+    const { site, coarse } = readMoonClick(clickAt(-89.475, -137.44), manifest)
     expect(site.lat).toBeCloseTo(-89.475, 9)
     expect(site.lon).toBeCloseTo(-137.44, 9)
+    expect(coarse).toBe(false)
   })
 
   it('o limite da área (84°S, do manifesto) ainda escolhe', () => {
     expect(manifest.areaMaxLatDeg).toBe(-84)
-    expect(readMoonClick(clickAt(-84, 10), manifest).site).toBeDefined()
+    expect(readMoonClick(clickAt(-84, 10), manifest).coarse).toBe(false)
   })
 
-  it('fora da área, não escolhe e pede o aviso', () => {
-    expect(readMoonClick(clickAt(-83.9, 10), manifest)).toEqual({ outside: true })
-    expect(readMoonClick(clickAt(30, 10), manifest)).toEqual({ outside: true })
+  it('fora da área do polo, escolhe o ponto do mesmo jeito e avisa que o relevo ali é mais grosso', () => {
+    expect(readMoonClick(clickAt(-83.9, 10), manifest).coarse).toBe(true)
+    const { site, coarse } = readMoonClick(clickAt(30, 10), manifest)
+    expect(site.lat).toBeCloseTo(30, 9)
+    expect(site.lon).toBeCloseTo(10, 9)
+    expect(coarse).toBe(true)
   })
 
   it('o fim de um arrasto para girar a Lua não escolhe nada', () => {

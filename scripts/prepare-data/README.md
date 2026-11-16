@@ -162,3 +162,96 @@ node scripts/prepare-data/window-lengths.mjs
 
 Leva menos de 1 minuto. A saída traz, para cada grupo de pontos e cada período, a porcentagem de
 pontos com janela de pelo menos 24, 72 e 144 h, e termina com `OK: janelas medidas em 382 pontos`.
+
+## 8. A Lua inteira e as estrelas
+
+O globo da Lua da cena (`public/data/moon/`), o relevo de fora do polo sul
+(`public/data/relief/global/`) e o céu de estrelas (`public/data/stars/`) saem de três arquivos,
+também guardados em `data-raw/`: dois do *CGI Moon Kit* da NASA (59 e 32 MB) e o catálogo de
+estrelas HYG 4.4 (14 MB). As fontes e as licenças estão no [CREDITS.md](../../CREDITS.md).
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+New-Item -ItemType Directory -Force data-raw | Out-Null; if ($?) {
+  curl.exe -fL -o data-raw\lroc_color_16bit_srgb_4k.tif https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_16bit_srgb_4k.tif
+  if ($LASTEXITCODE -eq 0) {
+    curl.exe -fL -o data-raw\ldem_16_uint.tif https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_16_uint.tif
+    if ($LASTEXITCODE -eq 0) {
+      curl.exe -fL -o data-raw\hyg_v44.csv.gz https://codeberg.org/astronexus/hyg/media/branch/main/data/hyg/CURRENT/hyg_v44.csv.gz
+      if ($LASTEXITCODE -eq 0) {
+        .venv\Scripts\python.exe scripts\prepare-data\prepare_moon_global.py
+        if ($LASTEXITCODE -eq 0) { .venv\Scripts\python.exe scripts\prepare-data\prepare_stars.py }
+      }
+    }
+  }
+}
+```
+
+Os três `curl.exe` baixam os arquivos; os dois scripts geram o que o site usa. Saída esperada, no
+fim, medida em 15/11/2026:
+
+```
+OK: color.jpg, 1.45 MB
+OK: normal.jpg, 0.90 MB
+OK: color-south.jpg, 0.06 MB
+OK: 648 ladrilhos do relevo da Lua inteira, 33.2 MB em public/data/relief/global
+OK: 8920 estrelas de 119613 do catálogo (magnitude até 6.5), 40 sem B-V, 178400 bytes em public/data/stars/stars.bin
+```
+
+O endereço do HYG tem `media` no caminho, e não `raw`: o arquivo fica no Git LFS do Codeberg, e
+pelo `raw` chega só um ponteiro de 133 bytes. O `prepare_stars.py` confere o arquivo e para se ele
+não for o HYG 4.4 esperado.
+
+## 9. As grades do mapa das áreas de pouso
+
+O mapa das áreas com janela de pouso usa o horizonte, já calculado, de duas grades de pontos
+(`public/data/landing-grid/`): a do polo sul, de 5 km, com o relevo fino, e a da Lua inteira, de 2°,
+com o relevo de `public/data/relief/global/`. Elas só precisam ser refeitas se o relevo ou os
+parâmetros do horizonte (`src/engine/config.js`) mudarem. Não usa Python: roda com o Node do projeto.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+node scripts\prepare-data\prepare-landing-grid.mjs
+```
+
+Leva uns 15 minutos (3 da grade do polo e o resto da grade da Lua inteira) e mostra o andamento.
+Saída esperada, no fim, medida em 15/11/2026:
+
+```
+OK: 4152 pontos, 1.49 MB em public/data/landing-grid/polar.bin
+OK: em 14/11/2026, 1540 pontos têm janela de pouso (37.1%)
+OK: o mapa e as janelas com o horizonte inteiro concordam em 166 de 167 pontos da amostra
+OK: Lua inteira, 10284 pontos, 3.70 MB em public/data/landing-grid/global.bin
+OK: em 14/11/2026, 5105 pontos da Lua inteira têm janela de pouso (49.6%)
+```
+
+A terceira linha é a conferência: o horizonte de cada ponto é guardado em passos de 0,2°, e um ponto
+no limite pode trocar de lado por causa do arredondamento.
+
+## 10. A imagem da Terra
+
+A Terra da vista do sistema usa o Blue Marble da NASA
+([svs.gsfc.nasa.gov/2915](https://svs.gsfc.nasa.gov/2915), domínio público, link conferido em
+15/11/2026). O `prepare_earth.py` lê a imagem da Terra inteira (2048 × 1024, em latitude e longitude,
+com Greenwich no meio) e grava `public/data/earth/color.jpg`. Usa o ambiente da seção 2.
+
+**Máquina: a sua · Shell: Windows PowerShell · pasta: raiz do repositório.**
+
+```powershell
+# COLE NO WINDOWS POWERSHELL, NÃO NO GIT BASH
+New-Item -ItemType Directory -Force data-raw | Out-Null; if ($?) {
+  curl.exe -fL -o data-raw\bluemarble-2048.png https://svs.gsfc.nasa.gov/vis/a000000/a002900/a002915/bluemarble-2048.png
+  if ($?) { .venv\Scripts\python.exe scripts\prepare-data\prepare_earth.py }
+}
+```
+
+O download tem 1,5 MB, e o script confere o SHA-256 dele. Saída esperada:
+
+```
+OK: bluemarble-2048.png confere
+OK: color.jpg, 0.25 MB em public/data/earth
+```
