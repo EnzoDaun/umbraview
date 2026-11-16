@@ -9,7 +9,7 @@ import { useState } from 'react'
 
 import { siteSky } from '../data/siteSky.js'
 import { panel } from '../data/panel.js'
-import { HORIZON } from '../engine/config.js'
+import { HORIZON, MIN_LANDING_WINDOW_HOURS } from '../engine/config.js'
 import { formatDegrees, formatUtc } from './format.js'
 import { GroundView } from './GroundView.jsx'
 import { Timeline } from './Timeline.jsx'
@@ -49,7 +49,7 @@ function SiteSkyChart({ sky, onDateChange }) {
       </div>
       <details className="site-sky__explain">
         <summary>{siteSky.explainTitle}</summary>
-        {siteSky.explain(HORIZON.mastM).map((paragraph) => (
+        {siteSky.explain(HORIZON.mastM, MIN_LANDING_WINDOW_HOURS).map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
       </details>

@@ -1,11 +1,12 @@
 /* O céu do ponto em desenho: a vista do chão e a linha do tempo, ligadas pela hora marcada. O teste
  * confere o que a pessoa lê e faz (os estados, o resumo para o leitor de tela, o cursor e o botão
  * que leva a hora para a data); a posição de cada traço tem teste próprio, em skyChart.test.js. */
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { panel } from '../data/panel.js'
 import { siteSky } from '../data/siteSky.js'
+import { MIN_LANDING_WINDOW_HOURS } from '../engine/config.js'
 import { formatPercent, formatUtc } from './format.js'
 import { SiteSky } from './SiteSky.jsx'
 
@@ -52,15 +53,17 @@ describe('SiteSky', () => {
   })
 
   it('o cursor começa na data escolhida e anda pelas horas do período', () => {
-    render(<SiteSky status="ready" sky={ceu()} onDateChange={() => {}} />)
+    const { container } = render(<SiteSky status="ready" sky={ceu()} onDateChange={() => {}} />)
     expect(cursor()).toHaveValue('0')
     expect(cursor()).toHaveAttribute('max', String(HORAS - 1))
     expect(cursor()).toHaveAttribute('aria-valuetext', formatUtc(INICIO))
     fireEvent.change(cursor(), { target: { value: '30' } })
     expect(cursor()).toHaveAttribute('aria-valuetext', formatUtc(new Date('2026-11-15T06:00:00Z')))
-    // na hora 30 o Sol já está escondido, e a Terra continua à vista
-    expect(screen.getByText(siteSky.hidden, { exact: false })).toBeInTheDocument()
-    expect(screen.getByText(siteSky.inView, { exact: false })).toBeInTheDocument()
+    // na hora 30 o Sol já está escondido, e a Terra continua à vista. Procura só na leitura da hora:
+    // a explicação, logo abaixo, também usa "in view" e "hidden" para ensinar a ler o gráfico.
+    const leitura = within(container.querySelector('.site-sky__readout'))
+    expect(leitura.getByText(siteSky.hidden, { exact: false })).toBeInTheDocument()
+    expect(leitura.getByText(siteSky.inView, { exact: false })).toBeInTheDocument()
   })
 
   it('o botão leva a hora marcada para a data do cálculo, e na hora 0 não tem o que fazer', () => {
@@ -88,5 +91,14 @@ describe('SiteSky', () => {
     const explicacao = screen.getByText(siteSky.explainTitle).closest('details')
     expect(explicacao).not.toHaveAttribute('open')
     expect(explicacao).toHaveTextContent('2 m above the ground')
+  })
+
+  it('a explicação ensina a ler o gráfico e a linha do tempo, com a janela mínima do motor', () => {
+    render(<SiteSky status="ready" sky={ceu()} onDateChange={() => {}} />)
+    const explicacao = screen.getByText(siteSky.explainTitle).closest('details')
+    expect(explicacao).toHaveTextContent('Solid stretches are in view')
+    expect(explicacao).toHaveTextContent('filled if in view, hollow if hidden')
+    expect(explicacao).toHaveTextContent(`at least ${MIN_LANDING_WINDOW_HOURS} hours in a row`)
+    expect(explicacao).toHaveTextContent(`"${siteSky.useThisTime}"`)
   })
 })
