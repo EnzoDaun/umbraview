@@ -1,25 +1,25 @@
-# Uso de inteligência artificial
+# Use of artificial intelligence
 
-A equipe usou inteligência artificial, o Claude, da Anthropic (claude.ai), para auxiliar e
-acelerar o desenvolvimento do UmbraView: na pesquisa, no código, nos testes, na documentação e
-no logo da equipe e do projeto (Claude Design). O que a IA produziu passa pela mesma revisão de qualquer contribuição
-([CONTRIBUTING.md](../CONTRIBUTING.md)), e quem faz cada commit responde por ele.
+The team used artificial intelligence, Claude, by Anthropic (claude.ai), to support and speed up
+the development of UmbraView: in research, code, tests, documentation and the team and project
+logo (Claude Design). What the AI produced goes through the same review as any contribution
+([CONTRIBUTING.md](../CONTRIBUTING.md)), and whoever makes each commit is responsible for it.
 
-O uso segue a permissão do NASA Space Apps Challenge 2026, que admite ferramentas de IA (a FAQ
-dos participantes as chama de "Super Intelligence", SI) e pede que cada equipe descreva na
-submissão como elas foram usadas.
+This use follows the permission of the NASA Space Apps Challenge 2026, which allows AI tools (the
+participants' FAQ calls them "Super Intelligence", SI) and asks each team to describe in the
+submission how they were used.
 
-O guia de submissão de 2026 pede marca visível em toda imagem e vídeo feitos com IA. O logo é
-marcado no rodapé do site (`src/data/app.js`, card E19) e no vídeo (card V4).
+The 2026 submission guide asks for a visible label on every image and video made with AI. The
+logo is labeled in the site footer (`src/data/app.js`, card E19) and in the video (card V4).
 
-O `.gitignore` e o histórico do git citam o Codex, da OpenAI. A configuração dele (as instruções
-para trabalhar no repositório, em `AGENTS.md`, e um gancho que o impede de fazer commit, push e
-merge, em `.codex/`) entrou por engano no PR #12 e saiu no PR #16, no mesmo dia (09/11/2026). O
-Codex não gerou código, teste nem texto do projeto: nenhum commit do histórico tem coautoria ou
-assinatura dele (conferido em 13/11/2026), e as sessões do Codex no computador do Marco não
-chamaram o modelo (conferido pelo Marco em 11/11/2026).
+The `.gitignore` and the git history mention Codex, by OpenAI. Its configuration (the instructions
+for working in the repository, in `AGENTS.md`, and a hook that prevents it from committing,
+pushing and merging, in `.codex/`) came in by mistake in PR #12 and was removed in PR #16, on the
+same day (09/11/2026). Codex did not generate code, tests or text for the project: no commit in
+the history has its co-authorship or signature (verified on 13/11/2026), and the Codex sessions on
+Marco's computer did not call the model (verified by Marco on 11/11/2026).
 
-## Texto para a submissão
+## Text for the submission
 
 > Artificial intelligence (Claude, by Anthropic, through claude.ai) was used in this project to
 > support and speed up development: research, code, tests, documentation and the team and
