@@ -44,6 +44,9 @@
   /* Estado */
   --color-danger: #ec8a7c;
   --color-success: #5fcf8f;
+  /* O fundo das janelas de pouso no painel (SitePanel.css): o verde delas bem fraco sobre a
+     superfície, só para separar o bloco. O texto em cima continua com o contraste do fundo. */
+  --color-success-surface: color-mix(in srgb, var(--color-success) 9%, transparent);
 
   /* Foco do teclado: visível sobre qualquer fundo do app */
   --color-focus: #f2c46b;

@@ -46,8 +46,10 @@
   text-transform: uppercase;
 }
 
-/* O ponto de cor diz de quem é a coluna sem depender de ler o rótulo. */
-.site-panel__row--now .site-panel__label::before {
+/* O ponto de cor diz de quem é a coluna sem depender de ler o rótulo. As janelas de pouso ganham o
+   mesmo ponto, no verde da legenda da linha do tempo. */
+.site-panel__row--now .site-panel__label::before,
+.site-panel__row--landing .site-panel__label::before {
   content: '';
   display: inline-block;
   width: var(--space-2);
@@ -64,6 +66,15 @@
   background: var(--color-earth);
 }
 
+.site-panel__row--landing .site-panel__label::before {
+  background: var(--color-success);
+}
+
+/* O rótulo das janelas sai do cinza dos outros: é a resposta que a pessoa veio procurar. */
+.site-panel__row--landing .site-panel__label {
+  color: var(--color-text-secondary);
+}
+
 .site-panel__value {
   margin: var(--space-1) 0 0;
   font-size: var(--font-size-sm);
@@ -78,10 +89,43 @@
 .site-panel__windows {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin: 0;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
   padding: 0;
   list-style: none;
+}
+
+/* Cada janela é um bloco com o filete verde à esquerda, como uma faixa da linha do tempo em pé: a
+   duração grande em cima e as datas embaixo, no tom secundário. Sem caixa nem sombra, para não virar
+   um cartão no meio de um painel que é só linhas finas. */
+.site-panel__window {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: 2px solid var(--color-success);
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
+  background: var(--color-success-surface);
+}
+
+/* Fora da tela: com a duração e as datas em linhas separadas, o " · " sobraria. */
+.site-panel__window-sep {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.site-panel__window-dates {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.site-panel__no-window {
+  color: var(--color-text-muted);
 }
 
 /* A data e a duração não quebram no meio, nem o "≥" se separa do número: se a linha não couber,
@@ -93,7 +137,9 @@
 
 .site-panel__duration {
   color: var(--color-success);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
 }
 
 /* Algarismos de largura fixa: o número não muda de tamanho quando o valor muda, e as datas de duas
