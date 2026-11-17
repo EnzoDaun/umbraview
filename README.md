@@ -251,6 +251,7 @@ umbraview/
 │
 ├── docs/
 │   ├── backlog.md
+│   ├── mission-simulation-plan.md   the plan for the mission simulation (cards C13 to C16), not built yet
 │   ├── primeiros-passos.md
 │   └── uso-de-ia.md
 │
