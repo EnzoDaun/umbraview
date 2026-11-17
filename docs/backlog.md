@@ -1664,6 +1664,177 @@ along with it.
 **Done when.** The Moon's edge from far away looks smooth when checked by eye, the cost measured on
 CIT-DES06 with the window maximized stays below 1.5 ms extra, and `verify` passes.
 
+### Mission simulation (cards C13 to C16)
+
+Proposed by Marco on 17/11/2026. **The four cards wait for Enzo's OK**: they bring back "Story
+mode", from "Out of scope for now", and they add files to the engine. The reasoning, the
+feasibility numbers and the sources are in
+[`docs/mission-simulation-plan.md`](mission-simulation-plan.md); the cards below are what each PR
+delivers.
+
+The idea in one sentence: choose a launch site on the Earth and see the path a spacecraft would
+follow, under the real gravity of the Earth, the Moon and the Sun, to reach the chosen site inside
+one of its landing windows. It is a reference mission computed by the engine, not the flight plan
+of IM-2 or of Artemis III, and the screen says so.
+
+### C13 · The launch sites on the Earth, in a view to scale
+
+**Status:** proposed on 17/11; waits for Enzo's OK · **Depends on:** nothing
+
+**What it is for.** The mission starts at a launch site, and today nothing in the site knows a
+point on the Earth. And the system view cannot hold a mission: there the Earth is drawn about 9
+times too big for its distance to the Moon, so an orbit 185 km up would be inside it.
+
+**What to do.**
+1. `src/data/launchSites.js`: the launch sites that have sent a mission to the Moon, one object
+   per site, with `id`, `name`, `operator`, `lat`, `lon`, the missions and `sourceUrl`.
+   Coordinates from GCAT (J. McDowell, CC-BY); the missions, from each agency's page. A row
+   without a source does not enter. The starting list and what is still not verified are in the
+   plan, "Data and sources". GCAT and each agency's page go into `CREDITS.md`.
+2. The rows copied from GCAT go to `scripts/references/`, and `src/data/launchSites.test.js` ties
+   the list to them, as `sites.test.js` does with the Artemis III outlines: a changed digit fails.
+3. `src/engine/earthSite.js`: where a point of the Earth is in space at an instant, from its
+   latitude and longitude (`ObserverVector` of the astronomy-engine), in the same drawing frame
+   as `system.js`.
+4. `src/scene/MissionView.jsx`, the third view of the selector in `App.jsx`: the Earth and the
+   Moon with their real sizes and their real distance, the Earth turning with the clock, the
+   Moon's orbit, the star sky and the sunlight from the right side, and a marker on each launch
+   site. Buttons take the camera to the Earth and to the Moon: to scale, the Earth is a dot when
+   the whole orbit fits on screen.
+5. The Earth and the Moon are already drawn in `SystemView.jsx`. Move what the two views share to
+   files of its own instead of copying it.
+6. The list of launch sites, as a `<select>`, is the way to choose with the keyboard; the chosen
+   site's marker is highlighted. Texts in `src/data/missionView.js`.
+
+**How to test.**
+- `earthSite.test.js`: the site is at the Earth's radius from the center; one sidereal day later
+  (23 h 56 min) it is back in the same direction; its latitude in space matches the one typed, to
+  the 0.2° that separates the two ways of measuring latitude on a flattened Earth; and one case
+  against an outside reference (JPL Horizons should give the vector between a point on the
+  Earth's surface and its center; not verified).
+- `MissionView.test.jsx`, with the Canvas replaced as in `SystemView.test.jsx`: the accessible
+  name, the list of sites, and that the text says the view is to scale.
+
+**Done when.** In `npm run dev`, the Mission view shows the Earth to scale with every launch site
+of the list in its place (checked by eye against a map for at least three of them), the list
+chooses a site with the keyboard alone, every row has its source in the file and in `CREDITS.md`,
+and `verify` passes.
+
+### C14 · The propagator, checked against a flown trajectory
+
+**Status:** proposed on 17/11; waits for Enzo's OK · **Depends on:** nothing
+
+**What it is for.** To draw an orbit that is real, the engine has to move a spacecraft under
+gravity. This card is only that: given a position, a speed and an instant, where the spacecraft
+is later. Card C15 uses it to design the mission.
+
+**What to do.**
+1. `src/engine/orbit.js`, plain JavaScript:
+   - the gravity of the Earth, plus the Moon and the Sun as third bodies, as point masses, with
+     the constants from JPL (*Astrodynamic Parameters*, DE440; `CREDITS.md`);
+   - the Moon and the Sun read from the astronomy-engine once, into a grid in time, and
+     interpolated: calling the ephemeris at every step is what would make it slow;
+   - a fixed-order integrator (RK4) whose step follows the distance to the Earth and to the Moon;
+   - the "closest pass by the Moon" event, which card C15 aims at.
+2. `scripts/references/`: a script that fetches from JPL Horizons the as-flown states of Artemis I
+   (object −1023, geocentric, ICRF) in a stretch of coast with no burn, and the fixture it
+   generates in `src/engine/fixtures/`.
+
+**How to test** (`orbit.test.js`, test first).
+- With only the Earth: a circular orbit closes in the period the formula gives, and the energy
+  does not drift.
+- Against the fixture: the position after 24, 48 and 68 hours stays within a limit written in the
+  test. In the draft of 17/11 the difference was 17, 43 and 56 km.
+- The same test with the Sun switched off, and with the Moon switched off too, has to fail: in
+  the draft they gave 660 km and 2,470 km. A reference that every model passes proves nothing.
+
+**Done when.** The three groups of tests pass, the differences measured against Artemis I are
+written in this card, no file in `src/engine/` imports React, and `verify` passes.
+
+### C15 · The mission in the engine: from the launch site to the landing window
+
+**Status:** proposed on 17/11; waits for Enzo's OK · **Depends on:** C13 (the launch sites) and
+C14 (the propagator)
+
+**What it is for.** Given a launch site, a landing site and one of its landing windows, compute
+the mission: when to launch and in which direction, the burns, and the path, phase by phase.
+
+**What to do.**
+1. The mission's parameters in `src/engine/config.js`, each with its reason and its source: the
+   height of the parking orbit, the crossing time, the height of the lunar orbit, how long the
+   spacecraft stays in it, and where in the window the landing is aimed. The values are decisions
+   of Marco and Enzo (plan, "Decisions that are not Claude's to make").
+2. `src/engine/mission.js`, in the order of the plan's "How a mission is calculated": the launch
+   time with the lowest tilt, the first guess with only the Earth, and the aiming by Newton's
+   method on three choices (the speed at the end of the burn, where on the parking orbit it
+   happens, and the tilt of the launch plane) against three targets (the height of the pass over
+   the Moon, the lunar orbit plane containing the landing site, and the arrival time), with the
+   Moon and the Sun switched on in steps. Then the lunar orbit and the descent ellipse.
+3. The climb from the pad and the powered descent are not integrated: they are a smooth curve
+   between two computed points, and the result marks them as `schematic`.
+4. `src/workers/mission.worker.js` and `src/hooks/useMission.js`: the calculation took 0.5 to
+   0.9 s in the draft, too long for the main thread. `useMission` returns `{ status, mission }`
+   with the same four `status` values as `useSiteSky`.
+5. The format of `mission` goes into "What the bridge delivers to the screen", telling Miguel
+   the same day. Draft, to be closed in the PR: the instants (`launchUtc`, `tliUtc`, `loiUtc`,
+   `landingUtc`), the numbers (launch direction, tilt of the parking orbit, the speed change of
+   each burn, the crossing time, the tilt of the lunar orbit) and `segments`, one per phase, with
+   the phase, whether it is `integrated` or `schematic`, whether its points are counted from the
+   Earth or from the Moon, and the points with their instants.
+
+**How to test** (`mission.test.js`, test first).
+- The launch site is in the plane of the parking orbit at the launch instant, and the tilt of
+  that orbit is never smaller than the site's latitude.
+- The burn that leaves the Earth is along the direction of motion.
+- The pass over the Moon is at the configured height, the lunar orbit plane contains the landing
+  site, and the landing falls inside the window.
+- The instants come in order: launch, burn, arrival, landing.
+- It converges for a spread of dates over one month and for sites at different latitudes, the
+  equator included (35 cases converged in the draft).
+- A window that no path reaches gives `error`, and not a wrong path.
+
+**Done when.** The tests pass; the time of one mission is measured in the browser, on Miguel's
+laptop as well, and written in this card; the simulated launch for the IM-2 landing from pad 39A
+is compared with the real one (26/02/2025, 7:16 p.m. EST, NASA) and the difference is written
+here, as a note and not as a pass or fail, because IM-2 flew its own profile; the bridge table has
+the new format; and `verify` passes.
+
+### C16 · The mission on screen: the path, the clock and the numbers
+
+**Status:** proposed on 17/11; waits for Enzo's OK · **Depends on:** C13 (the view) and C15 (the
+bridge)
+
+**What it is for.** Show the mission of card C15 in the view of card C13.
+
+**What the person sees when the card is done.** In the Mission view, with a site chosen on the
+Moon: a list of that site's landing windows and the list of launch sites. Choosing both draws a
+line from the launch site, around the Earth, across to the Moon, around it and down to the landing
+site. The integrated stretches and the schematic ones have different lines. A clock, with play and
+a cursor, moves a dot along the line, with the Earth turning and the Moon moving at the same
+instant. Next to it, the numbers: launch time and direction, each burn, the crossing time, the
+landing time.
+
+**What to do.**
+1. In `MissionView.jsx`, the lines of `mission.segments`, the dot of the spacecraft at the
+   clock's instant, and a name at each event (launch, leaving the Earth, arriving at the Moon,
+   landing). The stretches counted from the Moon are drawn on the Moon, and move with it.
+2. A button takes the camera to the spacecraft, next to the ones for the Earth and the Moon.
+3. One text for each state: no site chosen on the Moon, the site has no landing window in the
+   period, calculating, no path found, and the mission. All in `src/data/missionView.js`.
+4. The texts that say what is real and what is not (plan, "What real means here"), as the system
+   view does with its scale.
+5. The clock does not start on its own, and with the request for less motion the camera does not
+   glide (README, "Accessibility").
+
+**How to test** (`MissionView.test.jsx`). One case for each state of item 3, with the bridge
+replaced; the numbers on screen are the ones the bridge gave; the clock moves without changing
+the calculation date.
+
+**Done when.** In `npm run dev`, choosing a site, a window and a launch site draws the mission and
+the clock moves the spacecraft from the pad to the landing; everything works with the keyboard
+alone; Marco has checked it in the browser before the commit; the README's "What already exists"
+tells about the view; and `verify` passes.
+
 ---
 
 ## I: Miguel
@@ -2151,7 +2322,8 @@ Ideas that came up and are not going in now. They go back to the list above only
 
 - Clicking on any point of the whole Moon: the enabled area goes from the pole down to 84°S (card
   E2), and the rest is for later.
-- Story mode: telling a mission step by step.
+- Story mode: telling a mission step by step. Part of it is proposed to come back as cards C13 to
+  C16 (the mission simulation), which wait for Enzo's OK; the step-by-step text stays out.
 - Asking the local organizers for written confirmation that the team can start before
   14/11 (this was card P3): Enzo decided on 05/11/2026 not to ask. The team follows the guidance of
   its advisor and of the 2025 event organizers, and the risk is accepted in the scope (card E5).
