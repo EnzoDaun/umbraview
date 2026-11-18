@@ -1679,7 +1679,8 @@ of IM-2 or of Artemis III, and the screen says so.
 
 ### C13 · The launch sites on the Earth, in a view to scale
 
-**Status:** proposed on 17/11; waits for Enzo's OK · **Depends on:** nothing
+**Status:** built on 18/11, on the branch `feat/c13-vista-da-missao`, which was born from the plan's
+branch; it waits for Enzo's OK and for the PR number · **Depends on:** nothing
 
 **What it is for.** The mission starts at a launch site, and today nothing in the site knows a
 point on the Earth. And the system view cannot hold a mission: there the Earth is drawn about 9
@@ -1719,6 +1720,86 @@ times too big for its distance to the Moon, so an orbit 185 km up would be insid
 of the list in its place (checked by eye against a map for at least three of them), the list
 chooses a site with the keyboard alone, every row has its source in the file and in `CREDITS.md`,
 and `verify` passes.
+
+**How it turned out.**
+- **The list has 15 launch pads**, one row per pad: Kennedy LC-39A and LC-39B, Cape Canaveral
+  SLC-41, Wallops, Vandenberg, Kourou, Baikonur, Vostochny, Xichang, Wenchang, Sriharikota,
+  Tanegashima, Kagoshima (now Uchinoura), Mahia and Alcântara. The coordinate of each one is the
+  pad's, from GCAT's launch points table, with the 4 decimals it gives. Vandenberg and Kagoshima
+  were not in the plan's starting list: the GCAT launch log has a launch to the Moon from each
+  (Clementine and Hiten).
+- **Each pad carries one launch to the Moon that left from it**, with the time from the GCAT
+  launch log; it is not necessarily the most recent one. Two of them the log does not call by
+  name (SMART-1 rode along with two satellites, and Clementine appears as DSPSE): for those, the
+  link between the mission and the launch comes from NASA's page, and the time, the site and the
+  pad match the GCAT row. Alcântara enters with none: the log has 104 launches from there, none
+  to the Moon (read on 18/11/2026).
+- **Not decided by Marco or Enzo yet, and done as the plan proposed:** Alcântara is in the list,
+  and Kennedy has two rows (39A, from where IM-2 left, and 39B, the Artemis pad). Taking a row out
+  is deleting it from `launchSites.js` and from the copied GCAT rows.
+- **The engine:** `earthSiteKm` and `earthSiteEquatorialKm` (`src/engine/earthSite.js`). Against
+  JPL Horizons, for Kennedy and Mahia over one day each, the difference is 19 to 21 m.
+- **A defect found on the way, and fixed: the Earth of the system view was turned wrong.** Its
+  orientation (`earthMatrix`, in `src/engine/system.js`) came from the astronomy-engine's
+  `RotationAxis`, as the Moon's does. For the Earth that gives the right pole and the wrong turn:
+  against the position of a ground point, which matches Horizons, the continents were 0.88° off in
+  longitude in February 2025 and 0.56° in November 2026 (60 to 100 km at the equator), and 134° off
+  on 01/01/2000. Nobody could see it in the system view; in the mission view, the mark of a launch
+  site would fall in the sea. `earthMatrix` now comes from the position of three ground points,
+  the same calculation as the launch sites, and a test ties the two together. The Earth of the
+  system view turned by that much.
+- **What the two views share moved to files of its own:** the Earth (`EarthBody.jsx`), the Moon
+  (`MoonBody.jsx`), the image becoming a texture (`useBodyTexture.js`), the reading of a color
+  token (`cssToken.js`), the clock (`useViewClock.js`) and its row of controls (`ViewClock.jsx`).
+  `SystemView.jsx` shows the same as before. The layout classes of `SystemView.css` are used by
+  both views.
+- **Choosing a launch site in the list turns the camera to it** (the `facing` of
+  `ZoomControls.jsx`). Without that, someone using only the keyboard could choose a site on the far
+  side of the Earth and never see it: the camera only turns with the mouse.
+- **The marks can be clicked** (asked by Marco on 18/11): a click on a mark chooses that site, and
+  the camera stays where it is, because whoever clicked is already looking at it. The rule is in
+  `src/scene/missionPicking.js`, with three cautions: the end of a drag is not a click (the same
+  4 pixels as the click on the Moon); a mark on the far side of the Earth is not chosen through
+  it; and on marks that sit on top of each other, each click goes to the next one. Around each
+  mark there is an invisible area 5 times its size, about 24 pixels wide with the whole Earth on
+  screen, so the click does not have to hit a 5-pixel dot. The list is still the way to choose
+  with the keyboard: the scene does not receive focus.
+- **The marks shrink as the camera gets close**, to stay the same size on screen. With a fixed
+  size, up close a mark was a 140 km disc over the site, covering the coast and its own name. With
+  the whole Earth on screen, the two Kennedy pads and Cape Canaveral, a few km apart, have their
+  marks on top of each other: the list is what tells them apart.
+- **The image of the Earth is 2048 pixels wide**, 20 km per pixel at the equator: up close the
+  coast is blurred, and the night side is dark. A sharper image is a new card, if needed.
+
+**Verified** on 18/11/2026, with `npm run dev` in the app's browser pane (Chromium), at 1500 × 950:
+- Choosing Kennedy LC-39A turns the camera to Florida, and the mark is on its east coast;
+  Alcântara is on the north coast of Brazil, at the coastline; Baikonur is east of the Caspian Sea.
+  Mahia and Tanegashima were on the night side at the time, where the coast cannot be told.
+- The panel of the chosen site shows the coordinate and the launch: "28.6083° N, 80.6041° W" and
+  "IM-2, 27 Feb 2025" for Kennedy, "None so far" for Alcântara.
+- "Whole orbit" shows the Moon's orbit with the Earth as a dot in the middle, and "Moon" goes to
+  the Moon. Playing, the clock moved 18 hours in 3 seconds.
+- The system view shows the same bodies, names and buttons as before, and "Follow the Earth" still
+  takes the camera to it.
+- The console had no error, apart from the usual `THREE.Clock` warning.
+- Each new test fails on its own error: the equator of the date in place of J2000's, the longitude
+  with the sign swapped and a site 100 km up, in `earthSite.test.js`; the groups of the list
+  swapped, east and west swapped, and the camera left on the Moon when a site is chosen, in
+  `MissionView.test.jsx`. The click rule was written test first: with a skeleton that chose
+  nothing, 6 of its 8 tests failed, and the 2 that passed are the ones that expect nothing.
+- The click on a mark, with the mouse: over the mark in Central Asia the cursor becomes a hand,
+  and the click chooses Baikonur, with its numbers, without moving the camera. Over the place where
+  Vandenberg is, behind the Earth, the cursor does not change and the click does nothing. Dragging
+  the Earth with the mouse starting on the Sriharikota mark turns the Earth and chooses nothing.
+  Four clicks on the three marks of Florida, one on top of the other, went through LC-39B, LC-39A,
+  SLC-41 and back to LC-39B.
+- With the keyboard: with the focus on the list (the focus ring shows), the down arrow goes to the
+  next site, the camera turns to it and its numbers change; Shift+Tab from the list reaches the
+  camera buttons.
+- Marco checked the view and the click on the marks in his own browser on 18/11, before the
+  commits.
+- Not verified: with the request for less motion turned on, on a touch screen, and in a browser
+  other than Chromium.
 
 ### C14 · The propagator, checked against a flown trajectory
 
